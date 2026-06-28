@@ -83,6 +83,7 @@ export default function Home() {
   const [institution, setInstitution] = useState<string | null>(null);
   const [license, setLicense] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [minScore, setMinScore] = useState("");
   const [groupedView, setGroupedView] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -92,25 +93,37 @@ export default function Home() {
       .then(setData);
   }, []);
 
-  const universities = useMemo(
-    () => [...new Set(data.map((r) => r.university))].sort(),
-    [data]
-  );
-
   const bacTypes = useMemo(
     () => [...new Set(data.map((r) => r.bacType))].sort(),
     [data]
   );
 
-  const institutions = useMemo(
-    () => [...new Set(data.map((r) => r.institution))].sort(),
-    [data]
-  );
+  const universities = useMemo(() => {
+    const available = data.filter(
+      (record) =>
+        (!institution || record.institution === institution) &&
+        (!license || record.license === license)
+    );
+    return [...new Set(available.map((record) => record.university))].sort();
+  }, [data, institution, license]);
 
-  const licenses = useMemo(
-    () => [...new Set(data.map((r) => r.license))].sort(),
-    [data]
-  );
+  const institutions = useMemo(() => {
+    const available = data.filter(
+      (record) =>
+        (university === "all" || record.university === university) &&
+        (!license || record.license === license)
+    );
+    return [...new Set(available.map((record) => record.institution))].sort();
+  }, [data, university, license]);
+
+  const licenses = useMemo(() => {
+    const available = data.filter(
+      (record) =>
+        (university === "all" || record.university === university) &&
+        (!institution || record.institution === institution)
+    );
+    return [...new Set(available.map((record) => record.license))].sort();
+  }, [data, university, institution]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -120,6 +133,7 @@ export default function Home() {
         if (university !== "all" && r.university !== university) return false;
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
+        if (minScore && r.score > parseFloat(minScore)) return false;
         if (q) {
           const match =
             r.institution.toLowerCase().includes(q) ||
@@ -131,7 +145,7 @@ export default function Home() {
         return true;
       })
       .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
-  }, [data, search, bacType, university, institution, license, sortDir]);
+  }, [data, search, bacType, university, institution, license, minScore, sortDir]);
 
   const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
   const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
@@ -167,7 +181,7 @@ export default function Home() {
             <CardTitle>بحث وتصفية</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_176px_288px_144px]">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_108px_176px_144px]">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-text" />
                 <Input
@@ -178,6 +192,22 @@ export default function Home() {
                     setPage(1);
                   }}
                   className="pr-9"
+                />
+              </div>
+              <div className="relative">
+                <Input
+                  type="number"
+                  min="60"
+                  max="230"
+                  step="0.01"
+                  placeholder="النقاط ≤"
+                  value={minScore}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v !== "" && !/^\d+(\.\d*)?$/.test(v)) return;
+                    setMinScore(v);
+                    setPage(1);
+                  }}
                 />
               </div>
               <Select
@@ -203,6 +233,26 @@ export default function Home() {
                 </SelectContent>
               </Select>
               <Select
+                value={sortDir}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setSortDir(v as SortDir);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="الترتيب">
+                    {sortDir === "desc" ? "الأعلى أولا" : "الأدنى أولا"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">الأعلى أولا</SelectItem>
+                  <SelectItem value="asc">الأدنى أولا</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-[280px_1fr_1fr]">
+              <Select
                 value={university}
                 onValueChange={(v) => {
                   if (!v) return;
@@ -224,26 +274,6 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={sortDir}
-                onValueChange={(v) => {
-                  if (!v) return;
-                  setSortDir(v as SortDir);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="الترتيب">
-                    {sortDir === "desc" ? "الأعلى أولا" : "الأدنى أولا"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">الأعلى أولا</SelectItem>
-                  <SelectItem value="asc">الأدنى أولا</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="mt-4 flex flex-col items-stretch gap-4 border-t border-border pt-4 sm:flex-row sm:items-center">
               <Combobox
                 items={institutions}
                 value={institution}
@@ -254,7 +284,6 @@ export default function Home() {
                 placeholder="المؤسسة"
                 searchPlaceholder="ابحث عن مؤسسة..."
                 emptyMessage="لا توجد مؤسسة مطابقة"
-                className="sm:w-96"
               />
               <Combobox
                 items={licenses}
@@ -266,8 +295,9 @@ export default function Home() {
                 placeholder="الشعبة الجامعية"
                 searchPlaceholder="ابحث عن شعبة جامعية..."
                 emptyMessage="لا توجد شعبة مطابقة"
-                className="sm:w-80 md:w-96"
               />
+            </div>
+            <div className="mt-4 flex items-center justify-start border-t border-border pt-4">
               <button
                 type="button"
                 role="switch"
@@ -305,7 +335,7 @@ export default function Home() {
               <span className="text-muted-text text-sm font-normal">
                 {groupedView
                   ? `(${filteredLicenseGroups.length} إجازة · ${filtered.length} شعبة بكالوريا)`
-                  : `(${filtered.length} نتيجة)`}
+                  : `(${filtered.length} ${filtered.length < 10 ? "نتائج" : "نتيجة"})`}
               </span>
             </CardTitle>
           </CardHeader>
@@ -318,7 +348,7 @@ export default function Home() {
                   <TableHead className="hidden md:table-cell w-[250px]">المؤسسة</TableHead>
                   <TableHead className="w-[200px]">الإجازة</TableHead>
                   <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
-                  <TableHead className="w-[80px] text-right">المعدل</TableHead>
+                  <TableHead className="w-[80px] text-right">النقاط</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
