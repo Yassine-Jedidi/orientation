@@ -1,65 +1,206 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+import { Search } from "lucide-react";
+import type { ScoreRecord } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type SortDir = "desc" | "asc";
 
 export default function Home() {
+  const [data, setData] = useState<ScoreRecord[]>([]);
+  const [search, setSearch] = useState("");
+  const [bacType, setBacType] = useState<string>("all");
+  const [university, setUniversity] = useState<string>("all");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  useEffect(() => {
+    fetch("/data/scores.json")
+      .then((r) => r.json())
+      .then(setData);
+  }, []);
+
+  const universities = useMemo(
+    () => [...new Set(data.map((r) => r.university))].sort(),
+    [data]
+  );
+
+  const bacTypes = useMemo(
+    () => [...new Set(data.map((r) => r.bacType))].sort(),
+    [data]
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return data
+      .filter((r) => {
+        if (bacType !== "all" && r.bacType !== bacType) return false;
+        if (university !== "all" && r.university !== university) return false;
+        if (q) {
+          const match =
+            r.institution.toLowerCase().includes(q) ||
+            r.license.toLowerCase().includes(q) ||
+            r.code.includes(q) ||
+            r.university.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
+  }, [data, search, bacType, university, sortDir]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col flex-1">
+      <header className="border-b border-border bg-canvas">
+        <div className="mx-auto max-w-6xl px-6 py-8">
+          <h1 className="text-display-sm font-heading font-medium text-ink">
+            دليل التوجيه الجامعي
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-2 text-body">
+            استشارة معدلات التوجيه حسب الشعب والباكالوريا
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>بحث وتصفية</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-text" />
+                <Input
+                  placeholder="بحث بالمؤسسة أو الإجازة أو الرمز..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pr-9"
+                />
+              </div>
+              <Select value={bacType} onValueChange={(v) => v && setBacType(v)}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="الباكالوريا">
+                    {bacType === "all" ? "كل الشعب" : bacType}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">كل الشعب</SelectItem>
+                  {bacTypes.map((bt) => (
+                    <SelectItem key={bt} value={bt}>
+                      {bt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={university} onValueChange={(v) => v && setUniversity(v)}>
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue placeholder="الجامعة">
+                    {university === "all" ? "كل الجامعات" : university}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent listClassName="max-h-72">
+                  <SelectItem value="all">كل الجامعات</SelectItem>
+                  {universities.map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={sortDir}
+                onValueChange={(v) => v && setSortDir(v as SortDir)}
+              >
+                <SelectTrigger className="w-full sm:w-36">
+                  <SelectValue placeholder="الترتيب">
+                    {sortDir === "desc" ? "الأعلى أولا" : "الأدنى أولا"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">الأعلى أولا</SelectItem>
+                  <SelectItem value="asc">الأدنى أولا</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              النتائج{" "}
+              <span className="text-muted-text text-sm font-normal">
+                ({filtered.length} من {data.length})
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">الرمز</TableHead>
+                  <TableHead className="w-[180px]">الجامعة</TableHead>
+                  <TableHead className="hidden md:table-cell w-[250px]">المؤسسة</TableHead>
+                  <TableHead className="w-[200px]">الإجازة</TableHead>
+                  <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
+                  <TableHead className="w-[80px] text-right">المعدل</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-text py-12">
+                      لا توجد نتائج تطابق بحثك
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((r, i) => (
+                    <TableRow key={`${r.code}-${r.bacType}-${i}`}>
+                      <TableCell className="font-mono text-xs">
+                        {r.code}
+                      </TableCell>
+                      <TableCell>{r.university}</TableCell>
+                      <TableCell className="hidden md:table-cell max-w-xs truncate">
+                        {r.institution}
+                      </TableCell>
+                      <TableCell className="max-w-40 truncate">
+                        {r.license}
+                      </TableCell>
+                      <TableCell>{r.bacType}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {r.score.toFixed(4)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </main>
+
+      <footer className="border-t border-border bg-surface-soft">
+        <div className="mx-auto max-w-6xl px-6 py-6 text-center text-sm text-body">
+          البيانات مأخوذة من دليل التوجيه الجامعي التونسي 2025-2026
+        </div>
+      </footer>
     </div>
   );
 }
