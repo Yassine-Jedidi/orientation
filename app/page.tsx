@@ -20,8 +20,51 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 
 type SortDir = "desc" | "asc";
+
+interface LicenseGroup {
+  key: string;
+  university: string;
+  institution: string;
+  code: string;
+  license: string;
+  branches: ScoreRecord[];
+}
+
+const ROWS_PER_PAGE = 25;
+const LICENSES_PER_PAGE = 10;
+
+function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
+  const groups = new Map<string, LicenseGroup>();
+
+  records.forEach((record) => {
+    const key = [
+      record.university,
+      record.institution,
+      record.code,
+      record.license,
+    ].join("\u0000");
+    const group = groups.get(key);
+
+    if (group) {
+      group.branches.push(record);
+      return;
+    }
+
+    groups.set(key, {
+      key,
+      university: record.university,
+      institution: record.institution,
+      code: record.code,
+      license: record.license,
+      branches: [record],
+    });
+  });
+
+  return [...groups.values()];
+}
 
 export default function Home() {
   const [data, setData] = useState<ScoreRecord[]>([]);
@@ -29,6 +72,8 @@ export default function Home() {
   const [bacType, setBacType] = useState<string>("all");
   const [university, setUniversity] = useState<string>("all");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [groupedView, setGroupedView] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetch("/data/scores.json")
@@ -65,6 +110,21 @@ export default function Home() {
       .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
   }, [data, search, bacType, university, sortDir]);
 
+  const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
+  const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
+  const pageSize = groupedView ? LICENSES_PER_PAGE : ROWS_PER_PAGE;
+  const totalPages = Math.max(1, Math.ceil(resultCount / pageSize));
+
+  const paginatedRows = useMemo(() => {
+    const start = (page - 1) * ROWS_PER_PAGE;
+    return filtered.slice(start, start + ROWS_PER_PAGE);
+  }, [filtered, page]);
+
+  const paginatedGroups = useMemo(() => {
+    const start = (page - 1) * LICENSES_PER_PAGE;
+    return filteredLicenseGroups.slice(start, start + LICENSES_PER_PAGE);
+  }, [filteredLicenseGroups, page]);
+
   return (
     <div className="flex flex-col flex-1">
       <header className="border-b border-border bg-canvas">
@@ -90,11 +150,21 @@ export default function Home() {
                 <Input
                   placeholder="بحث بالمؤسسة أو الإجازة أو الرمز..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
                   className="pr-9"
                 />
               </div>
-              <Select value={bacType} onValueChange={(v) => v && setBacType(v)}>
+              <Select
+                value={bacType}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setBacType(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-full sm:w-44">
                   <SelectValue placeholder="الباكالوريا">
                     {bacType === "all" ? "كل الشعب" : bacType}
@@ -109,8 +179,15 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={university} onValueChange={(v) => v && setUniversity(v)}>
-                <SelectTrigger className="w-full sm:w-56">
+              <Select
+                value={university}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setUniversity(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-72">
                   <SelectValue placeholder="الجامعة">
                     {university === "all" ? "كل الجامعات" : university}
                   </SelectValue>
@@ -126,7 +203,11 @@ export default function Home() {
               </Select>
               <Select
                 value={sortDir}
-                onValueChange={(v) => v && setSortDir(v as SortDir)}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setSortDir(v as SortDir);
+                  setPage(1);
+                }}
               >
                 <SelectTrigger className="w-full sm:w-36">
                   <SelectValue placeholder="الترتيب">
@@ -139,6 +220,34 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="mt-4 flex items-center justify-start border-t border-border pt-4">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={groupedView}
+                onClick={() => {
+                  setGroupedView((active) => !active);
+                  setPage(1);
+                }}
+                className="group inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-strong/70 focus-visible:ring-3 focus-visible:ring-ring/40"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`relative h-6 w-11 rounded-pill border transition-colors ${
+                    groupedView
+                      ? "border-brand-ochre bg-brand-ochre"
+                      : "border-border bg-canvas"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-[18px] rounded-full bg-ink transition-transform ${
+                      groupedView ? "right-[21px]" : "right-0.5"
+                    }`}
+                  />
+                </span>
+                تجميع الشعب حسب الإجازة
+              </button>
+            </div>
           </CardContent>
         </Card>
 
@@ -147,7 +256,9 @@ export default function Home() {
             <CardTitle>
               النتائج{" "}
               <span className="text-muted-text text-sm font-normal">
-                ({filtered.length} من {data.length})
+                {groupedView
+                  ? `(${filteredLicenseGroups.length} إجازة · ${filtered.length} شعبة بكالوريا)`
+                  : `(${filtered.length} نتيجة)`}
               </span>
             </CardTitle>
           </CardHeader>
@@ -164,14 +275,56 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {resultCount === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-text py-12">
                       لا توجد نتائج تطابق بحثك
                     </TableCell>
                   </TableRow>
+                ) : groupedView ? (
+                  paginatedGroups.map((group) =>
+                    group.branches.map((branch, branchIndex) => (
+                      <TableRow
+                        key={`${group.key}-${branch.bacType}-${branchIndex}`}
+                        className={branchIndex === 0 ? "border-t border-border" : "border-border/60"}
+                      >
+                        {branchIndex === 0 && (
+                          <>
+                            <TableCell
+                              rowSpan={group.branches.length}
+                              className="align-top font-mono text-xs"
+                            >
+                              {group.code}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={group.branches.length}
+                              className="align-top"
+                            >
+                              {group.university}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={group.branches.length}
+                              className="hidden max-w-xs truncate align-top md:table-cell"
+                            >
+                              {group.institution}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={group.branches.length}
+                              className="max-w-40 truncate align-top font-medium"
+                            >
+                              {group.license}
+                            </TableCell>
+                          </>
+                        )}
+                        <TableCell>{branch.bacType}</TableCell>
+                        <TableCell className="text-right font-medium tabular-nums">
+                          {branch.score.toFixed(4)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )
                 ) : (
-                  filtered.map((r, i) => (
+                  paginatedRows.map((r, i) => (
                     <TableRow key={`${r.code}-${r.bacType}-${i}`}>
                       <TableCell className="font-mono text-xs">
                         {r.code}
@@ -193,6 +346,9 @@ export default function Home() {
               </TableBody>
             </Table>
           </CardContent>
+          <div className="border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
         </Card>
       </main>
 
