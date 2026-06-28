@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,14 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipPopup,
+  TooltipPortal,
+  TooltipPositioner,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type SortDir = "desc" | "asc";
 
@@ -71,6 +80,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [bacType, setBacType] = useState<string>("all");
   const [university, setUniversity] = useState<string>("all");
+  const [license, setLicense] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [groupedView, setGroupedView] = useState(false);
   const [page, setPage] = useState(1);
@@ -91,12 +101,18 @@ export default function Home() {
     [data]
   );
 
+  const licenses = useMemo(
+    () => [...new Set(data.map((r) => r.license))].sort(),
+    [data]
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return data
       .filter((r) => {
         if (bacType !== "all" && r.bacType !== bacType) return false;
         if (university !== "all" && r.university !== university) return false;
+        if (license && r.license !== license) return false;
         if (q) {
           const match =
             r.institution.toLowerCase().includes(q) ||
@@ -108,7 +124,7 @@ export default function Home() {
         return true;
       })
       .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
-  }, [data, search, bacType, university, sortDir]);
+  }, [data, search, bacType, university, license, sortDir]);
 
   const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
   const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
@@ -144,7 +160,7 @@ export default function Home() {
             <CardTitle>بحث وتصفية</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_176px_288px_144px]">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-text" />
                 <Input
@@ -165,7 +181,7 @@ export default function Home() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-44">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="الباكالوريا">
                     {bacType === "all" ? "كل الشعب" : bacType}
                   </SelectValue>
@@ -187,7 +203,7 @@ export default function Home() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-72">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="الجامعة">
                     {university === "all" ? "كل الجامعات" : university}
                   </SelectValue>
@@ -209,7 +225,7 @@ export default function Home() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-36">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="الترتيب">
                     {sortDir === "desc" ? "الأعلى أولا" : "الأدنى أولا"}
                   </SelectValue>
@@ -220,7 +236,19 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="mt-4 flex items-center justify-start border-t border-border pt-4">
+            <div className="mt-4 flex flex-col items-stretch gap-4 border-t border-border pt-4 sm:flex-row sm:items-center">
+              <Combobox
+                items={licenses}
+                value={license}
+                onValueChange={(value) => {
+                  setLicense(value);
+                  setPage(1);
+                }}
+                placeholder="الشعبة الجامعية"
+                searchPlaceholder="ابحث عن شعبة جامعية..."
+                emptyMessage="لا توجد شعبة مطابقة"
+                className="sm:w-80 md:w-96"
+              />
               <button
                 type="button"
                 role="switch"
@@ -306,13 +334,37 @@ export default function Home() {
                               rowSpan={group.branches.length}
                               className="hidden max-w-xs truncate align-top md:table-cell"
                             >
-                              {group.institution}
+                              <Tooltip>
+                                <TooltipTrigger delay={500} render={<span />}>
+                                  {group.institution}
+                                </TooltipTrigger>
+                                <TooltipPortal>
+                                  <TooltipPositioner sideOffset={8}>
+                                    <TooltipPopup>
+                                      <TooltipArrow />
+                                      {group.institution}
+                                    </TooltipPopup>
+                                  </TooltipPositioner>
+                                </TooltipPortal>
+                              </Tooltip>
                             </TableCell>
                             <TableCell
                               rowSpan={group.branches.length}
                               className="max-w-40 truncate align-top font-medium"
                             >
-                              {group.license}
+                              <Tooltip>
+                                <TooltipTrigger delay={500} render={<span />}>
+                                  {group.license}
+                                </TooltipTrigger>
+                                <TooltipPortal>
+                                  <TooltipPositioner sideOffset={8}>
+                                    <TooltipPopup>
+                                      <TooltipArrow />
+                                      {group.license}
+                                    </TooltipPopup>
+                                  </TooltipPositioner>
+                                </TooltipPortal>
+                              </Tooltip>
                             </TableCell>
                           </>
                         )}
@@ -331,10 +383,34 @@ export default function Home() {
                       </TableCell>
                       <TableCell>{r.university}</TableCell>
                       <TableCell className="hidden md:table-cell max-w-xs truncate">
-                        {r.institution}
+                        <Tooltip>
+                          <TooltipTrigger delay={500} render={<span />}>
+                            {r.institution}
+                          </TooltipTrigger>
+                          <TooltipPortal>
+                            <TooltipPositioner sideOffset={8}>
+                              <TooltipPopup>
+                                <TooltipArrow />
+                                {r.institution}
+                              </TooltipPopup>
+                            </TooltipPositioner>
+                          </TooltipPortal>
+                        </Tooltip>
                       </TableCell>
                       <TableCell className="max-w-40 truncate">
-                        {r.license}
+                        <Tooltip>
+                          <TooltipTrigger delay={500} render={<span />}>
+                            {r.license}
+                          </TooltipTrigger>
+                          <TooltipPortal>
+                            <TooltipPositioner sideOffset={8}>
+                              <TooltipPopup>
+                                <TooltipArrow />
+                                {r.license}
+                              </TooltipPopup>
+                            </TooltipPositioner>
+                          </TooltipPortal>
+                        </Tooltip>
                       </TableCell>
                       <TableCell>{r.bacType}</TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
