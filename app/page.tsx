@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -208,6 +209,7 @@ export default function Home() {
                     setMinScore(v);
                     setPage(1);
                   }}
+                  className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0 [-moz-appearance:textfield]"
                 />
               </div>
               <Select
@@ -324,6 +326,24 @@ export default function Home() {
                 </span>
                 تجميع الشعب حسب الإجازة
               </button>
+              {(search || bacType !== "all" || university !== "all" || institution || license || minScore) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearch("");
+                    setBacType("all");
+                    setUniversity("all");
+                    setInstitution(null);
+                    setLicense(null);
+                    setMinScore("");
+                    setSortDir("desc");
+                    setPage(1);
+                  }}
+                  className="mr-auto"
+                >
+                  إلغاء التصفية
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
