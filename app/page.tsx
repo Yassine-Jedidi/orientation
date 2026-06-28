@@ -80,6 +80,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [bacType, setBacType] = useState<string>("all");
   const [university, setUniversity] = useState<string>("all");
+  const [institution, setInstitution] = useState<string | null>(null);
   const [license, setLicense] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [groupedView, setGroupedView] = useState(false);
@@ -101,6 +102,11 @@ export default function Home() {
     [data]
   );
 
+  const institutions = useMemo(
+    () => [...new Set(data.map((r) => r.institution))].sort(),
+    [data]
+  );
+
   const licenses = useMemo(
     () => [...new Set(data.map((r) => r.license))].sort(),
     [data]
@@ -112,6 +118,7 @@ export default function Home() {
       .filter((r) => {
         if (bacType !== "all" && r.bacType !== bacType) return false;
         if (university !== "all" && r.university !== university) return false;
+        if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
         if (q) {
           const match =
@@ -124,7 +131,7 @@ export default function Home() {
         return true;
       })
       .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
-  }, [data, search, bacType, university, license, sortDir]);
+  }, [data, search, bacType, university, institution, license, sortDir]);
 
   const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
   const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
@@ -208,7 +215,7 @@ export default function Home() {
                     {university === "all" ? "كل الجامعات" : university}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent listClassName="max-h-72">
+                <SelectContent listClassName="max-h-72" showScrollbar>
                   <SelectItem value="all">كل الجامعات</SelectItem>
                   {universities.map((u) => (
                     <SelectItem key={u} value={u}>
@@ -237,6 +244,18 @@ export default function Home() {
               </Select>
             </div>
             <div className="mt-4 flex flex-col items-stretch gap-4 border-t border-border pt-4 sm:flex-row sm:items-center">
+              <Combobox
+                items={institutions}
+                value={institution}
+                onValueChange={(value) => {
+                  setInstitution(value);
+                  setPage(1);
+                }}
+                placeholder="المؤسسة"
+                searchPlaceholder="ابحث عن مؤسسة..."
+                emptyMessage="لا توجد مؤسسة مطابقة"
+                className="sm:w-96"
+              />
               <Combobox
                 items={licenses}
                 value={license}

@@ -65,9 +65,11 @@ function SelectContent({
   align = "center",
   alignOffset = 0,
   alignItemWithTrigger = false,
+  showScrollbar,
   ...props
 }: SelectPrimitive.Popup.Props & {
   listClassName?: string
+  showScrollbar?: boolean
 } &
   Pick<
     SelectPrimitive.Positioner.Props,
@@ -106,8 +108,8 @@ function SelectContent({
           <SelectPrimitive.List
             ref={listRef}
             data-slot="select-list"
-            style={{ scrollbarWidth: "none" } as React.CSSProperties}
-            className={cn("max-h-80 overflow-x-hidden overflow-y-auto [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:hidden", listClassName)}
+            style={!showScrollbar ? { scrollbarWidth: "none" } as React.CSSProperties : undefined}
+            className={cn("max-h-80 overflow-x-hidden overflow-y-auto", !showScrollbar && "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:hidden", listClassName)}
           >
             {children}
           </SelectPrimitive.List>
