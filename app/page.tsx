@@ -46,6 +46,16 @@ interface LicenseGroup {
 const ROWS_PER_PAGE = 25;
 const LICENSES_PER_PAGE = 10;
 
+const BAC_ORDER = [
+  "رياضيات",
+  "علوم تجريبية",
+  "علوم الإعلامية",
+  "العلوم التقنية",
+  "إقتصاد وتصرف",
+  "آداب",
+  "رياضة",
+];
+
 function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
   const groups = new Map<string, LicenseGroup>();
 
@@ -73,7 +83,12 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
     });
   });
 
-  return [...groups.values()];
+  return [...groups.values()].map((g) => ({
+    ...g,
+    branches: [...g.branches].sort(
+      (a, b) => BAC_ORDER.indexOf(a.bacType) - BAC_ORDER.indexOf(b.bacType)
+    ),
+  }));
 }
 
 export default function Home() {
@@ -86,6 +101,7 @@ export default function Home() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [minScore, setMinScore] = useState("");
   const [groupedView, setGroupedView] = useState(false);
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -95,7 +111,10 @@ export default function Home() {
   }, []);
 
   const bacTypes = useMemo(
-    () => [...new Set(data.map((r) => r.bacType))].sort(),
+    () =>
+      [...new Set(data.map((r) => r.bacType))].sort(
+        (a, b) => BAC_ORDER.indexOf(a) - BAC_ORDER.indexOf(b)
+      ),
     [data]
   );
 
@@ -354,7 +373,7 @@ export default function Home() {
               النتائج{" "}
               <span className="text-muted-text text-sm font-normal">
                 {groupedView
-                  ? `(${filteredLicenseGroups.length} إجازة · ${filtered.length} شعبة بكالوريا)`
+                  ? `(${filteredLicenseGroups.length} إجازة)`
                   : `(${filtered.length} ${filtered.length < 10 ? "نتائج" : "نتيجة"})`}
               </span>
             </CardTitle>
@@ -368,82 +387,112 @@ export default function Home() {
                   <TableHead className="hidden md:table-cell w-[250px]">المؤسسة</TableHead>
                   <TableHead className="w-[200px]">الإجازة</TableHead>
                   <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
+                  <TableHead className="w-[170px]">الصيغة</TableHead>
                   <TableHead className="w-[80px] text-right">النقاط</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              {groupedView ? (
+                  paginatedGroups.map((group) => {
+                    const bestIdx = group.branches.reduce(
+                      (maxIdx, b, i, arr) => (b.score > arr[maxIdx].score ? i : maxIdx),
+                      0
+                    );
+                    const isHovered = hoveredGroup === group.key;
+                    return (
+                      <tbody
+                        key={group.key}
+                        onMouseEnter={() => setHoveredGroup(group.key)}
+                        onMouseLeave={() => setHoveredGroup(null)}
+                      >
+                        {group.branches.map((branch, branchIndex) => (
+                          <TableRow
+                            key={`${group.key}-${branch.bacType}-${branchIndex}`}
+                            className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "!bg-surface-soft/80" : ""}`}
+                          >
+                            {branchIndex === 0 && (
+                              <>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                >
+                                  {group.code}
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                >
+                                  {group.university}
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger delay={500} render={<span />}>
+                                      {group.institution}
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                      <TooltipPositioner sideOffset={8}>
+                                        <TooltipPopup>
+                                          <TooltipArrow />
+                                          {group.institution}
+                                        </TooltipPopup>
+                                      </TooltipPositioner>
+                                    </TooltipPortal>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger delay={500} render={<span />}>
+                                      {group.license}
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                      <TooltipPositioner sideOffset={8}>
+                                        <TooltipPopup>
+                                          <TooltipArrow />
+                                          {group.license}
+                                        </TooltipPopup>
+                                      </TooltipPositioner>
+                                    </TooltipPortal>
+                                  </Tooltip>
+                                </TableCell>
+                              </>
+                            )}
+                            <TableCell>{branch.bacType}</TableCell>
+                            <TableCell className="max-w-48 truncate font-mono text-xs">
+                              <Tooltip>
+                                <TooltipTrigger delay={500} render={<span />}>
+                                  {branch.formula ?? "—"}
+                                </TooltipTrigger>
+                                <TooltipPortal>
+                                  <TooltipPositioner sideOffset={8}>
+                                    <TooltipPopup>
+                                      <TooltipArrow />
+                                      {branch.formula ?? "—"}
+                                    </TooltipPopup>
+                                  </TooltipPositioner>
+                                </TooltipPortal>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">
+                              {branch.score.toFixed(4)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </tbody>
+                    );
+                  })
+                ) : (
+                  <TableBody>
                 {resultCount === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-text py-12">
+                    <TableCell colSpan={7} className="text-center text-muted-text py-12">
                       لا توجد نتائج تطابق بحثك
                     </TableCell>
                   </TableRow>
-                ) : groupedView ? (
-                  paginatedGroups.map((group) =>
-                    group.branches.map((branch, branchIndex) => (
-                      <TableRow
-                        key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                        className={branchIndex === 0 ? "border-t border-border" : "border-border/60"}
-                      >
-                        {branchIndex === 0 && (
-                          <>
-                            <TableCell
-                              rowSpan={group.branches.length}
-                              className="align-top font-mono text-xs"
-                            >
-                              {group.code}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={group.branches.length}
-                              className="align-top"
-                            >
-                              {group.university}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={group.branches.length}
-                              className="hidden max-w-xs truncate align-top md:table-cell"
-                            >
-                              <Tooltip>
-                                <TooltipTrigger delay={500} render={<span />}>
-                                  {group.institution}
-                                </TooltipTrigger>
-                                <TooltipPortal>
-                                  <TooltipPositioner sideOffset={8}>
-                                    <TooltipPopup>
-                                      <TooltipArrow />
-                                      {group.institution}
-                                    </TooltipPopup>
-                                  </TooltipPositioner>
-                                </TooltipPortal>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell
-                              rowSpan={group.branches.length}
-                              className="max-w-40 truncate align-top font-medium"
-                            >
-                              <Tooltip>
-                                <TooltipTrigger delay={500} render={<span />}>
-                                  {group.license}
-                                </TooltipTrigger>
-                                <TooltipPortal>
-                                  <TooltipPositioner sideOffset={8}>
-                                    <TooltipPopup>
-                                      <TooltipArrow />
-                                      {group.license}
-                                    </TooltipPopup>
-                                  </TooltipPositioner>
-                                </TooltipPortal>
-                              </Tooltip>
-                            </TableCell>
-                          </>
-                        )}
-                        <TableCell>{branch.bacType}</TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">
-                          {branch.score.toFixed(4)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )
                 ) : (
                   paginatedRows.map((r, i) => (
                     <TableRow key={`${r.code}-${r.bacType}-${i}`}>
@@ -482,6 +531,21 @@ export default function Home() {
                         </Tooltip>
                       </TableCell>
                       <TableCell>{r.bacType}</TableCell>
+                      <TableCell className="max-w-48 truncate font-mono text-xs">
+                        <Tooltip>
+                          <TooltipTrigger delay={500} render={<span />}>
+                            {r.formula ?? "—"}
+                          </TooltipTrigger>
+                          <TooltipPortal>
+                            <TooltipPositioner sideOffset={8}>
+                              <TooltipPopup>
+                                <TooltipArrow />
+                                {r.formula ?? "—"}
+                              </TooltipPopup>
+                            </TooltipPositioner>
+                          </TooltipPortal>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {r.score.toFixed(4)}
                       </TableCell>
@@ -489,6 +553,7 @@ export default function Home() {
                   ))
                 )}
               </TableBody>
+            )}
             </Table>
           </CardContent>
           <div className="border-t border-border flex min-h-14 items-center justify-center px-4 py-2">

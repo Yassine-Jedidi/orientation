@@ -6,4 +6,5 @@ export interface ScoreRecord {
   license: string;
   bacType: string;
   score: number;
+  formula?: string;
 }
