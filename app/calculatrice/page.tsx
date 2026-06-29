@@ -237,7 +237,7 @@ export default function CalculatorPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-display-sm font-heading font-medium text-ink">
-                حاسبة النقاط
+                حاسب نقاطك
               </h1>
               <p className="mt-2 text-body">
                 احسب معدلك التوجيهي (FG) حسب مواد شعبتك

@@ -23,6 +23,10 @@ export const auth = betterAuth({
           },
         }
       : {},
+  session: {
+    expiresIn: 60 * 60 * 24 * 90,
+    updateAge: 60 * 60 * 24,
+  },
   advanced: {
     database: {
       generateId: "uuid",

@@ -214,7 +214,7 @@ export default function Home() {
                 </span>
               )}
               <Button nativeButton={false} render={<Link href="/calculatrice" />}>
-                حاسبة النقاط
+                حاسب نقاطك
               </Button>
               <AuthNav />
             </div>
