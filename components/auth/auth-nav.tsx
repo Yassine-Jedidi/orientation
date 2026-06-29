@@ -1,0 +1,40 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
+
+export function AuthNav() {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return <div className="h-11 w-24 animate-pulse rounded-md bg-surface-strong" />;
+  }
+
+  if (!session) {
+    return (
+      <Button variant="outline" nativeButton={false} render={<Link href="/sign-in" />}>
+        تسجيل الدخول
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="hidden text-sm text-body sm:inline">
+        {session.user.name}
+      </span>
+      <Button
+        variant="outline"
+        onClick={async () => {
+          await authClient.signOut();
+          router.refresh();
+        }}
+      >
+        تسجيل الخروج
+      </Button>
+    </div>
+  );
+}

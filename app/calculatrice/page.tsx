@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo, Fragment } from "react";
+import Link from "next/link";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AuthNav } from "@/components/auth/auth-nav";
 import {
   Select,
   SelectContent,
@@ -178,9 +180,12 @@ export default function CalculatorPage() {
                 احسب معدلك التوجيهي (FG) حسب مواد شعبتك
               </p>
             </div>
-            <Button variant="outline" nativeButton={false} render={<a href="/" />}>
-              دليل التوجيه
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" nativeButton={false} render={<Link href="/" />}>
+                دليل التوجيه
+              </Button>
+              <AuthNav />
+            </div>
           </div>
         </div>
       </header>

@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { AuthNav } from "@/components/auth/auth-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -186,9 +187,12 @@ export default function Home() {
                 استشارة معدلات التوجيه حسب الشعب والباكالوريا
               </p>
             </div>
-            <Button nativeButton={false} render={<a href="/calculatrice" />}>
-              حاسبة النقاط
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button nativeButton={false} render={<a href="/calculatrice" />}>
+                حاسبة النقاط
+              </Button>
+              <AuthNav />
+            </div>
           </div>
         </div>
       </header>
