@@ -1,6 +1,8 @@
 import {
   boolean,
   index,
+  doublePrecision,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -95,6 +97,28 @@ export const verification = pgTable(
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const studentScore = pgTable(
+  "student_score",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    bacType: text("bac_type").notNull(),
+    generalAverage: doublePrecision("general_average").notNull(),
+    grades: jsonb("grades").$type<Record<string, number>>().notNull(),
+    fg: doublePrecision("fg").notNull(),
+    fgRegional: doublePrecision("fg_regional").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex("student_score_user_id_unique").on(table.userId)],
 );
 
 export const authSchema = { user, session, account, verification };

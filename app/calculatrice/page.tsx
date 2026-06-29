@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState, useMemo, Fragment, useRef } from "react";
 import Link from "next/link";
+import { Check, Save } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipArrow,
@@ -25,6 +26,8 @@ import {
 } from "@/components/ui/tooltip";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { getBacFormula, ABBREVIATIONS } from "@/lib/bac-formulas";
+import { authClient } from "@/lib/auth-client";
+import { calculateFg } from "@/lib/fg";
 
 const FG_SUBJECTS: Record<string, { code: string; label: string }[]> = {
   "آداب": [
@@ -86,17 +89,56 @@ function getSubjectsForBac(bacType: string) {
   return FG_SUBJECTS[bacType] ?? [];
 }
 
+function normalize(v: string): string {
+  return v.replace(",", ".");
+}
+
+function isValidGrade(v: string): boolean {
+  if (v === "") return true;
+  const n = parseFloat(normalize(v));
+  return !isNaN(n) && n >= 0 && n <= 20;
+}
+
+function isValidMg(v: string): boolean {
+  if (v === "") return true;
+  const n = parseFloat(normalize(v));
+  return !isNaN(n) && n >= 0 && n <= 20;
+}
+
 export default function CalculatorPage() {
+  const { data: session, isPending: sessionPending } = authClient.useSession();
   const [data, setData] = useState<ScoreRecord[]>([]);
   const [bacType, setBacType] = useState("");
   const [mgInput, setMgInput] = useState("");
   const [grades, setGrades] = useState<Record<string, string>>({});
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const loadedSavedScore = useRef(false);
 
   useEffect(() => {
     fetch("/data/scores.json")
       .then((r) => r.json())
       .then(setData);
   }, []);
+
+  useEffect(() => {
+    if (!session || loadedSavedScore.current) return;
+    loadedSavedScore.current = true;
+
+    fetch("/api/student-score")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (!payload?.score) return;
+        setBacType(payload.score.bacType);
+        setMgInput(String(payload.score.generalAverage));
+        setGrades(
+          Object.fromEntries(
+            Object.entries(payload.score.grades as Record<string, number>).map(
+              ([code, grade]) => [code, String(grade)],
+            ),
+          ),
+        );
+      });
+  }, [session]);
 
   const bacTypes = useMemo(
     () =>
@@ -108,22 +150,6 @@ export default function CalculatorPage() {
 
   const subjects = useMemo(() => getSubjectsForBac(bacType), [bacType]);
   const formula = useMemo(() => getBacFormula(bacType), [bacType]);
-
-  function normalize(v: string): string {
-    return v.replace(",", ".");
-  }
-
-  function isValidGrade(v: string): boolean {
-    if (v === "") return true;
-    const n = parseFloat(normalize(v));
-    return !isNaN(n) && n >= 0 && n <= 20;
-  }
-
-  function isValidMg(v: string): boolean {
-    if (v === "") return true;
-    const n = parseFloat(normalize(v));
-    return !isNaN(n) && n >= 0 && n <= 20;
-  }
 
   const mgError = useMemo(() => {
     if (mgInput === "") return false;
@@ -142,29 +168,46 @@ export default function CalculatorPage() {
 
   const hasErrors = mgError || Object.keys(errors).length > 0;
 
+  const numericGrades = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(grades)
+          .filter(([, value]) => value !== "")
+          .map(([code, value]) => [code, parseFloat(value)]),
+      ),
+    [grades],
+  );
+
   const result = useMemo(() => {
     if (hasErrors) return null;
     const mg = parseFloat(mgInput);
-    if (isNaN(mg) || mg < 0 || mg > 20) return null;
-    if (!formula) return null;
-    let fgBonus = 0;
-    let filledCount = 0;
-    for (const t of formula.terms) {
-      const v = parseFloat(grades[t.code] ?? "");
-      if (!isNaN(v) && v >= 0 && v <= 20) {
-        fgBonus += v * t.coeff;
-        filledCount++;
-      }
-    }
-    if (filledCount === 0) return null;
-    const fg = 4 * mg + fgBonus;
-    const fgRegional = fg * 1.07;
-    return { mg, fg, fgRegional };
-  }, [mgInput, grades, hasErrors, formula]);
+    const calculated = calculateFg({
+      bacType,
+      generalAverage: mg,
+      grades: numericGrades,
+    });
+    return calculated ? { mg, ...calculated } : null;
+  }, [mgInput, numericGrades, hasErrors, bacType]);
 
   function setGrade(code: string, value: string) {
     if (value.includes("-")) return;
     setGrades((prev) => ({ ...prev, [code]: normalize(value) }));
+    setSaveState("idle");
+  }
+
+  async function saveScore() {
+    if (!result) return;
+    setSaveState("saving");
+    const response = await fetch("/api/student-score", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bacType,
+        generalAverage: result.mg,
+        grades: numericGrades,
+      }),
+    });
+    setSaveState(response.ok ? "saved" : "error");
   }
 
   return (
@@ -202,6 +245,7 @@ export default function CalculatorPage() {
                 setBacType(v ?? "");
                 setGrades({});
                 setMgInput("");
+                setSaveState("idle");
               }}
             >
               <SelectTrigger className="w-full">
@@ -290,7 +334,10 @@ export default function CalculatorPage() {
                       inputMode="decimal"
                       placeholder="0-20"
                       value={mgInput}
-                      onChange={(e) => setMgInput(normalize(e.target.value))}
+                      onChange={(e) => {
+                        setMgInput(normalize(e.target.value));
+                        setSaveState("idle");
+                      }}
                       className="w-24 text-center"
                       aria-invalid={mgError ? true : undefined}
                     />
@@ -333,7 +380,7 @@ export default function CalculatorPage() {
             </Card>
 
             {result && (
-              <Card>
+              <Card className="border-transparent bg-brand-ochre/35 ring-brand-ochre/70">
                 <CardHeader>
                   <CardTitle>النتيجة</CardTitle>
                 </CardHeader>
@@ -351,8 +398,52 @@ export default function CalculatorPage() {
                         {result.fgRegional.toFixed(2)}
                       </span>
                     </div>
+                    <p className="text-xs leading-relaxed text-body">
+                      قيمة التنفيل تقديرية وتُعتمد فقط للولايات والحالات المشمولة بنسبة 7%.
+                    </p>
                   </div>
                 </CardContent>
+                <CardFooter className="justify-between gap-3 bg-canvas/70">
+                  {sessionPending ? (
+                    <div className="h-11 w-full animate-pulse rounded-md bg-surface-strong" />
+                  ) : session ? (
+                    <>
+                      <div className="text-sm text-body" aria-live="polite">
+                        {saveState === "saved" && (
+                          <span className="inline-flex items-center gap-2 text-body-strong">
+                            <Check className="size-4 text-success" /> تم حفظ نتيجتك
+                          </span>
+                        )}
+                        {saveState === "error" && (
+                          <span className="text-destructive">تعذّر الحفظ، حاول مجدداً</span>
+                        )}
+                      </div>
+                      <Button
+                        onClick={saveScore}
+                        disabled={saveState === "saving"}
+                        className={
+                          saveState === "saved" || saveState === "error"
+                            ? "mr-auto"
+                            : undefined
+                        }
+                      >
+                        <Save />
+                        {saveState === "saving"
+                          ? "جارٍ الحفظ..."
+                          : saveState === "saved"
+                            ? "تحديث النتيجة"
+                            : "حفظ النتيجة"}
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-body">سجّل الدخول للاحتفاظ بنتيجتك والعودة إليها لاحقاً.</p>
+                      <Button nativeButton={false} render={<Link href="/sign-in" />}>
+                        تسجيل الدخول للحفظ
+                      </Button>
+                    </div>
+                  )}
+                </CardFooter>
               </Card>
             )}
           </>
