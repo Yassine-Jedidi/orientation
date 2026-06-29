@@ -93,6 +93,10 @@ function normalize(v: string): string {
   return v.replace(",", ".");
 }
 
+function isTwoDecimalInput(v: string): boolean {
+  return /^\d{0,2}(?:\.\d{0,2})?$/.test(normalize(v));
+}
+
 function isValidGrade(v: string): boolean {
   if (v === "") return true;
   const n = parseFloat(normalize(v));
@@ -127,13 +131,14 @@ export default function CalculatorPage() {
     fetch("/api/student-score")
       .then((response) => (response.ok ? response.json() : null))
       .then((payload) => {
-        if (!payload?.score) return;
-        setBacType(payload.score.bacType);
-        setMgInput(String(payload.score.generalAverage));
+        if (!payload?.bacType) return;
+        setBacType(payload.bacType);
+        if (!payload.score) return;
+        setMgInput(Number(payload.score.generalAverage).toFixed(2));
         setGrades(
           Object.fromEntries(
             Object.entries(payload.score.grades as Record<string, number>).map(
-              ([code, grade]) => [code, String(grade)],
+              ([code, grade]) => [code, Number(grade).toFixed(2)],
             ),
           ),
         );
@@ -190,8 +195,9 @@ export default function CalculatorPage() {
   }, [mgInput, numericGrades, hasErrors, bacType]);
 
   function setGrade(code: string, value: string) {
-    if (value.includes("-")) return;
-    setGrades((prev) => ({ ...prev, [code]: normalize(value) }));
+    const normalized = normalize(value);
+    if (!isTwoDecimalInput(normalized)) return;
+    setGrades((prev) => ({ ...prev, [code]: normalized }));
     setSaveState("idle");
   }
 
@@ -210,6 +216,20 @@ export default function CalculatorPage() {
     setSaveState(response.ok ? "saved" : "error");
   }
 
+  function selectBacType(value: string) {
+    setBacType(value);
+    setGrades({});
+    setMgInput("");
+    setSaveState("idle");
+
+    if (!session) return;
+    void fetch("/api/student-score", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bacType: value }),
+    });
+  }
+
   return (
     <div className="flex flex-col flex-1">
       <header className="border-b border-border bg-canvas">
@@ -224,6 +244,11 @@ export default function CalculatorPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              {session?.user?.name && (
+                <span className="hidden text-sm text-body sm:inline">
+                  {session.user.name}
+                </span>
+              )}
               <Button variant="outline" nativeButton={false} render={<Link href="/" />}>
                 دليل التوجيه
               </Button>
@@ -242,10 +267,7 @@ export default function CalculatorPage() {
             <Select
               value={bacType}
               onValueChange={(v) => {
-                setBacType(v ?? "");
-                setGrades({});
-                setMgInput("");
-                setSaveState("idle");
+                if (v) selectBacType(v);
               }}
             >
               <SelectTrigger className="w-full">
@@ -335,8 +357,15 @@ export default function CalculatorPage() {
                       placeholder="0-20"
                       value={mgInput}
                       onChange={(e) => {
-                        setMgInput(normalize(e.target.value));
+                        const value = normalize(e.target.value);
+                        if (!isTwoDecimalInput(value)) return;
+                        setMgInput(value);
                         setSaveState("idle");
+                      }}
+                      onBlur={() => {
+                        if (mgInput !== "" && isValidMg(mgInput)) {
+                          setMgInput(Number(mgInput).toFixed(2));
+                        }
                       }}
                       className="w-24 text-center"
                       aria-invalid={mgError ? true : undefined}
@@ -363,6 +392,15 @@ export default function CalculatorPage() {
                           placeholder="0-20"
                           value={grades[s.code] ?? ""}
                           onChange={(e) => setGrade(s.code, e.target.value)}
+                          onBlur={() => {
+                            const value = grades[s.code];
+                            if (value !== undefined && value !== "" && isValidGrade(value)) {
+                              setGrades((previous) => ({
+                                ...previous,
+                                [s.code]: Number(value).toFixed(2),
+                              }));
+                            }
+                          }}
                           className="w-24 text-center"
                           aria-invalid={errors[s.code] ? true : undefined}
                         />
@@ -389,13 +427,13 @@ export default function CalculatorPage() {
                     <div className="flex items-center justify-between rounded-lg bg-surface-soft px-4 py-3">
                       <span className="text-sm text-body">الصيغة الاجمالية (FG)</span>
                       <span className="text-lg font-semibold tabular-nums text-ink">
-                        {result.fg.toFixed(2)}
+                        {result.fg.toFixed(4)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between rounded-lg bg-surface-soft px-4 py-3">
                       <span className="text-sm text-body">FG + 7% (ولايات التنفيل)</span>
                       <span className="text-lg font-semibold tabular-nums text-ink">
-                        {result.fgRegional.toFixed(2)}
+                        {result.fgRegional.toFixed(4)}
                       </span>
                     </div>
                     <p className="text-xs leading-relaxed text-body">
@@ -438,7 +476,7 @@ export default function CalculatorPage() {
                   ) : (
                     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm text-body">سجّل الدخول للاحتفاظ بنتيجتك والعودة إليها لاحقاً.</p>
-                      <Button nativeButton={false} render={<Link href="/sign-in" />}>
+                      <Button nativeButton={false} render={<Link href="/connexion" />}>
                         تسجيل الدخول للحفظ
                       </Button>
                     </div>

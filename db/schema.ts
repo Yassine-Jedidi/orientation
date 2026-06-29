@@ -1,8 +1,8 @@
 import {
   boolean,
   index,
-  doublePrecision,
   jsonb,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -107,10 +107,18 @@ export const studentScore = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     bacType: text("bac_type").notNull(),
-    generalAverage: doublePrecision("general_average").notNull(),
+    generalAverage: numeric("general_average", {
+      precision: 4,
+      scale: 2,
+      mode: "number",
+    }).notNull(),
     grades: jsonb("grades").$type<Record<string, number>>().notNull(),
-    fg: doublePrecision("fg").notNull(),
-    fgRegional: doublePrecision("fg_regional").notNull(),
+    fg: numeric("fg", { precision: 10, scale: 4, mode: "number" }).notNull(),
+    fgRegional: numeric("fg_regional", {
+      precision: 10,
+      scale: 4,
+      mode: "number",
+    }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -119,6 +127,24 @@ export const studentScore = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex("student_score_user_id_unique").on(table.userId)],
+);
+
+export const studentProfile = pgTable(
+  "student_profile",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    bacType: text("bac_type").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex("student_profile_user_id_unique").on(table.userId)],
 );
 
 export const authSchema = { user, session, account, verification };

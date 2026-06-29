@@ -15,26 +15,21 @@ export function AuthNav() {
 
   if (!session) {
     return (
-      <Button variant="outline" nativeButton={false} render={<Link href="/sign-in" />}>
+      <Button variant="outline" nativeButton={false} render={<Link href="/connexion" />}>
         تسجيل الدخول
       </Button>
     );
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="hidden text-sm text-body sm:inline">
-        {session.user.name}
-      </span>
-      <Button
-        variant="outline"
-        onClick={async () => {
-          await authClient.signOut();
-          router.refresh();
-        }}
-      >
-        تسجيل الخروج
-      </Button>
-    </div>
+    <Button
+      variant="destructive"
+      onClick={async () => {
+        await authClient.signOut();
+        router.refresh();
+      }}
+    >
+      تسجيل الخروج
+    </Button>
   );
 }

@@ -2,10 +2,14 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { studentScore } from "@/db/schema";
+import { studentProfile, studentScore } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { calculateFg } from "@/lib/fg";
 import { getBacTypeCode, getBacTypeLabel } from "@/lib/bac-types";
+
+function roundToTwo(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
 
 async function getUserId() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -16,15 +20,50 @@ export async function GET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const saved = await db.query.studentScore.findFirst({
-    where: eq(studentScore.userId, userId),
-  });
+  const [saved, profile] = await Promise.all([
+    db.query.studentScore.findFirst({
+      where: eq(studentScore.userId, userId),
+    }),
+    db.query.studentProfile.findFirst({
+      where: eq(studentProfile.userId, userId),
+    }),
+  ]);
 
   return NextResponse.json({
+    bacType: profile
+      ? getBacTypeLabel(profile.bacType) ?? profile.bacType
+      : saved
+        ? getBacTypeLabel(saved.bacType) ?? saved.bacType
+        : null,
     score: saved
       ? { ...saved, bacType: getBacTypeLabel(saved.bacType) ?? saved.bacType }
       : null,
   });
+}
+
+export async function PATCH(request: Request) {
+  const userId = await getUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = (await request.json().catch(() => null)) as
+    | { bacType?: unknown }
+    | null;
+  const bacTypeCode =
+    typeof body?.bacType === "string" ? getBacTypeCode(body.bacType) : null;
+
+  if (!bacTypeCode) {
+    return NextResponse.json({ error: "Invalid bac type" }, { status: 400 });
+  }
+
+  await db
+    .insert(studentProfile)
+    .values({ userId, bacType: bacTypeCode })
+    .onConflictDoUpdate({
+      target: studentProfile.userId,
+      set: { bacType: bacTypeCode, updatedAt: new Date() },
+    });
+
+  return NextResponse.json({ bacType: body?.bacType });
 }
 
 export async function PUT(request: Request) {
@@ -45,7 +84,7 @@ export async function PUT(request: Request) {
   const input = body as Record<string, unknown>;
   const bacType = typeof input.bacType === "string" ? input.bacType : "";
   const bacTypeCode = getBacTypeCode(bacType);
-  const generalAverage = Number(input.generalAverage);
+  const generalAverage = roundToTwo(Number(input.generalAverage));
   const rawGrades = input.grades;
 
   if (!rawGrades || typeof rawGrades !== "object" || Array.isArray(rawGrades)) {
@@ -53,7 +92,10 @@ export async function PUT(request: Request) {
   }
 
   const grades = Object.fromEntries(
-    Object.entries(rawGrades).map(([code, value]) => [code, Number(value)]),
+    Object.entries(rawGrades).map(([code, value]) => [
+      code,
+      roundToTwo(Number(value)),
+    ]),
   );
   const result = calculateFg({ bacType, generalAverage, grades });
 
@@ -75,6 +117,14 @@ export async function PUT(request: Request) {
       },
     })
     .returning();
+
+  await db
+    .insert(studentProfile)
+    .values({ userId, bacType: bacTypeCode })
+    .onConflictDoUpdate({
+      target: studentProfile.userId,
+      set: { bacType: bacTypeCode, updatedAt: new Date() },
+    });
 
   return NextResponse.json({ score: saved });
 }

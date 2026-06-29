@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
+import { authClient } from "@/lib/auth-client";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -22,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { AuthNav } from "@/components/auth/auth-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
@@ -84,6 +87,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
 }
 
 export default function Home() {
+  const { data: session } = authClient.useSession();
   const [data, setData] = useState<ScoreRecord[]>([]);
   const [search, setSearch] = useState("");
   const [bacType, setBacType] = useState<string>("all");
@@ -95,12 +99,27 @@ export default function Home() {
   const [groupedView, setGroupedView] = useState(false);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [userBacType, setUserBacType] = useState<string | null>(null);
+  const [onlyMyBac, setOnlyMyBac] = useState(false);
 
   useEffect(() => {
     fetch("/data/scores.json")
       .then((r) => r.json())
       .then(setData);
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    fetch("/api/student-score")
+      .then((r) => r.json())
+      .then((payload) => {
+        if (payload.bacType) {
+          setUserBacType(payload.bacType);
+          setOnlyMyBac(true);
+        }
+      })
+      .catch(() => {});
+  }, [session]);
 
   const bacTypes = useMemo(
     () =>
@@ -141,7 +160,8 @@ export default function Home() {
     const q = search.trim().toLowerCase();
     return data
       .filter((r) => {
-        if (bacType !== "all" && r.bacType !== bacType) return false;
+        if (bacType !== "all" && r.bacType !== bacType && !onlyMyBac) return false;
+        if (onlyMyBac && userBacType && r.bacType !== userBacType) return false;
         if (university !== "all" && r.university !== university) return false;
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
@@ -157,7 +177,7 @@ export default function Home() {
         return true;
       })
       .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
-  }, [data, search, bacType, university, institution, license, minScore, sortDir]);
+  }, [data, search, bacType, university, institution, license, minScore, sortDir, onlyMyBac, userBacType]);
 
   const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
   const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
@@ -188,7 +208,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button nativeButton={false} render={<a href="/calculatrice" />}>
+              {session?.user?.name && (
+                <span className="hidden text-sm text-body sm:inline">
+                  {session.user.name}
+                </span>
+              )}
+              <Button nativeButton={false} render={<Link href="/calculatrice" />}>
                 حاسبة النقاط
               </Button>
               <AuthNav />
@@ -320,33 +345,31 @@ export default function Home() {
                 emptyMessage="لا توجد شعبة مطابقة"
               />
             </div>
-            <div className="mt-4 flex items-center justify-start border-t border-border pt-4">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={groupedView}
-                onClick={() => {
-                  setGroupedView((active) => !active);
-                  setPage(1);
-                }}
-                className="group inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-strong/70 focus-visible:ring-3 focus-visible:ring-ring/40"
-              >
-                <span
-                  aria-hidden="true"
-                  className={`relative h-6 w-11 rounded-pill border transition-colors ${
-                    groupedView
-                      ? "border-brand-ochre bg-brand-ochre"
-                      : "border-border bg-canvas"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 size-[18px] rounded-full bg-ink transition-transform ${
-                      groupedView ? "right-[21px]" : "right-0.5"
-                    }`}
+            <div className="mt-4 flex flex-wrap items-center justify-start gap-3 border-t border-border pt-4">
+              {session && userBacType && (
+                <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                  <Switch
+                    checked={onlyMyBac}
+                    onCheckedChange={(v) => {
+                      setOnlyMyBac(v);
+                      setPage(1);
+                    }}
                   />
-                </span>
-                تجميع الشعب حسب الإجازة
-              </button>
+                  شعبتي فقط
+                </label>
+              )}
+              {(!onlyMyBac || !userBacType) && (
+                <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                  <Switch
+                    checked={groupedView}
+                    onCheckedChange={(v) => {
+                      setGroupedView(v);
+                      setPage(1);
+                    }}
+                  />
+                  تجميع الشعب حسب الإجازة
+                </label>
+              )}
               {(search || bacType !== "all" || university !== "all" || institution || license || minScore) && (
                 <Button
                   variant="outline"

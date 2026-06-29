@@ -11,6 +11,10 @@ export interface FgResult {
   fgRegional: number;
 }
 
+function roundToFour(value: number) {
+  return Math.round((value + Number.EPSILON) * 10_000) / 10_000;
+}
+
 export function calculateFg(input: FgInput): FgResult | null {
   const formula = getBacFormula(input.bacType);
   if (!formula || !Number.isFinite(input.generalAverage)) return null;
@@ -29,6 +33,6 @@ export function calculateFg(input: FgInput): FgResult | null {
 
   if (filledCount === 0) return null;
 
-  const fg = 4 * input.generalAverage + bonus;
-  return { fg, fgRegional: fg * 1.07 };
+  const fg = roundToFour(4 * input.generalAverage + bonus);
+  return { fg, fgRegional: roundToFour(fg * 1.07) };
 }

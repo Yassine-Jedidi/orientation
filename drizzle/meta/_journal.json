@@ -22,6 +22,27 @@
       "when": 1782769163510,
       "tag": "0002_normalize_bac_type_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782771486988,
+      "tag": "0003_add_student_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782771716339,
+      "tag": "0004_fix_fg_precision",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782771830275,
+      "tag": "0005_fix_grade_precision",
+      "breakpoints": true
     }
   ]
 }
