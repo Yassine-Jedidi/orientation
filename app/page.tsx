@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
+import Avatar, { genConfig } from "react-nice-avatar";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -26,6 +27,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { AuthNav } from "@/components/auth/auth-nav";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -81,7 +91,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
   return [...groups.values()].map((g) => ({
     ...g,
     branches: [...g.branches].sort(
-      (a, b) => BAC_ORDER.indexOf(a.bacType) - BAC_ORDER.indexOf(b.bacType)
+      (a, b) => BAC_ORDER.indexOf(a.bacType) - BAC_ORDER.indexOf(b.bacType),
     ),
   }));
 }
@@ -124,16 +134,16 @@ export default function Home() {
   const bacTypes = useMemo(
     () =>
       [...new Set(data.map((r) => r.bacType))].sort(
-        (a, b) => BAC_ORDER.indexOf(a) - BAC_ORDER.indexOf(b)
+        (a, b) => BAC_ORDER.indexOf(a) - BAC_ORDER.indexOf(b),
       ),
-    [data]
+    [data],
   );
 
   const universities = useMemo(() => {
     const available = data.filter(
       (record) =>
         (!institution || record.institution === institution) &&
-        (!license || record.license === license)
+        (!license || record.license === license),
     );
     return [...new Set(available.map((record) => record.university))].sort();
   }, [data, institution, license]);
@@ -142,7 +152,7 @@ export default function Home() {
     const available = data.filter(
       (record) =>
         (university === "all" || record.university === university) &&
-        (!license || record.license === license)
+        (!license || record.license === license),
     );
     return [...new Set(available.map((record) => record.institution))].sort();
   }, [data, university, license]);
@@ -151,7 +161,7 @@ export default function Home() {
     const available = data.filter(
       (record) =>
         (university === "all" || record.university === university) &&
-        (!institution || record.institution === institution)
+        (!institution || record.institution === institution),
     );
     return [...new Set(available.map((record) => record.license))].sort();
   }, [data, university, institution]);
@@ -160,7 +170,8 @@ export default function Home() {
     const q = search.trim().toLowerCase();
     return data
       .filter((r) => {
-        if (bacType !== "all" && r.bacType !== bacType && !onlyMyBac) return false;
+        if (bacType !== "all" && r.bacType !== bacType && !onlyMyBac)
+          return false;
         if (onlyMyBac && userBacType && r.bacType !== userBacType) return false;
         if (university !== "all" && r.university !== university) return false;
         if (institution && r.institution !== institution) return false;
@@ -176,11 +187,29 @@ export default function Home() {
         }
         return true;
       })
-      .sort((a, b) => (sortDir === "desc" ? b.score - a.score : a.score - b.score));
-  }, [data, search, bacType, university, institution, license, minScore, sortDir, onlyMyBac, userBacType]);
+      .sort((a, b) =>
+        sortDir === "desc" ? b.score - a.score : a.score - b.score,
+      );
+  }, [
+    data,
+    search,
+    bacType,
+    university,
+    institution,
+    license,
+    minScore,
+    sortDir,
+    onlyMyBac,
+    userBacType,
+  ]);
 
-  const filteredLicenseGroups = useMemo(() => groupByLicense(filtered), [filtered]);
-  const resultCount = groupedView ? filteredLicenseGroups.length : filtered.length;
+  const filteredLicenseGroups = useMemo(
+    () => groupByLicense(filtered),
+    [filtered],
+  );
+  const resultCount = groupedView
+    ? filteredLicenseGroups.length
+    : filtered.length;
   const pageSize = groupedView ? LICENSES_PER_PAGE : ROWS_PER_PAGE;
   const totalPages = Math.max(1, Math.ceil(resultCount / pageSize));
 
@@ -208,15 +237,59 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {session?.user?.name && (
-                <span className="hidden text-sm text-body sm:inline">
-                  {session.user.name}
-                </span>
-              )}
-              <Button nativeButton={false} render={<Link href="/calculatrice" />}>
-                حاسب نقاطك
-              </Button>
-              <AuthNav />
+              {/* Desktop */}
+              <div className="hidden items-center gap-3 sm:flex">
+                {session?.user?.name && (
+                  <span className="flex items-center gap-2">
+                    <Avatar
+                      className="size-10 shrink-0"
+                      {...genConfig(session.user.email ?? session.user.name)}
+                    />
+                    <span className="text-sm text-body">{session.user.name}</span>
+                  </span>
+                )}
+                <Button
+                  nativeButton={false}
+                  render={<Link href="/calculatrice" />}
+                >
+                  احسب سكورك
+                </Button>
+                <AuthNav />
+              </div>
+
+              {/* Mobile */}
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+                    <Menu className="size-5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-48">
+                    {session?.user?.name && (
+                      <>
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel className="flex items-center gap-2 font-normal">
+                            <Avatar
+                              className="size-10 shrink-0"
+                              {...genConfig(session.user.email ?? session.user.name)}
+                            />
+                            <span>{session.user.name}</span>
+                          </DropdownMenuLabel>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem>
+                      <Link href="/calculatrice" className="flex w-full items-center gap-2">
+                        احسب سكورك
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <div className="px-1 py-1">
+                      <AuthNav />
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </div>
@@ -370,7 +443,12 @@ export default function Home() {
                   تجميع الشعب حسب الإجازة
                 </label>
               )}
-              {(search || bacType !== "all" || university !== "all" || institution || license || minScore) && (
+              {(search ||
+                bacType !== "all" ||
+                university !== "all" ||
+                institution ||
+                license ||
+                minScore) && (
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -409,7 +487,9 @@ export default function Home() {
                 <TableRow>
                   <TableHead className="w-[80px]">الرمز</TableHead>
                   <TableHead className="w-[200px]">الجامعة</TableHead>
-                  <TableHead className="hidden md:table-cell w-[260px]">المؤسسة</TableHead>
+                  <TableHead className="hidden md:table-cell w-[260px]">
+                    المؤسسة
+                  </TableHead>
                   <TableHead className="w-[220px]">الإجازة</TableHead>
                   <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
                   <TableHead className="w-[190px]">الصيغة</TableHead>
@@ -417,172 +497,180 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               {groupedView ? (
-                  paginatedGroups.map((group) => {
-                    const bestIdx = group.branches.reduce(
-                      (maxIdx, b, i, arr) => (b.score > arr[maxIdx].score ? i : maxIdx),
-                      0
-                    );
-                    const isHovered = hoveredGroup === group.key;
-                    return (
-                      <tbody
-                        key={group.key}
-                        onMouseEnter={() => setHoveredGroup(group.key)}
-                        onMouseLeave={() => setHoveredGroup(null)}
+                paginatedGroups.map((group) => {
+                  const bestIdx = group.branches.reduce(
+                    (maxIdx, b, i, arr) =>
+                      b.score > arr[maxIdx].score ? i : maxIdx,
+                    0,
+                  );
+                  const isHovered = hoveredGroup === group.key;
+                  return (
+                    <tbody
+                      key={group.key}
+                      onMouseEnter={() => setHoveredGroup(group.key)}
+                      onMouseLeave={() => setHoveredGroup(null)}
+                    >
+                      {group.branches.map((branch, branchIndex) => (
+                        <TableRow
+                          key={`${group.key}-${branch.bacType}-${branchIndex}`}
+                          className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""}`}
+                        >
+                          {branchIndex === 0 && (
+                            <>
+                              <TableCell
+                                rowSpan={group.branches.length}
+                                className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                              >
+                                {group.code}
+                              </TableCell>
+                              <TableCell
+                                rowSpan={group.branches.length}
+                                className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                              >
+                                {group.university}
+                              </TableCell>
+                              <TableCell
+                                rowSpan={group.branches.length}
+                                className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger delay={500} render={<span />}>
+                                    {group.institution}
+                                  </TooltipTrigger>
+                                  <TooltipPortal>
+                                    <TooltipPositioner sideOffset={8}>
+                                      <TooltipPopup>
+                                        <TooltipArrow />
+                                        {group.institution}
+                                      </TooltipPopup>
+                                    </TooltipPositioner>
+                                  </TooltipPortal>
+                                </Tooltip>
+                              </TableCell>
+                              <TableCell
+                                rowSpan={group.branches.length}
+                                className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger delay={500} render={<span />}>
+                                    {group.license}
+                                  </TooltipTrigger>
+                                  <TooltipPortal>
+                                    <TooltipPositioner sideOffset={8}>
+                                      <TooltipPopup>
+                                        <TooltipArrow />
+                                        {group.license}
+                                      </TooltipPopup>
+                                    </TooltipPositioner>
+                                  </TooltipPortal>
+                                </Tooltip>
+                              </TableCell>
+                            </>
+                          )}
+                          <TableCell>{branch.bacType}</TableCell>
+                          <TableCell className="max-w-48 truncate font-mono text-xs">
+                            <Tooltip>
+                              <TooltipTrigger delay={500} render={<span />}>
+                                {branch.formula ?? "—"}
+                              </TooltipTrigger>
+                              <TooltipPortal>
+                                <TooltipPositioner sideOffset={8}>
+                                  <TooltipPopup>
+                                    <TooltipArrow />
+                                    {branch.formula ?? "—"}
+                                  </TooltipPopup>
+                                </TooltipPositioner>
+                              </TooltipPortal>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell className="text-right font-medium tabular-nums">
+                            {branch.score.toFixed(4)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </tbody>
+                  );
+                })
+              ) : (
+                <TableBody>
+                  {resultCount === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-muted-text py-12"
                       >
-                        {group.branches.map((branch, branchIndex) => (
-                          <TableRow
-                            key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                            className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""}`}
-                          >
-                            {branchIndex === 0 && (
-                              <>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  {group.code}
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  {group.university}
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  <Tooltip>
-                                    <TooltipTrigger delay={500} render={<span />}>
-                                      {group.institution}
-                                    </TooltipTrigger>
-                                    <TooltipPortal>
-                                      <TooltipPositioner sideOffset={8}>
-                                        <TooltipPopup>
-                                          <TooltipArrow />
-                                          {group.institution}
-                                        </TooltipPopup>
-                                      </TooltipPositioner>
-                                    </TooltipPortal>
-                                  </Tooltip>
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  <Tooltip>
-                                    <TooltipTrigger delay={500} render={<span />}>
-                                      {group.license}
-                                    </TooltipTrigger>
-                                    <TooltipPortal>
-                                      <TooltipPositioner sideOffset={8}>
-                                        <TooltipPopup>
-                                          <TooltipArrow />
-                                          {group.license}
-                                        </TooltipPopup>
-                                      </TooltipPositioner>
-                                    </TooltipPortal>
-                                  </Tooltip>
-                                </TableCell>
-                              </>
-                            )}
-                            <TableCell>{branch.bacType}</TableCell>
-                            <TableCell className="max-w-48 truncate font-mono text-xs">
-                              <Tooltip>
-                                <TooltipTrigger delay={500} render={<span />}>
-                                  {branch.formula ?? "—"}
-                                </TooltipTrigger>
-                                <TooltipPortal>
-                                  <TooltipPositioner sideOffset={8}>
-                                    <TooltipPopup>
-                                      <TooltipArrow />
-                                      {branch.formula ?? "—"}
-                                    </TooltipPopup>
-                                  </TooltipPositioner>
-                                </TooltipPortal>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell className="text-right font-medium tabular-nums">
-                              {branch.score.toFixed(4)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </tbody>
-                    );
-                  })
-                ) : (
-                  <TableBody>
-                {resultCount === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-text py-12">
-                      لا توجد نتائج تطابق بحثك
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedRows.map((r, i) => (
-                    <TableRow key={`${r.code}-${r.bacType}-${i}`}>
-                      <TableCell className="font-mono text-xs">
-                        {r.code}
-                      </TableCell>
-                      <TableCell>{r.university}</TableCell>
-                      <TableCell className="hidden md:table-cell max-w-xs truncate">
-                        <Tooltip>
-                          <TooltipTrigger delay={500} render={<span />}>
-                            {r.institution}
-                          </TooltipTrigger>
-                          <TooltipPortal>
-                            <TooltipPositioner sideOffset={8}>
-                              <TooltipPopup>
-                                <TooltipArrow />
-                                {r.institution}
-                              </TooltipPopup>
-                            </TooltipPositioner>
-                          </TooltipPortal>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell className="max-w-40 truncate">
-                        <Tooltip>
-                          <TooltipTrigger delay={500} render={<span />}>
-                            {r.license}
-                          </TooltipTrigger>
-                          <TooltipPortal>
-                            <TooltipPositioner sideOffset={8}>
-                              <TooltipPopup>
-                                <TooltipArrow />
-                                {r.license}
-                              </TooltipPopup>
-                            </TooltipPositioner>
-                          </TooltipPortal>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>{r.bacType}</TableCell>
-                      <TableCell className="max-w-48 truncate font-mono text-xs">
-                        <Tooltip>
-                          <TooltipTrigger delay={500} render={<span />}>
-                            {r.formula ?? "—"}
-                          </TooltipTrigger>
-                          <TooltipPortal>
-                            <TooltipPositioner sideOffset={8}>
-                              <TooltipPopup>
-                                <TooltipArrow />
-                                {r.formula ?? "—"}
-                              </TooltipPopup>
-                            </TooltipPositioner>
-                          </TooltipPortal>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell className="text-right font-medium tabular-nums">
-                        {r.score.toFixed(4)}
+                        لا توجد نتائج تطابق بحثك
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            )}
+                  ) : (
+                    paginatedRows.map((r, i) => (
+                      <TableRow key={`${r.code}-${r.bacType}-${i}`}>
+                        <TableCell className="font-mono text-xs">
+                          {r.code}
+                        </TableCell>
+                        <TableCell>{r.university}</TableCell>
+                        <TableCell className="hidden md:table-cell max-w-xs truncate">
+                          <Tooltip>
+                            <TooltipTrigger delay={500} render={<span />}>
+                              {r.institution}
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipPositioner sideOffset={8}>
+                                <TooltipPopup>
+                                  <TooltipArrow />
+                                  {r.institution}
+                                </TooltipPopup>
+                              </TooltipPositioner>
+                            </TooltipPortal>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell className="max-w-40 truncate">
+                          <Tooltip>
+                            <TooltipTrigger delay={500} render={<span />}>
+                              {r.license}
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipPositioner sideOffset={8}>
+                                <TooltipPopup>
+                                  <TooltipArrow />
+                                  {r.license}
+                                </TooltipPopup>
+                              </TooltipPositioner>
+                            </TooltipPortal>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell>{r.bacType}</TableCell>
+                        <TableCell className="max-w-48 truncate font-mono text-xs">
+                          <Tooltip>
+                            <TooltipTrigger delay={500} render={<span />}>
+                              {r.formula ?? "—"}
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipPositioner sideOffset={8}>
+                                <TooltipPopup>
+                                  <TooltipArrow />
+                                  {r.formula ?? "—"}
+                                </TooltipPopup>
+                              </TooltipPositioner>
+                            </TooltipPortal>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell className="text-right font-medium tabular-nums">
+                          {r.score.toFixed(4)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              )}
             </Table>
           </CardContent>
           <div className="border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           </div>
         </Card>
       </main>

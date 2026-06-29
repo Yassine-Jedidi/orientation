@@ -241,3 +241,32 @@
 [data-slot="select-list"]::-webkit-scrollbar-button {
   display: none;
 }
+
+/* Same branded ochre scrollbar for mobile table overflow. */
+[data-slot="table-container"] {
+  scrollbar-color: var(--brand-ochre) var(--popover) !important;
+  scrollbar-width: thin;
+}
+
+[data-slot="table-container"]::-webkit-scrollbar {
+  height: 6px;
+}
+
+[data-slot="table-container"]::-webkit-scrollbar-track {
+  background: var(--popover);
+  border-radius: var(--radius-pill);
+}
+
+[data-slot="table-container"]::-webkit-scrollbar-thumb {
+  background: var(--brand-ochre);
+  border: 1px solid var(--popover);
+  border-radius: var(--radius-pill);
+}
+
+[data-slot="table-container"]::-webkit-scrollbar-thumb:hover {
+  background: #c99a2e;
+}
+
+[data-slot="table-container"]::-webkit-scrollbar-button {
+  display: none;
+}
