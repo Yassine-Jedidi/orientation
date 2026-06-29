@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
+import { BAC_ORDER } from "@/lib/bac-order";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -45,16 +46,6 @@ interface LicenseGroup {
 
 const ROWS_PER_PAGE = 25;
 const LICENSES_PER_PAGE = 10;
-
-const BAC_ORDER = [
-  "رياضيات",
-  "علوم تجريبية",
-  "علوم الإعلامية",
-  "العلوم التقنية",
-  "إقتصاد وتصرف",
-  "آداب",
-  "رياضة",
-];
 
 function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
   const groups = new Map<string, LicenseGroup>();
@@ -185,17 +176,24 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1">
       <header className="border-b border-border bg-canvas">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <h1 className="text-display-sm font-heading font-medium text-ink">
-            دليل التوجيه الجامعي
-          </h1>
-          <p className="mt-2 text-body">
-            استشارة معدلات التوجيه حسب الشعب والباكالوريا
-          </p>
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-display-sm font-heading font-medium text-ink">
+                دليل التوجيه الجامعي
+              </h1>
+              <p className="mt-2 text-body">
+                استشارة معدلات التوجيه حسب الشعب والباكالوريا
+              </p>
+            </div>
+            <Button nativeButton={false} render={<a href="/calculatrice" />}>
+              حاسبة النقاط
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>بحث وتصفية</CardTitle>
@@ -383,11 +381,11 @@ export default function Home() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">الرمز</TableHead>
-                  <TableHead className="w-[180px]">الجامعة</TableHead>
-                  <TableHead className="hidden md:table-cell w-[250px]">المؤسسة</TableHead>
-                  <TableHead className="w-[200px]">الإجازة</TableHead>
+                  <TableHead className="w-[200px]">الجامعة</TableHead>
+                  <TableHead className="hidden md:table-cell w-[260px]">المؤسسة</TableHead>
+                  <TableHead className="w-[220px]">الإجازة</TableHead>
                   <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
-                  <TableHead className="w-[170px]">الصيغة</TableHead>
+                  <TableHead className="w-[190px]">الصيغة</TableHead>
                   <TableHead className="w-[80px] text-right">النقاط</TableHead>
                 </TableRow>
               </TableHeader>
@@ -407,25 +405,25 @@ export default function Home() {
                         {group.branches.map((branch, branchIndex) => (
                           <TableRow
                             key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                            className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "!bg-surface-soft/80" : ""}`}
+                            className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""}`}
                           >
                             {branchIndex === 0 && (
                               <>
                                 <TableCell
                                   rowSpan={group.branches.length}
-                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
                                   {group.code}
                                 </TableCell>
                                 <TableCell
                                   rowSpan={group.branches.length}
-                                  className={`align-top ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                  className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
                                   {group.university}
                                 </TableCell>
                                 <TableCell
                                   rowSpan={group.branches.length}
-                                  className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                  className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
                                   <Tooltip>
                                     <TooltipTrigger delay={500} render={<span />}>
@@ -443,7 +441,7 @@ export default function Home() {
                                 </TableCell>
                                 <TableCell
                                   rowSpan={group.branches.length}
-                                  className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "!bg-surface-soft/80" : ""}`}
+                                  className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
                                   <Tooltip>
                                     <TooltipTrigger delay={500} render={<span />}>
@@ -563,7 +561,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border bg-surface-soft">
-        <div className="mx-auto max-w-6xl px-6 py-6 text-center text-sm text-body">
+        <div className="mx-auto max-w-7xl px-6 py-6 text-center text-sm text-body">
           البيانات مأخوذة من دليل التوجيه الجامعي التونسي 2025-2026
         </div>
       </footer>
