@@ -4,7 +4,15 @@ const CODE_ALIASES: Record<string, string> = {
   Ang: "ANG",
   info: "INF",
   Inf: "INF",
-  IT: "INF",
+  ALL: "OPT",
+  ESP: "OPT",
+  IT: "OPT",
+  SP: "PHYS",
+  PH: "PHILO",
+  Algo: "ALGO",
+  TE: "TECH",
+  SB: "SVT",
+  Spt: "SPT",
 };
 
 export const SUBJECT_LABELS: Record<string, string> = {
@@ -12,29 +20,33 @@ export const SUBJECT_LABELS: Record<string, string> = {
   AR: "العربية",
   ANG: "الإنجليزية",
   F: "الفرنسية",
-  PH: "الفيزياء",
+  PH: "الفلسفة",
   M: "الرياضيات",
   HG: "التاريخ والجغرافيا",
   A: "العربية",
   Algo: "الخوارزميات",
   ECO: "الإقتصاد",
   GEST: "التصرف",
-  SP: "العلوم الطبيعية",
+  SP: "الفيزياء",
   SVT: "علوم الحياة والأرض",
   TE: "التكنولوجيا",
   INF: "الإعلامية",
   SB: "علوم الحياة",
-  ALL: "المواد جميعها",
+  ALL: "الألمانية",
   ESP: "الإسبانية",
+  IT: "الإيطالية",
+  OPT: "المادة الاختيارية",
   STI: "العلوم التقنية",
   Spt: "الرياضة",
+  SPT: "الرياضة",
 };
 
 export function getRelevantCodes(formulas: string[]): string[] {
   const codes = new Set<string>();
   const re = /\b[A-Za-z]+\b/g;
   for (const f of formulas) {
-    for (const m of f.matchAll(re)) {
+    const normalized = f.replace(/(\d+)([A-Za-z]\w*)/g, "$1*$2");
+    for (const m of normalized.matchAll(re)) {
       const code = m[0];
       if (code !== "FG" && code !== "Max") {
         codes.add(CODE_ALIASES[code] ?? code);
@@ -44,10 +56,32 @@ export function getRelevantCodes(formulas: string[]): string[] {
   return [...codes].sort();
 }
 
+export function getFormulaCalculation(
+  formula: string,
+  grades: Record<string, number>,
+): { substituted: string; result: number } | null {
+  let missing = false;
+  const readableFormula = formula.replace(/(\d+)([A-Za-z])/g, "$1×$2");
+  const substituted = readableFormula.replace(/\b[A-Za-z]+\b/g, (rawCode) => {
+    if (rawCode === "Max") return rawCode;
+    const code = rawCode === "FG" ? "FG" : (CODE_ALIASES[rawCode] ?? rawCode);
+    const value = grades[code] ?? grades.OPT;
+    if (value === undefined || !Number.isFinite(value)) {
+      missing = true;
+      return rawCode;
+    }
+    return Number(value).toFixed(2);
+  });
+  if (missing) return null;
+
+  const result = evaluateFormula(formula, grades);
+  return result === null ? null : { substituted, result };
+}
+
 export function evaluateFormula(
   formula: string,
   grades: Record<string, number>
-): number {
+): number | null {
   let expr = formula;
 
   for (const [alias, canonical] of Object.entries(CODE_ALIASES)) {
@@ -59,13 +93,20 @@ export function evaluateFormula(
 
   expr = expr.replace(/\bFG\b/g, String(grades["FG"] ?? 0));
 
+  expr = expr.replace(/(\d+)([A-Za-z]\w*)/g, "$1*$2");
+
   const allCodes = new Set<string>();
   const codeRe = /\b[A-Za-z]+\b/g;
   for (const m of expr.matchAll(codeRe)) {
     if (m[0] !== "Math" && m[0] !== "max") allCodes.add(m[0]);
   }
   for (const code of allCodes) {
-    const val = grades[code] ?? 0;
+    // Some guide formulas name the selected optional subject itself (for
+    // example M/SVT for Lettres or HG/INF for Sport). The calculator stores
+    // every student's single selected option under OPT, regardless of its
+    // actual subject.
+    const val = grades[code] ?? grades.OPT;
+    if (val === undefined || !Number.isFinite(val)) return null;
     const re = new RegExp(`\\b${code}\\b`, "g");
     expr = expr.replace(re, String(val));
   }
@@ -73,8 +114,8 @@ export function evaluateFormula(
   try {
     const fn = new Function(`"use strict"; return (${expr})`);
     const result = fn();
-    return typeof result === "number" && !Number.isNaN(result) ? result : 0;
+    return typeof result === "number" && Number.isFinite(result) ? result : null;
   } catch {
-    return 0;
+    return null;
   }
 }

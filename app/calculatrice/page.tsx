@@ -38,69 +38,10 @@ import { BAC_ORDER } from "@/lib/bac-order";
 import { getBacFormula, ABBREVIATIONS } from "@/lib/bac-formulas";
 import { authClient } from "@/lib/auth-client";
 import { calculateFg } from "@/lib/fg";
-
-const FG_SUBJECTS: Record<string, { code: string; label: string }[]> = {
-  "آداب": [
-    { code: "AR", label: "العربية" },
-    { code: "PHILO", label: "الفلسفة" },
-    { code: "HG", label: "التاريخ والجغرافيا" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "رياضيات": [
-    { code: "M", label: "الرياضيات" },
-    { code: "PHYS", label: "الفيزياء" },
-    { code: "SVT", label: "علوم الحياة والأرض" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "علوم تجريبية": [
-    { code: "M", label: "الرياضيات" },
-    { code: "PHYS", label: "الفيزياء" },
-    { code: "SVT", label: "علوم الحياة والأرض" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "إقتصاد وتصرف": [
-    { code: "ECO", label: "الاقتصاد" },
-    { code: "GEST", label: "التصرف" },
-    { code: "M", label: "الرياضيات" },
-    { code: "HG", label: "التاريخ والجغرافيا" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "العلوم التقنية": [
-    { code: "TECH", label: "التكنولوجيا" },
-    { code: "M", label: "الرياضيات" },
-    { code: "PHYS", label: "الفيزياء" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "علوم الإعلامية": [
-    { code: "M", label: "الرياضيات" },
-    { code: "ALGO", label: "خوارزميات" },
-    { code: "PHYS", label: "الفيزياء" },
-    { code: "STI", label: "نظم المعلومات" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-  "رياضة": [
-    { code: "SVT", label: "علوم الحياة والأرض" },
-    { code: "SP_PRAT", label: "التربية الرياضية (تطبيق)" },
-    { code: "EP", label: "التربية البدنية" },
-    { code: "PHYS", label: "الفيزياء" },
-    { code: "PHILO", label: "الفلسفة" },
-    { code: "F", label: "الفرنسية" },
-    { code: "ANG", label: "الإنجليزية" },
-  ],
-};
-
-function getSubjectsForBac(bacType: string) {
-  return FG_SUBJECTS[bacType] ?? [];
-}
+import { getBacSubjects } from "@/lib/bac-subjects";
 
 function normalize(v: string): string {
-  return v.replace(",", ".");
+  return (v ?? "").replace(",", ".");
 }
 
 function isTwoDecimalInput(v: string): boolean {
@@ -108,13 +49,13 @@ function isTwoDecimalInput(v: string): boolean {
 }
 
 function isValidGrade(v: string): boolean {
-  if (v === "") return true;
+  if (!v && v !== "0") return true;
   const n = parseFloat(normalize(v));
   return !isNaN(n) && n >= 0 && n <= 20;
 }
 
 function isValidMg(v: string): boolean {
-  if (v === "") return true;
+  if (!v && v !== "0") return true;
   const n = parseFloat(normalize(v));
   return !isNaN(n) && n >= 0 && n <= 20;
 }
@@ -127,6 +68,7 @@ export default function CalculatorPage() {
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const loadedSavedScore = useRef(false);
+  const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; saved: boolean }>>({});
 
   useEffect(() => {
     fetch("/data/scores.json")
@@ -144,14 +86,17 @@ export default function CalculatorPage() {
         if (!payload?.bacType) return;
         setBacType(payload.bacType);
         if (!payload.score) return;
-        setMgInput(Number(payload.score.generalAverage).toFixed(2));
-        setGrades(
-          Object.fromEntries(
-            Object.entries(payload.score.grades as Record<string, number>).map(
-              ([code, grade]) => [code, Number(grade).toFixed(2)],
-            ),
+        const mg = Number(payload.score.generalAverage).toFixed(2);
+        const loadedGrades = Object.fromEntries(
+          Object.entries(payload.score.grades as Record<string, number>).map(
+            ([code, grade]) => [code, Number(grade).toFixed(2)],
           ),
         );
+        loadedGrades.OPT ??=
+          loadedGrades.ALL ?? loadedGrades.ESP ?? loadedGrades.IT;
+        setMgInput(mg);
+        setGrades(loadedGrades);
+        formCache.current[payload.bacType] = { mg, grades: loadedGrades, saved: true };
       });
   }, [session]);
 
@@ -163,7 +108,7 @@ export default function CalculatorPage() {
     [data]
   );
 
-  const subjects = useMemo(() => getSubjectsForBac(bacType), [bacType]);
+  const subjects = useMemo(() => getBacSubjects(bacType), [bacType]);
   const formula = useMemo(() => getBacFormula(bacType), [bacType]);
 
   const mgError = useMemo(() => {
@@ -223,14 +168,28 @@ export default function CalculatorPage() {
         grades: numericGrades,
       }),
     });
+    if (response.ok) {
+      formCache.current[bacType] = { mg: mgInput, grades, saved: true };
+    }
     setSaveState(response.ok ? "saved" : "error");
   }
 
   function selectBacType(value: string) {
+    if (bacType) {
+      formCache.current[bacType] = { mg: mgInput, grades, saved: saveState === "saved" };
+    }
+
     setBacType(value);
     setGrades({});
     setMgInput("");
     setSaveState("idle");
+
+    const cached = formCache.current[value];
+    if (cached) {
+      setMgInput(cached.mg);
+      setGrades(cached.grades);
+      setSaveState(cached.saved ? "saved" : "idle");
+    }
 
     if (!session) return;
     void fetch("/api/student-score", {

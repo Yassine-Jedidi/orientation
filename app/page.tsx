@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, Check, ArrowUp, X } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import { evaluateFormula, getFormulaCalculation } from "@/lib/formula-evaluator";
 import {
   Tooltip,
   TooltipArrow,
@@ -110,7 +111,34 @@ export default function Home() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [userBacType, setUserBacType] = useState<string | null>(null);
+  const [userScore, setUserScore] = useState<number | null>(null);
+  const [userGrades, setUserGrades] = useState<Record<string, number> | null>(null);
   const [onlyMyBac, setOnlyMyBac] = useState(false);
+  const userScoreFetched = useRef(false);
+
+  const computeEffective = (formula?: string | null) => {
+    if (userScore === null) return null;
+    return formula && formula !== "FG"
+      ? evaluateFormula(formula, { FG: userScore, ...(userGrades ?? {}) })
+      : userScore;
+  };
+
+  const getCalculation = (formula?: string | null) => {
+    if (!formula || userScore === null) return null;
+    return getFormulaCalculation(formula, {
+      FG: userScore,
+      ...(userGrades ?? {}),
+    });
+  };
+
+  const getRowStatus = (bacType: string, score: number, formula?: string | null) => {
+    if (userScore === null || userBacType !== bacType) return null;
+    const effective = computeEffective(formula);
+    if (effective === null) return null;
+    if (effective >= score) return "qualified";
+    if (score > effective + 15) return "far";
+    return "close";
+  };
 
   useEffect(() => {
     fetch("/data/scores.json")
@@ -119,13 +147,24 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || userScoreFetched.current) return;
+    userScoreFetched.current = true;
     fetch("/api/student-score")
       .then((r) => r.json())
       .then((payload) => {
         if (payload.bacType) {
           setUserBacType(payload.bacType);
           setOnlyMyBac(true);
+        }
+        if (payload.score?.fg != null) {
+          setUserScore(Number(payload.score.fg));
+        }
+        if (payload.score?.grades) {
+          const grades: Record<string, number> = {};
+          for (const [k, v] of Object.entries(payload.score.grades)) {
+            grades[k] = Number(v);
+          }
+          setUserGrades(grades);
         }
       })
       .catch(() => {});
@@ -504,16 +543,38 @@ export default function Home() {
                     0,
                   );
                   const isHovered = hoveredGroup === group.key;
+                  const branchStatuses = group.branches.map(
+                    (b) => getRowStatus(b.bacType, b.score, b.formula),
+                  );
+                  const anyQualified = branchStatuses.includes("qualified");
+                  const anyClose = branchStatuses.includes("close");
+                  const anyFar = branchStatuses.includes("far");
+                  const groupIcon = anyQualified
+                    ? { icon: Check, color: "text-success" }
+                    : anyClose
+                      ? { icon: ArrowUp, color: "text-warning" }
+                      : anyFar
+                        ? { icon: X, color: "text-error" }
+                        : null;
                   return (
                     <tbody
                       key={group.key}
                       onMouseEnter={() => setHoveredGroup(group.key)}
                       onMouseLeave={() => setHoveredGroup(null)}
                     >
-                      {group.branches.map((branch, branchIndex) => (
+                      {group.branches.map((branch, branchIndex) => {
+                        const status = getRowStatus(branch.bacType, branch.score, branch.formula);
+                        const bgClass = status === "qualified"
+                          ? "bg-success/5"
+                          : status === "close"
+                            ? "bg-warning/5"
+                            : status === "far"
+                              ? "bg-error/5"
+                              : "";
+                        return (
                         <TableRow
                           key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                          className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""}`}
+                          className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                         >
                           {branchIndex === 0 && (
                             <>
@@ -522,6 +583,9 @@ export default function Home() {
                                 className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                               >
                                 {group.code}
+                                {groupIcon && (
+                                  <groupIcon.icon className={`size-3.5 inline align-middle ms-1 ${groupIcon.color}`} />
+                                )}
                               </TableCell>
                               <TableCell
                                 rowSpan={group.branches.length}
@@ -577,17 +641,69 @@ export default function Home() {
                                 <TooltipPositioner sideOffset={8}>
                                   <TooltipPopup>
                                     <TooltipArrow />
-                                    {branch.formula ?? "—"}
+                                    {(() => {
+                                      const calculation = userBacType === branch.bacType
+                                        ? getCalculation(branch.formula)
+                                        : null;
+                                      if (!calculation) return branch.formula ?? "—";
+                                      return (
+                                        <span className="block whitespace-nowrap text-xs leading-relaxed" dir="ltr">
+                                          <span className="block">{branch.formula}</span>
+                                          <span className="block text-muted-text">= {calculation.substituted}</span>
+                                          <span className="block font-semibold text-ink">= {calculation.result.toFixed(4)}</span>
+                                        </span>
+                                      );
+                                    })()}
                                   </TooltipPopup>
                                 </TooltipPositioner>
                               </TooltipPortal>
                             </Tooltip>
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
-                            {branch.score.toFixed(4)}
+                            {userBacType === branch.bacType && userScore !== null ? (
+                              <Tooltip>
+                              <TooltipTrigger delay={500} render={<span className="cursor-help" />}>
+                                {branch.score.toFixed(4)}
+                              </TooltipTrigger>
+                              <TooltipPortal>
+                                <TooltipPositioner sideOffset={8}>
+                                  <TooltipPopup>
+                                    <TooltipArrow />
+                                    {(() => {
+                                      const eff = computeEffective(branch.formula);
+                                      if (eff === null || userBacType !== branch.bacType) return null;
+                                      return (
+                                        <span className="whitespace-nowrap text-xs leading-relaxed">
+                                          <span className="block">سكورك: {eff.toFixed(4)}</span>
+                                          <span className="block">الحد: {branch.score.toFixed(4)}</span>
+                                          <span
+                                            dir="ltr"
+                                            className="block text-right"
+                                          >
+                                            <span className="text-ink">الفارق: </span>
+                                            <span className={
+                                              eff >= branch.score
+                                                ? "text-success"
+                                                : branch.score - eff <= 15
+                                                  ? "text-warning"
+                                                  : "text-error"
+                                            }>
+                                              {eff >= branch.score ? "+" : ""}{(eff - branch.score).toFixed(4)}
+                                            </span>
+                                          </span>
+                                        </span>
+                                      );
+                                    })()}
+                                  </TooltipPopup>
+                                </TooltipPositioner>
+                              </TooltipPortal>
+                              </Tooltip>
+                            ) : (
+                              branch.score.toFixed(4)
+                            )}
                           </TableCell>
                         </TableRow>
-                      ))}
+                      );})}
                     </tbody>
                   );
                 })
@@ -604,9 +720,21 @@ export default function Home() {
                     </TableRow>
                   ) : (
                     paginatedRows.map((r, i) => (
-                      <TableRow key={`${r.code}-${r.bacType}-${i}`}>
-                        <TableCell className="font-mono text-xs">
+                      <TableRow
+                        key={`${r.code}-${r.bacType}-${i}`}
+                        className={getRowStatus(r.bacType, r.score, r.formula) === "qualified" ? "bg-success/5" : getRowStatus(r.bacType, r.score, r.formula) === "close" ? "bg-warning/5" : getRowStatus(r.bacType, r.score, r.formula) === "far" ? "bg-error/5" : ""}
+                      >
+                      <TableCell className="font-mono text-xs">
                           {r.code}
+                          {getRowStatus(r.bacType, r.score, r.formula) === "qualified" && (
+                            <Check className="size-3.5 text-success inline align-middle ms-1" />
+                          )}
+                          {getRowStatus(r.bacType, r.score, r.formula) === "close" && (
+                            <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
+                          )}
+                          {getRowStatus(r.bacType, r.score, r.formula) === "far" && (
+                            <X className="size-3.5 text-error inline align-middle ms-1" />
+                          )}
                         </TableCell>
                         <TableCell>{r.university}</TableCell>
                         <TableCell className="hidden md:table-cell max-w-xs truncate">
@@ -647,16 +775,68 @@ export default function Home() {
                             </TooltipTrigger>
                             <TooltipPortal>
                               <TooltipPositioner sideOffset={8}>
-                                <TooltipPopup>
-                                  <TooltipArrow />
-                                  {r.formula ?? "—"}
+                              <TooltipPopup>
+                                <TooltipArrow />
+                                {(() => {
+                                  const calculation = userBacType === r.bacType
+                                    ? getCalculation(r.formula)
+                                    : null;
+                                  if (!calculation) return r.formula ?? "—";
+                                  return (
+                                    <span className="block whitespace-nowrap text-xs leading-relaxed" dir="ltr">
+                                      <span className="block">{r.formula}</span>
+                                      <span className="block text-muted-text">= {calculation.substituted}</span>
+                                      <span className="block font-semibold text-ink">= {calculation.result.toFixed(4)}</span>
+                                    </span>
+                                  );
+                                })()}
                                 </TooltipPopup>
                               </TooltipPositioner>
                             </TooltipPortal>
                           </Tooltip>
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
-                          {r.score.toFixed(4)}
+                          {userBacType === r.bacType && userScore !== null ? (
+                            <Tooltip>
+                            <TooltipTrigger delay={500} render={<span className="cursor-help" />}>
+                              {r.score.toFixed(4)}
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipPositioner sideOffset={8}>
+                                <TooltipPopup>
+                                  <TooltipArrow />
+                                  {(() => {
+                                    const eff = computeEffective(r.formula);
+                                    if (eff === null || userBacType !== r.bacType) return null;
+                                    return (
+                                      <span className="whitespace-nowrap text-xs leading-relaxed">
+                                        <span className="block">سكورك: {eff.toFixed(4)}</span>
+                                        <span className="block">الحد: {r.score.toFixed(4)}</span>
+                                          <span
+                                            dir="ltr"
+                                            className="block text-right"
+                                          >
+                                            <span className="text-ink">الفارق: </span>
+                                            <span className={
+                                              eff >= r.score
+                                                ? "text-success"
+                                                : r.score - eff <= 15
+                                                  ? "text-warning"
+                                                  : "text-error"
+                                            }>
+                                              {eff >= r.score ? "+" : ""}{(eff - r.score).toFixed(4)}
+                                            </span>
+                                          </span>
+                                      </span>
+                                    );
+                                  })()}
+                                </TooltipPopup>
+                              </TooltipPositioner>
+                            </TooltipPortal>
+                            </Tooltip>
+                          ) : (
+                            r.score.toFixed(4)
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
