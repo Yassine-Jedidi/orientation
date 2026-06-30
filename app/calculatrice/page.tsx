@@ -38,7 +38,7 @@ import { BAC_ORDER } from "@/lib/bac-order";
 import { getBacFormula, ABBREVIATIONS } from "@/lib/bac-formulas";
 import { authClient } from "@/lib/auth-client";
 import { calculateFg } from "@/lib/fg";
-import { getBacSubjects } from "@/lib/bac-subjects";
+import { getBacOptionalSubjects, getBacSubjects } from "@/lib/bac-subjects";
 
 function normalize(v: string): string {
   return (v ?? "").replace(",", ".");
@@ -66,9 +66,10 @@ export default function CalculatorPage() {
   const [bacType, setBacType] = useState("");
   const [mgInput, setMgInput] = useState("");
   const [grades, setGrades] = useState<Record<string, string>>({});
+  const [optionalSubject, setOptionalSubject] = useState("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const loadedSavedScore = useRef(false);
-  const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; saved: boolean }>>({});
+  const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; optionalSubject: string; saved: boolean }>>({});
 
   useEffect(() => {
     fetch("/data/scores.json")
@@ -92,11 +93,13 @@ export default function CalculatorPage() {
             ([code, grade]) => [code, Number(grade).toFixed(2)],
           ),
         );
-        loadedGrades.OPT ??=
-          loadedGrades.ALL ?? loadedGrades.ESP ?? loadedGrades.IT;
+        const loadedOptionalSubject = getBacOptionalSubjects(payload.bacType).find(
+          ({ code }) => loadedGrades[code] !== undefined,
+        )?.code ?? "";
         setMgInput(mg);
         setGrades(loadedGrades);
-        formCache.current[payload.bacType] = { mg, grades: loadedGrades, saved: true };
+        setOptionalSubject(loadedOptionalSubject);
+        formCache.current[payload.bacType] = { mg, grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true };
       });
   }, [session]);
 
@@ -109,6 +112,7 @@ export default function CalculatorPage() {
   );
 
   const subjects = useMemo(() => getBacSubjects(bacType), [bacType]);
+  const optionalSubjects = useMemo(() => getBacOptionalSubjects(bacType), [bacType]);
   const formula = useMemo(() => getBacFormula(bacType), [bacType]);
 
   const mgError = useMemo(() => {
@@ -156,6 +160,23 @@ export default function CalculatorPage() {
     setSaveState("idle");
   }
 
+  function selectOptionalSubject(code: string) {
+    setGrades((previous) => {
+      const legacyGrade = previous.OPT;
+      const currentGrade = optionalSubjects.map((subject) => previous[subject.code]).find(
+        (grade) => grade !== undefined,
+      );
+      const next = { ...previous };
+      delete next.OPT;
+      for (const subject of optionalSubjects) delete next[subject.code];
+      const grade = currentGrade ?? legacyGrade;
+      if (grade !== undefined) next[code] = grade;
+      return next;
+    });
+    setOptionalSubject(code);
+    setSaveState("idle");
+  }
+
   async function saveScore() {
     if (!result) return;
     setSaveState("saving");
@@ -169,18 +190,19 @@ export default function CalculatorPage() {
       }),
     });
     if (response.ok) {
-      formCache.current[bacType] = { mg: mgInput, grades, saved: true };
+      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: true };
     }
     setSaveState(response.ok ? "saved" : "error");
   }
 
   function selectBacType(value: string) {
     if (bacType) {
-      formCache.current[bacType] = { mg: mgInput, grades, saved: saveState === "saved" };
+      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: saveState === "saved" };
     }
 
     setBacType(value);
     setGrades({});
+    setOptionalSubject("");
     setMgInput("");
     setSaveState("idle");
 
@@ -188,6 +210,7 @@ export default function CalculatorPage() {
     if (cached) {
       setMgInput(cached.mg);
       setGrades(cached.grades);
+      setOptionalSubject(cached.optionalSubject);
       setSaveState(cached.saved ? "saved" : "idle");
     }
 
@@ -388,7 +411,54 @@ export default function CalculatorPage() {
                   )}
 
                   <div className="border-t border-border pt-3">
-                    {subjects.map((s) => (
+                    {subjects.map((s) => s.optional ? (
+                      <div key={s.code} className="space-y-2 py-1.5">
+                        <div className="flex items-center gap-3">
+                          <label className="flex-1 text-sm text-body">{s.label}</label>
+                          <Select
+                            value={optionalSubject || null}
+                            onValueChange={(value) => value && selectOptionalSubject(value)}
+                          >
+                            <SelectTrigger className="w-40" aria-label="اختر المادة الاختيارية">
+                              <SelectValue>
+                                {optionalSubjects.find(({ code }) => code === optionalSubject)?.label
+                                  ?? "اختر المادة"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {optionalSubjects.map((subject) => (
+                                <SelectItem key={subject.code} value={subject.code}>
+                                  {subject.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0-20"
+                            disabled={!optionalSubject}
+                            value={optionalSubject ? grades[optionalSubject] ?? "" : grades.OPT ?? ""}
+                            onChange={(e) => optionalSubject && setGrade(optionalSubject, e.target.value)}
+                            onBlur={() => {
+                              if (!optionalSubject) return;
+                              const value = grades[optionalSubject];
+                              if (value !== undefined && value !== "" && isValidGrade(value)) {
+                                setGrades((previous) => ({
+                                  ...previous,
+                                  [optionalSubject]: Number(value).toFixed(2),
+                                }));
+                              }
+                            }}
+                            className="w-24 text-center"
+                            aria-invalid={optionalSubject && errors[optionalSubject] ? true : undefined}
+                          />
+                        </div>
+                        {grades.OPT !== undefined && !optionalSubject && (
+                          <p className="text-xs text-body">اختر المادة لربط النقطة المحفوظة بها.</p>
+                        )}
+                      </div>
+                    ) : (
                       <div
                         key={s.code}
                         className="flex items-center gap-3 py-1.5"

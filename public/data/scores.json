@@ -13048,50 +13048,6 @@
   {
     "page": 36,
     "university": "جامعة صفاقس",
-    "institution": "كلية الآداب والعلوم الإنسانية بصفاقس",
-    "code": "40161",
-    "license": "الإجازة في حفظ الممتلكات الثقافية",
-    "bacType": "آداب",
-    "score": 89.3167,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 36,
-    "university": "جامعة صفاقس",
-    "institution": "كلية الآداب والعلوم الإنسانية بصفاقس",
-    "code": "40161",
-    "license": "الإجازة في حفظ الممتلكات الثقافية",
-    "bacType": "علوم تجريبية",
-    "score": 68.2017,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 36,
-    "university": "جامعة صفاقس",
-    "institution": "كلية الآداب والعلوم الإنسانية بصفاقس",
-    "code": "40161",
-    "license": "الإجازة في حفظ الممتلكات الثقافية",
-    "bacType": "إقتصاد وتصرف",
-    "score": 71.585,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 36,
-    "university": "جامعة صفاقس",
-    "institution": "كلية الآداب والعلوم الإنسانية بصفاقس",
-    "code": "40161",
-    "license": "الإجازة في حفظ الممتلكات الثقافية",
-    "bacType": "رياضة",
-    "score": 120.705,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 36,
-    "university": "جامعة صفاقس",
     "institution": "كلية العلوم بصفاقس",
     "code": "40501",
     "license": "الإجازة في الكيمياء",
@@ -16162,61 +16118,6 @@
     "page": 45,
     "university": "جامعة جندوبة",
     "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
-    "code": "80159",
-    "license": "الاجازة في جغرافية البيئة",
-    "bacType": "آداب",
-    "score": 89.0317,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 45,
-    "university": "جامعة جندوبة",
-    "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
-    "code": "80159",
-    "license": "الاجازة في جغرافية البيئة",
-    "bacType": "علوم تجريبية",
-    "score": 90.2169,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 45,
-    "university": "جامعة جندوبة",
-    "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
-    "code": "80159",
-    "license": "الاجازة في جغرافية البيئة",
-    "bacType": "إقتصاد وتصرف",
-    "score": 74.7732,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 45,
-    "university": "جامعة جندوبة",
-    "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
-    "code": "80159",
-    "license": "الاجازة في جغرافية البيئة",
-    "bacType": "العلوم التقنية",
-    "score": 64.1684,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 45,
-    "university": "جامعة جندوبة",
-    "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
-    "code": "80159",
-    "license": "الاجازة في جغرافية البيئة",
-    "bacType": "علوم الإعلامية",
-    "score": 84.8151,
-    "formula": "FG+(F+HG)/2",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 45,
-    "university": "جامعة جندوبة",
-    "institution": "المعهد العالي للعلوم الإنسانية بجندوبة",
     "code": "80477",
     "license": "الإجازة في التربية والتعليم",
     "bacType": "آداب",
@@ -19248,50 +19149,6 @@
     "score": 90.7356,
     "formula": "FG+(M+SP+SVT)/3",
     "formulaSource": "tariqi.tn"
-  },
-  {
-    "page": 54,
-    "university": "الإدارة العامة للدراسات التكنولوجية",
-    "institution": "المعهد العالي للدراسات التكنولوجية في المواصلات بتونس",
-    "code": "10360",
-    "license": "الإجازة في التصرف في تكنولوجيات المعلومات والاتصال",
-    "bacType": "رياضيات",
-    "score": 127.195,
-    "formula": "FG+Inf",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 54,
-    "university": "الإدارة العامة للدراسات التكنولوجية",
-    "institution": "المعهد العالي للدراسات التكنولوجية في المواصلات بتونس",
-    "code": "10360",
-    "license": "الإجازة في التصرف في تكنولوجيات المعلومات والاتصال",
-    "bacType": "علوم تجريبية",
-    "score": 142.7,
-    "formula": "FG+Inf",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 54,
-    "university": "الإدارة العامة للدراسات التكنولوجية",
-    "institution": "المعهد العالي للدراسات التكنولوجية في المواصلات بتونس",
-    "code": "10360",
-    "license": "الإجازة في التصرف في تكنولوجيات المعلومات والاتصال",
-    "bacType": "إقتصاد وتصرف",
-    "score": 149.2,
-    "formula": "FG+Inf",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 54,
-    "university": "الإدارة العامة للدراسات التكنولوجية",
-    "institution": "المعهد العالي للدراسات التكنولوجية في المواصلات بتونس",
-    "code": "10360",
-    "license": "الإجازة في التصرف في تكنولوجيات المعلومات والاتصال",
-    "bacType": "علوم الإعلامية",
-    "score": 149.49,
-    "formula": "FG+Inf",
-    "formulaSource": "orientini"
   },
   {
     "page": 54,
@@ -28422,39 +28279,6 @@
     "score": 76.0356,
     "formula": "FG+(M+SP+Algo)/3",
     "formulaSource": "tariqi"
-  },
-  {
-    "page": 78,
-    "university": "جامعة القيروان",
-    "institution": "كلية العلوم و التقنيات بسيدي بوزيد",
-    "code": "75842",
-    "license": "الإجازة في التكنولوجيات الغذائية والمحيط",
-    "bacType": "آداب",
-    "score": 99.1934,
-    "formula": "FG+SVT",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 78,
-    "university": "جامعة القيروان",
-    "institution": "كلية العلوم و التقنيات بسيدي بوزيد",
-    "code": "75842",
-    "license": "الإجازة في التكنولوجيات الغذائية والمحيط",
-    "bacType": "علوم تجريبية",
-    "score": 86.5465,
-    "formula": "FG+SVT",
-    "formulaSource": "orientini"
-  },
-  {
-    "page": 78,
-    "university": "جامعة القيروان",
-    "institution": "كلية العلوم و التقنيات بسيدي بوزيد",
-    "code": "75842",
-    "license": "الإجازة في التكنولوجيات الغذائية والمحيط",
-    "bacType": "العلوم التقنية",
-    "score": 71.4268,
-    "formula": "FG+SVT",
-    "formulaSource": "orientini"
   },
   {
     "page": 78,

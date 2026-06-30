@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Search, Menu, Check, ArrowUp, X } from "lucide-react";
+import { Search, Menu, Check, ArrowUp, X, CircleSlash2 } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
@@ -38,7 +38,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Popover,
+  PopoverArrow,
+  PopoverPopup,
+  PopoverPortal,
+  PopoverPositioner,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { evaluateFormula, getFormulaCalculation } from "@/lib/formula-evaluator";
+import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
   Tooltip,
   TooltipArrow,
@@ -131,13 +140,50 @@ export default function Home() {
     });
   };
 
+  const getUnavailableOptionalSubject = (bacType: string, formula?: string | null) => {
+    if (!formula || userBacType !== bacType || !userGrades) return null;
+    return getBacOptionalSubjects(bacType).find(({ code }) => {
+      const isRequired = new RegExp(`\\b${code}\\b`, "i").test(formula);
+      return isRequired && userGrades[code] === undefined;
+    }) ?? null;
+  };
+
   const getRowStatus = (bacType: string, score: number, formula?: string | null) => {
     if (userScore === null || userBacType !== bacType) return null;
+    if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
     const effective = computeEffective(formula);
     if (effective === null) return null;
     if (effective >= score) return "qualified";
     if (score > effective + 15) return "far";
     return "close";
+  };
+
+  const getRowColorClasses = (
+    status: ReturnType<typeof getRowStatus>,
+    colorCells = false,
+  ) => {
+    const cellColors = colorCells
+      ? status === "qualified"
+        ? "[&>td]:bg-success/5 hover:[&>td]:bg-success/10"
+        : status === "close"
+          ? "[&>td]:bg-warning/5 hover:[&>td]:bg-warning/10"
+          : status === "far"
+            ? "[&>td]:bg-error/5 hover:[&>td]:bg-error/10"
+            : status === "unavailable"
+              ? "[&>td]:bg-surface-strong/35 hover:[&>td]:bg-surface-strong/60"
+              : ""
+      : "";
+    const rowColors =
+    status === "qualified"
+      ? "bg-success/5 hover:bg-success/10"
+      : status === "close"
+        ? "bg-warning/5 hover:bg-warning/10"
+        : status === "far"
+          ? "bg-error/5 hover:bg-error/10"
+          : status === "unavailable"
+            ? "bg-surface-strong/35 text-muted-text hover:bg-surface-strong/60"
+            : "hover:bg-surface-soft/50";
+    return `${rowColors} ${cellColors}`;
   };
 
   useEffect(() => {
@@ -509,7 +555,7 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="pb-0">
           <CardHeader>
             <CardTitle>
               النتائج{" "}
@@ -549,13 +595,16 @@ export default function Home() {
                   const anyQualified = branchStatuses.includes("qualified");
                   const anyClose = branchStatuses.includes("close");
                   const anyFar = branchStatuses.includes("far");
+                  const allUnavailable = branchStatuses.every((status) => status === "unavailable");
                   const groupIcon = anyQualified
                     ? { icon: Check, color: "text-success" }
                     : anyClose
                       ? { icon: ArrowUp, color: "text-warning" }
                       : anyFar
-                        ? { icon: X, color: "text-error" }
-                        : null;
+                         ? { icon: X, color: "text-error" }
+                         : allUnavailable
+                           ? { icon: CircleSlash2, color: "text-muted-text" }
+                         : null;
                   return (
                     <tbody
                       key={group.key}
@@ -564,17 +613,11 @@ export default function Home() {
                     >
                       {group.branches.map((branch, branchIndex) => {
                         const status = getRowStatus(branch.bacType, branch.score, branch.formula);
-                        const bgClass = status === "qualified"
-                          ? "bg-success/5"
-                          : status === "close"
-                            ? "bg-warning/5"
-                            : status === "far"
-                              ? "bg-error/5"
-                              : "";
+                        const bgClass = getRowColorClasses(status);
                         return (
                         <TableRow
                           key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                          className={`hover:bg-inherit ${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx ? "bg-surface-soft/80!" : ""} ${bgClass}`}
+                          className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                         >
                           {branchIndex === 0 && (
                             <>
@@ -633,14 +676,20 @@ export default function Home() {
                           )}
                           <TableCell>{branch.bacType}</TableCell>
                           <TableCell className="max-w-48 truncate font-mono text-xs">
-                            <Tooltip>
-                              <TooltipTrigger delay={500} render={<span />}>
-                                {branch.formula ?? "—"}
-                              </TooltipTrigger>
-                              <TooltipPortal>
-                                <TooltipPositioner sideOffset={8}>
-                                  <TooltipPopup>
-                                    <TooltipArrow />
+                            <Popover>
+                              <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(branch.bacType, branch.formula))} openOnHover delay={500} render={<button type="button" className="block max-w-full cursor-help bg-transparent p-0 text-right" />}>
+                                <span>{branch.formula ?? "—"}</span>
+                                {getUnavailableOptionalSubject(branch.bacType, branch.formula) && (
+                                  <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
+                                    <CircleSlash2 className="size-3" />
+                                    غير متاح · يتطلب {getUnavailableOptionalSubject(branch.bacType, branch.formula)?.label}
+                                  </span>
+                                )}
+                              </PopoverTrigger>
+                              <PopoverPortal>
+                                <PopoverPositioner sideOffset={8}>
+                                  <PopoverPopup>
+                                    <PopoverArrow />
                                     {(() => {
                                       const calculation = userBacType === branch.bacType
                                         ? getCalculation(branch.formula)
@@ -654,50 +703,47 @@ export default function Home() {
                                         </span>
                                       );
                                     })()}
-                                  </TooltipPopup>
-                                </TooltipPositioner>
-                              </TooltipPortal>
-                            </Tooltip>
+                                  </PopoverPopup>
+                                </PopoverPositioner>
+                              </PopoverPortal>
+                            </Popover>
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
                             {userBacType === branch.bacType && userScore !== null ? (
-                              <Tooltip>
-                              <TooltipTrigger delay={500} render={<span className="cursor-help" />}>
+                              <Popover>
+                              <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(branch.bacType, branch.formula))} openOnHover delay={500} render={<button type="button" className="cursor-help bg-transparent p-0 font-medium tabular-nums" />}>
                                 {branch.score.toFixed(4)}
-                              </TooltipTrigger>
-                              <TooltipPortal>
-                                <TooltipPositioner sideOffset={8}>
-                                  <TooltipPopup>
-                                    <TooltipArrow />
+                              </PopoverTrigger>
+                              <PopoverPortal>
+                                <PopoverPositioner sideOffset={8}>
+                                  <PopoverPopup>
+                                    <PopoverArrow />
                                     {(() => {
                                       const eff = computeEffective(branch.formula);
                                       if (eff === null || userBacType !== branch.bacType) return null;
                                       return (
                                         <span className="whitespace-nowrap text-xs leading-relaxed">
-                                          <span className="block">سكورك: {eff.toFixed(4)}</span>
-                                          <span className="block">الحد: {branch.score.toFixed(4)}</span>
-                                          <span
-                                            dir="ltr"
-                                            className="block text-right"
-                                          >
+                                          <span className="block">سكورك: <b dir="ltr" className="inline-block tabular-nums">{eff.toFixed(4)}</b></span>
+                                          <span className="block">الحد: <b dir="ltr" className="inline-block tabular-nums">{branch.score.toFixed(4)}</b></span>
+                                          <span className="block text-right">
                                             <span className="text-ink">الفارق: </span>
-                                            <span className={
+                                            <b dir="ltr" className={`inline-block tabular-nums ${
                                               eff >= branch.score
                                                 ? "text-success"
                                                 : branch.score - eff <= 15
                                                   ? "text-warning"
                                                   : "text-error"
-                                            }>
+                                            }`}>
                                               {eff >= branch.score ? "+" : ""}{(eff - branch.score).toFixed(4)}
-                                            </span>
+                                            </b>
                                           </span>
                                         </span>
                                       );
                                     })()}
-                                  </TooltipPopup>
-                                </TooltipPositioner>
-                              </TooltipPortal>
-                              </Tooltip>
+                                  </PopoverPopup>
+                                </PopoverPositioner>
+                              </PopoverPortal>
+                              </Popover>
                             ) : (
                               branch.score.toFixed(4)
                             )}
@@ -722,7 +768,7 @@ export default function Home() {
                     paginatedRows.map((r, i) => (
                       <TableRow
                         key={`${r.code}-${r.bacType}-${i}`}
-                        className={getRowStatus(r.bacType, r.score, r.formula) === "qualified" ? "bg-success/5" : getRowStatus(r.bacType, r.score, r.formula) === "close" ? "bg-warning/5" : getRowStatus(r.bacType, r.score, r.formula) === "far" ? "bg-error/5" : ""}
+                        className={getRowColorClasses(getRowStatus(r.bacType, r.score, r.formula), true)}
                       >
                       <TableCell className="font-mono text-xs">
                           {r.code}
@@ -734,6 +780,9 @@ export default function Home() {
                           )}
                           {getRowStatus(r.bacType, r.score, r.formula) === "far" && (
                             <X className="size-3.5 text-error inline align-middle ms-1" />
+                          )}
+                          {getRowStatus(r.bacType, r.score, r.formula) === "unavailable" && (
+                            <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
                           )}
                         </TableCell>
                         <TableCell>{r.university}</TableCell>
@@ -769,14 +818,20 @@ export default function Home() {
                         </TableCell>
                         <TableCell>{r.bacType}</TableCell>
                         <TableCell className="max-w-48 truncate font-mono text-xs">
-                          <Tooltip>
-                            <TooltipTrigger delay={500} render={<span />}>
-                              {r.formula ?? "—"}
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                              <TooltipPositioner sideOffset={8}>
-                              <TooltipPopup>
-                                <TooltipArrow />
+                          <Popover>
+                            <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(r.bacType, r.formula))} openOnHover delay={500} render={<button type="button" className="block max-w-full cursor-help bg-transparent p-0 text-right" />}>
+                              <span>{r.formula ?? "—"}</span>
+                              {getUnavailableOptionalSubject(r.bacType, r.formula) && (
+                                <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
+                                  <CircleSlash2 className="size-3" />
+                                  غير متاح · يتطلب {getUnavailableOptionalSubject(r.bacType, r.formula)?.label}
+                                </span>
+                              )}
+                            </PopoverTrigger>
+                            <PopoverPortal>
+                              <PopoverPositioner sideOffset={8}>
+                              <PopoverPopup>
+                                <PopoverArrow />
                                 {(() => {
                                   const calculation = userBacType === r.bacType
                                     ? getCalculation(r.formula)
@@ -790,50 +845,47 @@ export default function Home() {
                                     </span>
                                   );
                                 })()}
-                                </TooltipPopup>
-                              </TooltipPositioner>
-                            </TooltipPortal>
-                          </Tooltip>
+                                </PopoverPopup>
+                              </PopoverPositioner>
+                            </PopoverPortal>
+                          </Popover>
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
                           {userBacType === r.bacType && userScore !== null ? (
-                            <Tooltip>
-                            <TooltipTrigger delay={500} render={<span className="cursor-help" />}>
+                            <Popover>
+                            <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(r.bacType, r.formula))} openOnHover delay={500} render={<button type="button" className="cursor-help bg-transparent p-0 font-medium tabular-nums" />}>
                               {r.score.toFixed(4)}
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                              <TooltipPositioner sideOffset={8}>
-                                <TooltipPopup>
-                                  <TooltipArrow />
+                            </PopoverTrigger>
+                            <PopoverPortal>
+                              <PopoverPositioner sideOffset={8}>
+                                <PopoverPopup>
+                                  <PopoverArrow />
                                   {(() => {
                                     const eff = computeEffective(r.formula);
                                     if (eff === null || userBacType !== r.bacType) return null;
                                     return (
                                       <span className="whitespace-nowrap text-xs leading-relaxed">
-                                        <span className="block">سكورك: {eff.toFixed(4)}</span>
-                                        <span className="block">الحد: {r.score.toFixed(4)}</span>
-                                          <span
-                                            dir="ltr"
-                                            className="block text-right"
-                                          >
+                                        <span className="block">سكورك: <b dir="ltr" className="inline-block tabular-nums">{eff.toFixed(4)}</b></span>
+                                        <span className="block">الحد: <b dir="ltr" className="inline-block tabular-nums">{r.score.toFixed(4)}</b></span>
+                                          <span className="block text-right">
                                             <span className="text-ink">الفارق: </span>
-                                            <span className={
+                                            <b dir="ltr" className={`inline-block tabular-nums ${
                                               eff >= r.score
                                                 ? "text-success"
                                                 : r.score - eff <= 15
                                                   ? "text-warning"
                                                   : "text-error"
-                                            }>
+                                            }`}>
                                               {eff >= r.score ? "+" : ""}{(eff - r.score).toFixed(4)}
-                                            </span>
+                                            </b>
                                           </span>
                                       </span>
                                     );
                                   })()}
-                                </TooltipPopup>
-                              </TooltipPositioner>
-                            </TooltipPortal>
-                            </Tooltip>
+                                </PopoverPopup>
+                              </PopoverPositioner>
+                            </PopoverPortal>
+                            </Popover>
                           ) : (
                             r.score.toFixed(4)
                           )}
@@ -845,7 +897,7 @@ export default function Home() {
               )}
             </Table>
           </CardContent>
-          <div className="border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
+          <div className="-mt-(--card-spacing) border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
             <Pagination
               page={page}
               totalPages={totalPages}

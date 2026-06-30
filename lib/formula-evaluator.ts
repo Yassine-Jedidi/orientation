@@ -4,9 +4,6 @@ const CODE_ALIASES: Record<string, string> = {
   Ang: "ANG",
   info: "INF",
   Inf: "INF",
-  ALL: "OPT",
-  ESP: "OPT",
-  IT: "OPT",
   SP: "PHYS",
   PH: "PHILO",
   Algo: "ALGO",
@@ -35,6 +32,14 @@ export const SUBJECT_LABELS: Record<string, string> = {
   ALL: "الألمانية",
   ESP: "الإسبانية",
   IT: "الإيطالية",
+  RU: "الروسية",
+  ZH: "الصينية",
+  TR: "التركية",
+  PT: "البرتغالية",
+  MUSIC: "التربية الموسيقية",
+  ART: "التربية التشكيلية",
+  HIST: "التاريخ",
+  GEO: "الجغرافيا",
   OPT: "المادة الاختيارية",
   STI: "العلوم التقنية",
   Spt: "الرياضة",
@@ -65,7 +70,7 @@ export function getFormulaCalculation(
   const substituted = readableFormula.replace(/\b[A-Za-z]+\b/g, (rawCode) => {
     if (rawCode === "Max") return rawCode;
     const code = rawCode === "FG" ? "FG" : (CODE_ALIASES[rawCode] ?? rawCode);
-    const value = grades[code] ?? grades.OPT;
+    const value = grades[code];
     if (value === undefined || !Number.isFinite(value)) {
       missing = true;
       return rawCode;
@@ -82,7 +87,9 @@ export function evaluateFormula(
   formula: string,
   grades: Record<string, number>
 ): number | null {
-  let expr = formula;
+  // Split implicit coefficients before normalizing aliases so terms such as
+  // `2Ang` and `2Algo` expose `Ang`/`Algo` as complete tokens.
+  let expr = formula.replace(/(\d+)([A-Za-z]\w*)/g, "$1*$2");
 
   for (const [alias, canonical] of Object.entries(CODE_ALIASES)) {
     const re = new RegExp(`\\b${alias}\\b`, "g");
@@ -93,19 +100,13 @@ export function evaluateFormula(
 
   expr = expr.replace(/\bFG\b/g, String(grades["FG"] ?? 0));
 
-  expr = expr.replace(/(\d+)([A-Za-z]\w*)/g, "$1*$2");
-
   const allCodes = new Set<string>();
   const codeRe = /\b[A-Za-z]+\b/g;
   for (const m of expr.matchAll(codeRe)) {
     if (m[0] !== "Math" && m[0] !== "max") allCodes.add(m[0]);
   }
   for (const code of allCodes) {
-    // Some guide formulas name the selected optional subject itself (for
-    // example M/SVT for Lettres or HG/INF for Sport). The calculator stores
-    // every student's single selected option under OPT, regardless of its
-    // actual subject.
-    const val = grades[code] ?? grades.OPT;
+    const val = grades[code];
     if (val === undefined || !Number.isFinite(val)) return null;
     const re = new RegExp(`\\b${code}\\b`, "g");
     expr = expr.replace(re, String(val));
