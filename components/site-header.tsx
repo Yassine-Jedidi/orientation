@@ -55,11 +55,11 @@ export function SiteHeader({
                 <span className="text-sm text-body">{session.user.name}</span>
               </span>
             )}
-            {links.map((link, index) => (
+            {links.map((link) => (
               <Button
                 key={link.id}
                 nativeButton={false}
-                variant={index === 0 ? "default" : "outline"}
+                variant={link.id === "calculator" ? "brand-mint" : link.id === "tenfil" ? "brand-lavender" : "brand-peach"}
                 render={<Link href={link.href} />}
               >
                 {link.label}

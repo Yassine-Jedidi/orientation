@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { Search, Check, ArrowUp, X, CircleSlash2 } from "lucide-react";
+import { Search, Check, ArrowUp, X, CircleSlash2, ChevronLeft } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
@@ -25,8 +25,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverArrow,
@@ -451,10 +459,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               />
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-start gap-3 border-t border-border pt-4">
-              {session && userBacType && (
+              {session && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
                     checked={onlyMyBac}
+                    disabled={!userBacType}
                     onCheckedChange={(v) => {
                       setOnlyMyBac(v);
                       setPage(1);
@@ -464,21 +473,23 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 </label>
               )}
               {session && userScore !== null && (
-                <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                <label className="flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
                     checked={useGeographicBonus}
                     onCheckedChange={setUseGeographicBonus}
                     aria-label="تطبيق التنفيل الجغرافي بنسبة 7%"
                   />
-                  تطبيق التنفيل الجغرافي (+7%)
-                  <span className="text-xs font-normal text-muted-text">
-                    فقط إذا كانت الشعبة في ولايتك، أو في أقرب مؤسسة إلى مركز
-                    ولايتك عند عدم توفرها
+                  <span className="flex flex-col">
+                    <span>تطبيق التنفيل الجغرافي (+7%)</span>
+                    <span className="text-xs font-normal text-muted-text">
+                      فقط إذا كانت الشعبة في ولايتك، أو في أقرب مؤسسة إلى مركز
+                      ولايتك عند عدم توفرها
+                    </span>
                   </span>
                 </label>
               )}
               {(!onlyMyBac || !userBacType) && (
-                <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                <label className="hidden min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70 md:inline-flex">
                   <Switch
                     checked={groupedView}
                     onCheckedChange={(v) => {
@@ -528,6 +539,143 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
+            <div className="space-y-3 px-3 pb-4 md:hidden">
+              {filtered.length === 0 ? (
+                <div className="rounded-lg bg-surface-soft px-4 py-12 text-center text-sm text-muted-text ring-1 ring-border">
+                  لا توجد نتائج تطابق بحثك
+                </div>
+              ) : (
+                paginatedRows.map((record, index) => {
+                  const status = getRowStatus(
+                    record.bacType,
+                    record.score,
+                    record.formula,
+                    record.code,
+                  );
+                  const effective = computeEffective(record.formula, record.code);
+                  const unavailable = getUnavailableOptionalSubject(
+                    record.bacType,
+                    record.formula,
+                  );
+                  const statusColor =
+                    status === "qualified"
+                      ? "text-success"
+                      : status === "close"
+                        ? "text-warning"
+                        : status === "far"
+                          ? "text-error"
+                          : "text-muted-text";
+
+                  return (
+                    <Dialog key={`${record.code}-${record.bacType}-${index}`}>
+                      <DialogTrigger render={<button type="button" className="block w-full text-right" />}>
+                        <Card className={`gap-0 py-0 ${status === "qualified" ? "bg-success/[0.04]" : status === "close" ? "bg-warning/[0.04]" : status === "far" ? "bg-error/[0.04]" : "bg-canvas"}`}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex min-w-0 items-center gap-2 font-mono text-xs text-muted-text">
+                                <span>{record.code}</span>
+                                {status === "qualified" && <Check className="size-3.5 text-success" />}
+                                {status === "close" && <ArrowUp className="size-3.5 text-warning" />}
+                                {status === "far" && <X className="size-3.5 text-error" />}
+                                {status === "unavailable" && <CircleSlash2 className="size-3.5 text-muted-text" />}
+                              </div>
+                              <div className="shrink-0 text-left">
+                                <span className="block text-xs text-muted-text">الحد الأدنى</span>
+                                <strong className={`font-mono text-base tabular-nums ${statusColor}`} dir="ltr">
+                                  {record.score.toFixed(4)}
+                                </strong>
+                              </div>
+                            </div>
+
+                            <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
+                              {record.license}
+                            </h3>
+                            <p className="mt-2 line-clamp-1 text-sm font-medium leading-5 text-body">
+                              {record.university}
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-text">
+                              {record.institution}
+                            </p>
+
+                            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-caption">
+                              <span className="rounded-full bg-surface-card px-2.5 py-1 font-medium text-ink">
+                                {record.bacType}
+                              </span>
+                              {hasGeographicBonus(record.code) && (
+                                <span className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink" dir="ltr">
+                                  +7%
+                                </span>
+                              )}
+                              <span className="min-w-0 flex-1 truncate text-left font-mono text-xs text-body" dir="ltr">
+                                {record.formula ?? "FG"}
+                              </span>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="justify-between px-4 py-3 text-caption font-semibold text-ink">
+                            <span>عرض التفاصيل</span>
+                            <ChevronLeft className="size-4" />
+                          </CardFooter>
+                        </Card>
+                      </DialogTrigger>
+
+                      <DialogContent className="top-auto! bottom-0! left-0! w-full! max-w-none! translate-x-0! translate-y-0! rounded-b-none rounded-t-xl p-5 [&_[data-slot=dialog-close]]:right-auto [&_[data-slot=dialog-close]]:left-3 [&_[data-slot=dialog-close]]:top-3">
+                        <DialogHeader>
+                          <DialogTitle className="pe-10 text-right text-title-md leading-7">
+                            {record.license}
+                          </DialogTitle>
+                          <DialogDescription className="text-right">
+                            الرمز {record.code} · {record.university}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="rounded-lg bg-surface-soft p-4">
+                            <p className="text-xs text-muted-text">المؤسسة</p>
+                            <p className="mt-1 leading-6 text-ink">{record.institution}</p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="rounded-lg bg-surface-card p-3">
+                              <span className="text-xs text-muted-text">شعبة الباكالوريا</span>
+                              <strong className="mt-1 block text-ink">{record.bacType}</strong>
+                            </div>
+                            <div className="rounded-lg bg-surface-card p-3">
+                              <span className="text-xs text-muted-text">الحد الأدنى</span>
+                              <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{record.score.toFixed(4)}</strong>
+                            </div>
+                          </div>
+                          <div className="rounded-lg bg-surface-soft p-4">
+                            <p className="text-xs text-muted-text">صيغة الاحتساب</p>
+                            <p className="mt-1 break-all text-right font-mono text-sm leading-6 text-ink" dir="ltr">
+                              {record.formula ?? "FG"}
+                            </p>
+                          </div>
+                          {userBacType === record.bacType && effective !== null && !unavailable && (
+                            <div className="grid grid-cols-2 gap-3 rounded-lg bg-brand-peach/25 p-4 text-sm">
+                              <div>
+                                <span className="text-xs text-muted-text">سكورك</span>
+                                <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{effective.toFixed(4)}</strong>
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-text">الفارق</span>
+                                <strong className={`mt-1 block text-right font-mono ${statusColor}`} dir="ltr">
+                                  {effective >= record.score ? "+" : ""}{(effective - record.score).toFixed(4)}
+                                </strong>
+                              </div>
+                            </div>
+                          )}
+                          {unavailable && (
+                            <p className="rounded-lg bg-surface-strong p-3 text-sm text-muted-text">
+                              غير متاح: تتطلب الصيغة مادة {unavailable.label}.
+                            </p>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -1179,6 +1327,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 </TableBody>
               )}
             </Table>
+            </div>
           </CardContent>
           <div className="-mt-(--card-spacing) border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
             <Pagination
