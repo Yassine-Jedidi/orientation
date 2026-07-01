@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import Link from "next/link";
-import { Search, Menu, Check, ArrowUp, X, CircleSlash2 } from "lucide-react";
+import { Search, Check, ArrowUp, X, CircleSlash2 } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
-import Avatar, { genConfig } from "react-nice-avatar";
+import { SiteHeader } from "@/components/site-header";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -26,16 +25,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AuthNav } from "@/components/auth/auth-nav";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -46,7 +35,14 @@ import {
   PopoverPositioner,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { evaluateFormula, getFormulaCalculation } from "@/lib/formula-evaluator";
+import {
+  evaluateFormula,
+  getFormulaCalculation,
+} from "@/lib/formula-evaluator";
+import {
+  getScoreWithGeographicBonus,
+  hasGeographicBonus,
+} from "@/lib/geographic-bonus";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
   Tooltip,
@@ -121,15 +117,26 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [userBacType, setUserBacType] = useState<string | null>(null);
   const [userScore, setUserScore] = useState<number | null>(null);
-  const [userGrades, setUserGrades] = useState<Record<string, number> | null>(null);
+  const [userGrades, setUserGrades] = useState<Record<string, number> | null>(
+    null,
+  );
   const [onlyMyBac, setOnlyMyBac] = useState(false);
+  const [useGeographicBonus, setUseGeographicBonus] = useState(true);
   const userScoreFetched = useRef(false);
 
-  const computeEffective = (formula?: string | null) => {
+  const computeBaseScore = (formula?: string | null) => {
     if (userScore === null) return null;
     return formula && formula !== "FG"
       ? evaluateFormula(formula, { FG: userScore, ...(userGrades ?? {}) })
       : userScore;
+  };
+
+  const computeEffective = (formula?: string | null, programCode?: string) => {
+    const score = computeBaseScore(formula);
+    if (score === null) return null;
+    return programCode
+      ? getScoreWithGeographicBonus(score, programCode, useGeographicBonus)
+      : score;
   };
 
   const getCalculation = (formula?: string | null) => {
@@ -140,18 +147,28 @@ export default function Home() {
     });
   };
 
-  const getUnavailableOptionalSubject = (bacType: string, formula?: string | null) => {
+  const getUnavailableOptionalSubject = (
+    bacType: string,
+    formula?: string | null,
+  ) => {
     if (!formula || userBacType !== bacType || !userGrades) return null;
-    return getBacOptionalSubjects(bacType).find(({ code }) => {
-      const isRequired = new RegExp(`\\b${code}\\b`, "i").test(formula);
-      return isRequired && userGrades[code] === undefined;
-    }) ?? null;
+    return (
+      getBacOptionalSubjects(bacType).find(({ code }) => {
+        const isRequired = new RegExp(`\\b${code}\\b`, "i").test(formula);
+        return isRequired && userGrades[code] === undefined;
+      }) ?? null
+    );
   };
 
-  const getRowStatus = (bacType: string, score: number, formula?: string | null) => {
+  const getRowStatus = (
+    bacType: string,
+    score: number,
+    formula?: string | null,
+    programCode?: string,
+  ) => {
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
-    const effective = computeEffective(formula);
+    const effective = computeEffective(formula, programCode);
     if (effective === null) return null;
     if (effective >= score) return "qualified";
     if (score > effective + 15) return "far";
@@ -174,15 +191,15 @@ export default function Home() {
               : ""
       : "";
     const rowColors =
-    status === "qualified"
-      ? "bg-success/5 hover:bg-success/10"
-      : status === "close"
-        ? "bg-warning/5 hover:bg-warning/10"
-        : status === "far"
-          ? "bg-error/5 hover:bg-error/10"
-          : status === "unavailable"
-            ? "bg-surface-strong/35 text-muted-text hover:bg-surface-strong/60"
-            : "hover:bg-surface-soft/50";
+      status === "qualified"
+        ? "bg-success/5 hover:bg-success/10"
+        : status === "close"
+          ? "bg-warning/5 hover:bg-warning/10"
+          : status === "far"
+            ? "bg-error/5 hover:bg-error/10"
+            : status === "unavailable"
+              ? "bg-surface-strong/35 text-muted-text hover:bg-surface-strong/60"
+              : "hover:bg-surface-soft/50";
     return `${rowColors} ${cellColors}`;
   };
 
@@ -310,75 +327,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col flex-1">
-      <header className="border-b border-border bg-canvas">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-display-sm font-heading font-medium text-ink">
-                دليل التوجيه الجامعي
-              </h1>
-              <p className="mt-2 text-body">
-                استشارة معدلات التوجيه حسب الشعب والباكالوريا
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Desktop */}
-              <div className="hidden items-center gap-3 sm:flex">
-                {session?.user?.name && (
-                  <span className="flex items-center gap-2">
-                    <Avatar
-                      className="size-10 shrink-0"
-                      {...genConfig(session.user.email ?? session.user.name)}
-                    />
-                    <span className="text-sm text-body">{session.user.name}</span>
-                  </span>
-                )}
-                <Button
-                  nativeButton={false}
-                  render={<Link href="/calculatrice" />}
-                >
-                  احسب سكورك
-                </Button>
-                <AuthNav />
-              </div>
-
-              {/* Mobile */}
-              <div className="sm:hidden">
-                <DropdownMenu>
-                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-                    <Menu className="size-5" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-48">
-                    {session?.user?.name && (
-                      <>
-                        <DropdownMenuGroup>
-                          <DropdownMenuLabel className="flex items-center gap-2 font-normal">
-                            <Avatar
-                              className="size-10 shrink-0"
-                              {...genConfig(session.user.email ?? session.user.name)}
-                            />
-                            <span>{session.user.name}</span>
-                          </DropdownMenuLabel>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    <DropdownMenuItem>
-                      <Link href="/calculatrice" className="flex w-full items-center gap-2">
-                        احسب سكورك
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <div className="px-1 py-1">
-                      <AuthNav />
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader
+        current="guide"
+        title="دليل التوجيه الجامعي"
+        subtitle="استشارة معدلات التوجيه حسب الشعب والباكالوريا"
+      />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
         <Card className="mb-6">
@@ -516,6 +469,20 @@ export default function Home() {
                   شعبتي فقط
                 </label>
               )}
+              {session && userScore !== null && (
+                <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                  <Switch
+                    checked={useGeographicBonus}
+                    onCheckedChange={setUseGeographicBonus}
+                    aria-label="تطبيق التنفيل الجغرافي بنسبة 7%"
+                  />
+                  تطبيق التنفيل الجغرافي (+7%)
+                  <span className="text-xs font-normal text-muted-text">
+                    فقط إذا كانت الشعبة في ولايتك، أو في أقرب مؤسسة إلى مركز
+                    ولايتك عند عدم توفرها
+                  </span>
+                </label>
+              )}
               {(!onlyMyBac || !userBacType) && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
@@ -571,13 +538,16 @@ export default function Home() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">الرمز</TableHead>
-                  <TableHead className="w-[200px]">الجامعة</TableHead>
-                  <TableHead className="hidden md:table-cell w-[260px]">
+                  <TableHead className="w-[190px]">الجامعة</TableHead>
+                  <TableHead className="hidden w-[250px] md:table-cell">
                     المؤسسة
                   </TableHead>
-                  <TableHead className="w-[220px]">الإجازة</TableHead>
+                  <TableHead className="w-[210px]">الإجازة</TableHead>
+                  <TableHead className="w-[84px] text-center">
+                    التنفيل
+                  </TableHead>
                   <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
-                  <TableHead className="w-[190px]">الصيغة</TableHead>
+                  <TableHead className="w-[180px]">الصيغة</TableHead>
                   <TableHead className="w-[80px] text-right">النقاط</TableHead>
                 </TableRow>
               </TableHeader>
@@ -589,22 +559,24 @@ export default function Home() {
                     0,
                   );
                   const isHovered = hoveredGroup === group.key;
-                  const branchStatuses = group.branches.map(
-                    (b) => getRowStatus(b.bacType, b.score, b.formula),
+                  const branchStatuses = group.branches.map((b) =>
+                    getRowStatus(b.bacType, b.score, b.formula, b.code),
                   );
                   const anyQualified = branchStatuses.includes("qualified");
                   const anyClose = branchStatuses.includes("close");
                   const anyFar = branchStatuses.includes("far");
-                  const allUnavailable = branchStatuses.every((status) => status === "unavailable");
+                  const allUnavailable = branchStatuses.every(
+                    (status) => status === "unavailable",
+                  );
                   const groupIcon = anyQualified
                     ? { icon: Check, color: "text-success" }
                     : anyClose
                       ? { icon: ArrowUp, color: "text-warning" }
                       : anyFar
-                         ? { icon: X, color: "text-error" }
-                         : allUnavailable
-                           ? { icon: CircleSlash2, color: "text-muted-text" }
-                         : null;
+                        ? { icon: X, color: "text-error" }
+                        : allUnavailable
+                          ? { icon: CircleSlash2, color: "text-muted-text" }
+                          : null;
                   return (
                     <tbody
                       key={group.key}
@@ -612,144 +584,300 @@ export default function Home() {
                       onMouseLeave={() => setHoveredGroup(null)}
                     >
                       {group.branches.map((branch, branchIndex) => {
-                        const status = getRowStatus(branch.bacType, branch.score, branch.formula);
+                        const status = getRowStatus(
+                          branch.bacType,
+                          branch.score,
+                          branch.formula,
+                          branch.code,
+                        );
                         const bgClass = getRowColorClasses(status);
                         return (
-                        <TableRow
-                          key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                          className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
-                        >
-                          {branchIndex === 0 && (
-                            <>
-                              <TableCell
-                                rowSpan={group.branches.length}
-                                className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                              >
-                                {group.code}
-                                {groupIcon && (
-                                  <groupIcon.icon className={`size-3.5 inline align-middle ms-1 ${groupIcon.color}`} />
-                                )}
-                              </TableCell>
-                              <TableCell
-                                rowSpan={group.branches.length}
-                                className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                              >
-                                {group.university}
-                              </TableCell>
-                              <TableCell
-                                rowSpan={group.branches.length}
-                                className={`hidden max-w-xs truncate align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                              >
-                                <Tooltip>
-                                  <TooltipTrigger delay={500} render={<span />}>
-                                    {group.institution}
-                                  </TooltipTrigger>
-                                  <TooltipPortal>
-                                    <TooltipPositioner sideOffset={8}>
-                                      <TooltipPopup>
-                                        <TooltipArrow />
-                                        {group.institution}
-                                      </TooltipPopup>
-                                    </TooltipPositioner>
-                                  </TooltipPortal>
-                                </Tooltip>
-                              </TableCell>
-                              <TableCell
-                                rowSpan={group.branches.length}
-                                className={`max-w-40 truncate align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                              >
-                                <Tooltip>
-                                  <TooltipTrigger delay={500} render={<span />}>
-                                    {group.license}
-                                  </TooltipTrigger>
-                                  <TooltipPortal>
-                                    <TooltipPositioner sideOffset={8}>
-                                      <TooltipPopup>
-                                        <TooltipArrow />
-                                        {group.license}
-                                      </TooltipPopup>
-                                    </TooltipPositioner>
-                                  </TooltipPortal>
-                                </Tooltip>
-                              </TableCell>
-                            </>
-                          )}
-                          <TableCell>{branch.bacType}</TableCell>
-                          <TableCell className="max-w-48 truncate font-mono text-xs">
-                            <Popover>
-                              <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(branch.bacType, branch.formula))} openOnHover delay={500} render={<button type="button" className="block max-w-full cursor-help bg-transparent p-0 text-right" />}>
-                                <span>{branch.formula ?? "—"}</span>
-                                {getUnavailableOptionalSubject(branch.bacType, branch.formula) && (
-                                  <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
-                                    <CircleSlash2 className="size-3" />
-                                    غير متاح · يتطلب {getUnavailableOptionalSubject(branch.bacType, branch.formula)?.label}
+                          <TableRow
+                            key={`${group.key}-${branch.bacType}-${branchIndex}`}
+                            className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
+                          >
+                            {branchIndex === 0 && (
+                              <>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                >
+                                  {group.code}
+                                  {groupIcon && (
+                                    <groupIcon.icon
+                                      className={`size-3.5 inline align-middle ms-1 ${groupIcon.color}`}
+                                    />
+                                  )}
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                >
+                                  <span className="line-clamp-2 whitespace-normal leading-5">
+                                    {group.university}
                                   </span>
-                                )}
-                              </PopoverTrigger>
-                              <PopoverPortal>
-                                <PopoverPositioner sideOffset={8}>
-                                  <PopoverPopup>
-                                    <PopoverArrow />
-                                    {(() => {
-                                      const calculation = userBacType === branch.bacType
-                                        ? getCalculation(branch.formula)
-                                        : null;
-                                      if (!calculation) return branch.formula ?? "—";
-                                      return (
-                                        <span className="block whitespace-nowrap text-xs leading-relaxed" dir="ltr">
-                                          <span className="block">{branch.formula}</span>
-                                          <span className="block text-muted-text">= {calculation.substituted}</span>
-                                          <span className="block font-semibold text-ink">= {calculation.result.toFixed(4)}</span>
-                                        </span>
-                                      );
-                                    })()}
-                                  </PopoverPopup>
-                                </PopoverPositioner>
-                              </PopoverPortal>
-                            </Popover>
-                          </TableCell>
-                          <TableCell className="text-right font-medium tabular-nums">
-                            {userBacType === branch.bacType && userScore !== null ? (
-                              <Popover>
-                              <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(branch.bacType, branch.formula))} openOnHover delay={500} render={<button type="button" className="cursor-help bg-transparent p-0 font-medium tabular-nums" />}>
-                                {branch.score.toFixed(4)}
-                              </PopoverTrigger>
-                              <PopoverPortal>
-                                <PopoverPositioner sideOffset={8}>
-                                  <PopoverPopup>
-                                    <PopoverArrow />
-                                    {(() => {
-                                      const eff = computeEffective(branch.formula);
-                                      if (eff === null || userBacType !== branch.bacType) return null;
-                                      return (
-                                        <span className="whitespace-nowrap text-xs leading-relaxed">
-                                          <span className="block">سكورك: <b dir="ltr" className="inline-block tabular-nums">{eff.toFixed(4)}</b></span>
-                                          <span className="block">الحد: <b dir="ltr" className="inline-block tabular-nums">{branch.score.toFixed(4)}</b></span>
-                                          <span className="block text-right">
-                                            <span className="text-ink">الفارق: </span>
-                                            <b dir="ltr" className={`inline-block tabular-nums ${
-                                              eff >= branch.score
-                                                ? "text-success"
-                                                : branch.score - eff <= 15
-                                                  ? "text-warning"
-                                                  : "text-error"
-                                            }`}>
-                                              {eff >= branch.score ? "+" : ""}{(eff - branch.score).toFixed(4)}
-                                            </b>
-                                          </span>
-                                        </span>
-                                      );
-                                    })()}
-                                  </PopoverPopup>
-                                </PopoverPositioner>
-                              </PopoverPortal>
-                              </Popover>
-                            ) : (
-                              branch.score.toFixed(4)
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`hidden max-w-xs align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      delay={500}
+                                      render={
+                                        <span className="line-clamp-2 whitespace-normal leading-5" />
+                                      }
+                                    >
+                                      {group.institution}
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                      <TooltipPositioner sideOffset={8}>
+                                        <TooltipPopup>
+                                          <TooltipArrow />
+                                          {group.institution}
+                                        </TooltipPopup>
+                                      </TooltipPositioner>
+                                    </TooltipPortal>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      delay={500}
+                                      render={
+                                        <span className="line-clamp-2 whitespace-normal leading-5" />
+                                      }
+                                    >
+                                      {group.license}
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                      <TooltipPositioner sideOffset={8}>
+                                        <TooltipPopup>
+                                          <TooltipArrow />
+                                          {group.license}
+                                        </TooltipPopup>
+                                      </TooltipPositioner>
+                                    </TooltipPortal>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell
+                                  rowSpan={group.branches.length}
+                                  className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                >
+                                  {hasGeographicBonus(group.code) ? (
+                                    <span
+                                      className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
+                                      dir="ltr"
+                                    >
+                                      +7%
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted-soft">—</span>
+                                  )}
+                                </TableCell>
+                              </>
                             )}
-                          </TableCell>
-                        </TableRow>
-                      );})}
+                            <TableCell>{branch.bacType}</TableCell>
+                            <TableCell
+                              className="max-w-48 font-mono text-xs"
+                              dir="ltr"
+                            >
+                              <Popover>
+                                <PopoverTrigger
+                                  disabled={Boolean(
+                                    getUnavailableOptionalSubject(
+                                      branch.bacType,
+                                      branch.formula,
+                                    ),
+                                  )}
+                                  openOnHover
+                                  delay={500}
+                                  render={
+                                    <button
+                                      type="button"
+                                      className="block w-full cursor-help truncate bg-transparent p-0 text-right"
+                                    />
+                                  }
+                                >
+                                  <span className="block truncate" dir="ltr">
+                                    {branch.formula ?? "—"}
+                                  </span>
+                                  {getUnavailableOptionalSubject(
+                                    branch.bacType,
+                                    branch.formula,
+                                  ) && (
+                                    <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
+                                      <CircleSlash2 className="size-3" />
+                                      غير متاح · يتطلب{" "}
+                                      {
+                                        getUnavailableOptionalSubject(
+                                          branch.bacType,
+                                          branch.formula,
+                                        )?.label
+                                      }
+                                    </span>
+                                  )}
+                                </PopoverTrigger>
+                                <PopoverPortal>
+                                  <PopoverPositioner sideOffset={8}>
+                                    <PopoverPopup>
+                                      <PopoverArrow />
+                                      {(() => {
+                                        const calculation =
+                                          userBacType === branch.bacType
+                                            ? getCalculation(branch.formula)
+                                            : null;
+                                        if (!calculation)
+                                          return branch.formula ?? "—";
+                                        return (
+                                          <span
+                                            className="block whitespace-nowrap text-xs leading-relaxed"
+                                            dir="ltr"
+                                          >
+                                            <span className="block">
+                                              {branch.formula}
+                                            </span>
+                                            <span className="block text-muted-text">
+                                              = {calculation.substituted}
+                                            </span>
+                                            <span className="block font-semibold text-ink">
+                                              = {calculation.result.toFixed(4)}
+                                            </span>
+                                          </span>
+                                        );
+                                      })()}
+                                    </PopoverPopup>
+                                  </PopoverPositioner>
+                                </PopoverPortal>
+                              </Popover>
+                            </TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">
+                              {userBacType === branch.bacType &&
+                              userScore !== null ? (
+                                <Popover>
+                                  <PopoverTrigger
+                                    disabled={Boolean(
+                                      getUnavailableOptionalSubject(
+                                        branch.bacType,
+                                        branch.formula,
+                                      ),
+                                    )}
+                                    openOnHover
+                                    delay={500}
+                                    render={
+                                      <button
+                                        type="button"
+                                        className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                      />
+                                    }
+                                  >
+                                    {branch.score.toFixed(4)}
+                                  </PopoverTrigger>
+                                  <PopoverPortal>
+                                    <PopoverPositioner sideOffset={8}>
+                                      <PopoverPopup>
+                                        <PopoverArrow />
+                                        {(() => {
+                                          const base = computeBaseScore(
+                                            branch.formula,
+                                          );
+                                          const eff = computeEffective(
+                                            branch.formula,
+                                            branch.code,
+                                          );
+                                          if (
+                                            eff === null ||
+                                            userBacType !== branch.bacType
+                                          )
+                                            return null;
+                                          const bonusApplied =
+                                            useGeographicBonus &&
+                                            hasGeographicBonus(branch.code);
+                                          return (
+                                            <span className="whitespace-nowrap text-xs leading-relaxed">
+                                              {bonusApplied &&
+                                                base !== null && (
+                                                  <>
+                                                    <span className="block">
+                                                      السكور قبل التنفيل:{" "}
+                                                      <b
+                                                        dir="ltr"
+                                                        className="inline-block tabular-nums"
+                                                      >
+                                                        {base.toFixed(4)}
+                                                      </b>
+                                                    </span>
+                                                    <span className="block text-success">
+                                                      التنفيل:{" "}
+                                                      <b
+                                                        dir="ltr"
+                                                        className="inline-block tabular-nums"
+                                                      >
+                                                        × 1.07
+                                                      </b>
+                                                    </span>
+                                                  </>
+                                                )}
+                                              <span className="block">
+                                                {bonusApplied
+                                                  ? "سكورك بعد التنفيل"
+                                                  : "سكورك"}
+                                                :{" "}
+                                                <b
+                                                  dir="ltr"
+                                                  className="inline-block tabular-nums"
+                                                >
+                                                  {eff.toFixed(4)}
+                                                </b>
+                                              </span>
+                                              <span className="block">
+                                                الحد:{" "}
+                                                <b
+                                                  dir="ltr"
+                                                  className="inline-block tabular-nums"
+                                                >
+                                                  {branch.score.toFixed(4)}
+                                                </b>
+                                              </span>
+                                              <span className="block text-right">
+                                                <span className="text-ink">
+                                                  الفارق:{" "}
+                                                </span>
+                                                <b
+                                                  dir="ltr"
+                                                  className={`inline-block tabular-nums ${
+                                                    eff >= branch.score
+                                                      ? "text-success"
+                                                      : branch.score - eff <= 15
+                                                        ? "text-warning"
+                                                        : "text-error"
+                                                  }`}
+                                                >
+                                                  {eff >= branch.score
+                                                    ? "+"
+                                                    : ""}
+                                                  {(eff - branch.score).toFixed(
+                                                    4,
+                                                  )}
+                                                </b>
+                                              </span>
+                                            </span>
+                                          );
+                                        })()}
+                                      </PopoverPopup>
+                                    </PopoverPositioner>
+                                  </PopoverPortal>
+                                </Popover>
+                              ) : (
+                                branch.score.toFixed(4)
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </tbody>
                   );
                 })
@@ -758,7 +886,7 @@ export default function Home() {
                   {resultCount === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="text-center text-muted-text py-12"
                       >
                         لا توجد نتائج تطابق بحثك
@@ -768,27 +896,59 @@ export default function Home() {
                     paginatedRows.map((r, i) => (
                       <TableRow
                         key={`${r.code}-${r.bacType}-${i}`}
-                        className={getRowColorClasses(getRowStatus(r.bacType, r.score, r.formula), true)}
+                        className={getRowColorClasses(
+                          getRowStatus(r.bacType, r.score, r.formula, r.code),
+                          true,
+                        )}
                       >
-                      <TableCell className="font-mono text-xs">
+                        <TableCell className="font-mono text-xs">
                           {r.code}
-                          {getRowStatus(r.bacType, r.score, r.formula) === "qualified" && (
+                          {getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                          ) === "qualified" && (
                             <Check className="size-3.5 text-success inline align-middle ms-1" />
                           )}
-                          {getRowStatus(r.bacType, r.score, r.formula) === "close" && (
+                          {getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                          ) === "close" && (
                             <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
                           )}
-                          {getRowStatus(r.bacType, r.score, r.formula) === "far" && (
+                          {getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                          ) === "far" && (
                             <X className="size-3.5 text-error inline align-middle ms-1" />
                           )}
-                          {getRowStatus(r.bacType, r.score, r.formula) === "unavailable" && (
+                          {getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                          ) === "unavailable" && (
                             <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
                           )}
                         </TableCell>
-                        <TableCell>{r.university}</TableCell>
-                        <TableCell className="hidden md:table-cell max-w-xs truncate">
+                        <TableCell>
+                          <span className="line-clamp-2 whitespace-normal leading-5">
+                            {r.university}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden max-w-xs md:table-cell">
                           <Tooltip>
-                            <TooltipTrigger delay={500} render={<span />}>
+                            <TooltipTrigger
+                              delay={500}
+                              render={
+                                <span className="line-clamp-2 whitespace-normal leading-5" />
+                              }
+                            >
                               {r.institution}
                             </TooltipTrigger>
                             <TooltipPortal>
@@ -801,9 +961,14 @@ export default function Home() {
                             </TooltipPortal>
                           </Tooltip>
                         </TableCell>
-                        <TableCell className="max-w-40 truncate">
+                        <TableCell>
                           <Tooltip>
-                            <TooltipTrigger delay={500} render={<span />}>
+                            <TooltipTrigger
+                              delay={500}
+                              render={
+                                <span className="line-clamp-2 whitespace-normal leading-5" />
+                              }
+                            >
                               {r.license}
                             </TooltipTrigger>
                             <TooltipPortal>
@@ -816,35 +981,86 @@ export default function Home() {
                             </TooltipPortal>
                           </Tooltip>
                         </TableCell>
+                        <TableCell className="text-center">
+                          {hasGeographicBonus(r.code) ? (
+                            <span
+                              className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
+                              dir="ltr"
+                            >
+                              +7%
+                            </span>
+                          ) : (
+                            <span className="text-muted-soft">—</span>
+                          )}
+                        </TableCell>
                         <TableCell>{r.bacType}</TableCell>
-                        <TableCell className="max-w-48 truncate font-mono text-xs">
+                        <TableCell
+                          className="max-w-48 font-mono text-xs"
+                          dir="ltr"
+                        >
                           <Popover>
-                            <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(r.bacType, r.formula))} openOnHover delay={500} render={<button type="button" className="block max-w-full cursor-help bg-transparent p-0 text-right" />}>
-                              <span>{r.formula ?? "—"}</span>
-                              {getUnavailableOptionalSubject(r.bacType, r.formula) && (
+                            <PopoverTrigger
+                              disabled={Boolean(
+                                getUnavailableOptionalSubject(
+                                  r.bacType,
+                                  r.formula,
+                                ),
+                              )}
+                              openOnHover
+                              delay={500}
+                              render={
+                                <button
+                                  type="button"
+                                  className="block w-full cursor-help truncate bg-transparent p-0 text-right"
+                                />
+                              }
+                            >
+                              <span className="block truncate" dir="ltr">
+                                {r.formula ?? "—"}
+                              </span>
+                              {getUnavailableOptionalSubject(
+                                r.bacType,
+                                r.formula,
+                              ) && (
                                 <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
                                   <CircleSlash2 className="size-3" />
-                                  غير متاح · يتطلب {getUnavailableOptionalSubject(r.bacType, r.formula)?.label}
+                                  غير متاح · يتطلب{" "}
+                                  {
+                                    getUnavailableOptionalSubject(
+                                      r.bacType,
+                                      r.formula,
+                                    )?.label
+                                  }
                                 </span>
                               )}
                             </PopoverTrigger>
                             <PopoverPortal>
                               <PopoverPositioner sideOffset={8}>
-                              <PopoverPopup>
-                                <PopoverArrow />
-                                {(() => {
-                                  const calculation = userBacType === r.bacType
-                                    ? getCalculation(r.formula)
-                                    : null;
-                                  if (!calculation) return r.formula ?? "—";
-                                  return (
-                                    <span className="block whitespace-nowrap text-xs leading-relaxed" dir="ltr">
-                                      <span className="block">{r.formula}</span>
-                                      <span className="block text-muted-text">= {calculation.substituted}</span>
-                                      <span className="block font-semibold text-ink">= {calculation.result.toFixed(4)}</span>
-                                    </span>
-                                  );
-                                })()}
+                                <PopoverPopup>
+                                  <PopoverArrow />
+                                  {(() => {
+                                    const calculation =
+                                      userBacType === r.bacType
+                                        ? getCalculation(r.formula)
+                                        : null;
+                                    if (!calculation) return r.formula ?? "—";
+                                    return (
+                                      <span
+                                        className="block whitespace-nowrap text-xs leading-relaxed"
+                                        dir="ltr"
+                                      >
+                                        <span className="block">
+                                          {r.formula}
+                                        </span>
+                                        <span className="block text-muted-text">
+                                          = {calculation.substituted}
+                                        </span>
+                                        <span className="block font-semibold text-ink">
+                                          = {calculation.result.toFixed(4)}
+                                        </span>
+                                      </span>
+                                    );
+                                  })()}
                                 </PopoverPopup>
                               </PopoverPositioner>
                             </PopoverPortal>
@@ -853,38 +1069,111 @@ export default function Home() {
                         <TableCell className="text-right font-medium tabular-nums">
                           {userBacType === r.bacType && userScore !== null ? (
                             <Popover>
-                            <PopoverTrigger disabled={Boolean(getUnavailableOptionalSubject(r.bacType, r.formula))} openOnHover delay={500} render={<button type="button" className="cursor-help bg-transparent p-0 font-medium tabular-nums" />}>
-                              {r.score.toFixed(4)}
-                            </PopoverTrigger>
-                            <PopoverPortal>
-                              <PopoverPositioner sideOffset={8}>
-                                <PopoverPopup>
-                                  <PopoverArrow />
-                                  {(() => {
-                                    const eff = computeEffective(r.formula);
-                                    if (eff === null || userBacType !== r.bacType) return null;
-                                    return (
-                                      <span className="whitespace-nowrap text-xs leading-relaxed">
-                                        <span className="block">سكورك: <b dir="ltr" className="inline-block tabular-nums">{eff.toFixed(4)}</b></span>
-                                        <span className="block">الحد: <b dir="ltr" className="inline-block tabular-nums">{r.score.toFixed(4)}</b></span>
-                                          <span className="block text-right">
-                                            <span className="text-ink">الفارق: </span>
-                                            <b dir="ltr" className={`inline-block tabular-nums ${
-                                              eff >= r.score
-                                                ? "text-success"
-                                                : r.score - eff <= 15
-                                                  ? "text-warning"
-                                                  : "text-error"
-                                            }`}>
-                                              {eff >= r.score ? "+" : ""}{(eff - r.score).toFixed(4)}
+                              <PopoverTrigger
+                                disabled={Boolean(
+                                  getUnavailableOptionalSubject(
+                                    r.bacType,
+                                    r.formula,
+                                  ),
+                                )}
+                                openOnHover
+                                delay={500}
+                                render={
+                                  <button
+                                    type="button"
+                                    className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                  />
+                                }
+                              >
+                                {r.score.toFixed(4)}
+                              </PopoverTrigger>
+                              <PopoverPortal>
+                                <PopoverPositioner sideOffset={8}>
+                                  <PopoverPopup>
+                                    <PopoverArrow />
+                                    {(() => {
+                                      const base = computeBaseScore(r.formula);
+                                      const eff = computeEffective(
+                                        r.formula,
+                                        r.code,
+                                      );
+                                      if (
+                                        eff === null ||
+                                        userBacType !== r.bacType
+                                      )
+                                        return null;
+                                      const bonusApplied =
+                                        useGeographicBonus &&
+                                        hasGeographicBonus(r.code);
+                                      return (
+                                        <span className="whitespace-nowrap text-xs leading-relaxed">
+                                          {bonusApplied && base !== null && (
+                                            <>
+                                              <span className="block">
+                                                السكور قبل التنفيل:{" "}
+                                                <b
+                                                  dir="ltr"
+                                                  className="inline-block tabular-nums"
+                                                >
+                                                  {base.toFixed(4)}
+                                                </b>
+                                              </span>
+                                              <span className="block text-success">
+                                                التنفيل:{" "}
+                                                <b
+                                                  dir="ltr"
+                                                  className="inline-block tabular-nums"
+                                                >
+                                                  × 1.07
+                                                </b>
+                                              </span>
+                                            </>
+                                          )}
+                                          <span className="block">
+                                            {bonusApplied
+                                              ? "سكورك بعد التنفيل"
+                                              : "سكورك"}
+                                            :{" "}
+                                            <b
+                                              dir="ltr"
+                                              className="inline-block tabular-nums"
+                                            >
+                                              {eff.toFixed(4)}
                                             </b>
                                           </span>
-                                      </span>
-                                    );
-                                  })()}
-                                </PopoverPopup>
-                              </PopoverPositioner>
-                            </PopoverPortal>
+                                          <span className="block">
+                                            الحد:{" "}
+                                            <b
+                                              dir="ltr"
+                                              className="inline-block tabular-nums"
+                                            >
+                                              {r.score.toFixed(4)}
+                                            </b>
+                                          </span>
+                                          <span className="block text-right">
+                                            <span className="text-ink">
+                                              الفارق:{" "}
+                                            </span>
+                                            <b
+                                              dir="ltr"
+                                              className={`inline-block tabular-nums ${
+                                                eff >= r.score
+                                                  ? "text-success"
+                                                  : r.score - eff <= 15
+                                                    ? "text-warning"
+                                                    : "text-error"
+                                              }`}
+                                            >
+                                              {eff >= r.score ? "+" : ""}
+                                              {(eff - r.score).toFixed(4)}
+                                            </b>
+                                          </span>
+                                        </span>
+                                      );
+                                    })()}
+                                  </PopoverPopup>
+                                </PopoverPositioner>
+                              </PopoverPortal>
                             </Popover>
                           ) : (
                             r.score.toFixed(4)

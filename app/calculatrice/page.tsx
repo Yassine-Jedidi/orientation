@@ -2,21 +2,11 @@
 
 import { useEffect, useState, useMemo, Fragment, useRef } from "react";
 import Link from "next/link";
-import { Check, Save, Menu } from "lucide-react";
+import { Check, Save } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AuthNav } from "@/components/auth/auth-nav";
-import Avatar, { genConfig } from "react-nice-avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { SiteHeader } from "@/components/site-header";
 import {
   Select,
   SelectContent,
@@ -224,72 +214,11 @@ export default function CalculatorPage() {
 
   return (
     <div className="flex flex-col flex-1">
-      <header className="border-b border-border bg-canvas">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-display-sm font-heading font-medium text-ink">
-                احسب سكورك
-              </h1>
-              <p className="mt-2 text-body">
-                احسب معدلك التوجيهي (FG) حسب مواد شعبتك
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Desktop */}
-              <div className="hidden items-center gap-3 sm:flex">
-                {session?.user?.name && (
-                  <span className="flex items-center gap-2">
-                    <Avatar
-                      className="size-10 shrink-0"
-                      {...genConfig(session.user.email ?? session.user.name)}
-                    />
-                    <span className="text-sm text-body">{session.user.name}</span>
-                  </span>
-                )}
-                <Button nativeButton={false} render={<Link href="/" />}>
-                  دليل التوجيه
-                </Button>
-                <AuthNav />
-              </div>
-
-              {/* Mobile */}
-              <div className="sm:hidden">
-                <DropdownMenu>
-                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-                    <Menu className="size-5" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-48">
-                    {session?.user?.name && (
-                      <>
-                        <DropdownMenuGroup>
-                          <DropdownMenuLabel className="flex items-center gap-2 font-normal">
-                            <Avatar
-                              className="size-10 shrink-0"
-                              {...genConfig(session.user.email ?? session.user.name)}
-                            />
-                            <span>{session.user.name}</span>
-                          </DropdownMenuLabel>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    <DropdownMenuItem>
-                      <Link href="/" className="flex w-full items-center gap-2">
-                        دليل التوجيه
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <div className="px-1 py-1">
-                      <AuthNav />
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader
+        current="calculator"
+        title="احسب سكورك"
+        subtitle="احسب معدلك التوجيهي (FG) حسب مواد شعبتك"
+      />
 
       <main className="mx-auto w-full max-w-xl flex-1 px-6 py-6">
         <Card className="mb-6">
