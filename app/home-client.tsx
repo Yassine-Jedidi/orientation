@@ -648,20 +648,44 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {record.formula ?? "FG"}
                             </p>
                           </div>
-                          {userBacType === record.bacType && effective !== null && !unavailable && (
-                            <div className="grid grid-cols-2 gap-3 rounded-lg bg-brand-peach/25 p-4 text-sm">
-                              <div>
-                                <span className="text-xs text-muted-text">سكورك</span>
-                                <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{effective.toFixed(4)}</strong>
-                              </div>
-                              <div>
-                                <span className="text-xs text-muted-text">الفارق</span>
-                                <strong className={`mt-1 block text-right font-mono ${statusColor}`} dir="ltr">
-                                  {effective >= record.score ? "+" : ""}{(effective - record.score).toFixed(4)}
-                                </strong>
+                          {userBacType === record.bacType && effective !== null && !unavailable && (() => {
+                            const base = computeBaseScore(record.formula);
+                            const bonusApplied = useGeographicBonus && hasGeographicBonus(record.code);
+                            const baseColor = base === null ? "text-muted-text"
+                              : base >= record.score ? "text-success"
+                              : record.score > base + 15 ? "text-error"
+                              : "text-warning";
+                            return (
+                            <div className="rounded-lg bg-brand-peach/25 p-4 text-sm">
+                              {bonusApplied && base !== null && (
+                                <div className="mb-3 pb-3 border-b border-border/50 grid grid-cols-2 gap-3">
+                                  <div>
+                                    <span className="text-xs text-muted-text">سكورك قبل التنفيل</span>
+                                    <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{base.toFixed(4)}</strong>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-muted-text">الفارق</span>
+                                    <strong className={`mt-1 block text-right font-mono ${baseColor}`} dir="ltr">
+                                      {base >= record.score ? "+" : ""}{(base - record.score).toFixed(4)}
+                                    </strong>
+                                  </div>
+                                </div>
+                              )}
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <span className="text-xs text-muted-text">{bonusApplied ? "سكورك بعد التنفيل" : "سكورك"}</span>
+                                  <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{effective.toFixed(4)}</strong>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-text">الفارق</span>
+                                  <strong className={`mt-1 block text-right font-mono ${statusColor}`} dir="ltr">
+                                    {effective >= record.score ? "+" : ""}{(effective - record.score).toFixed(4)}
+                                  </strong>
+                                </div>
                               </div>
                             </div>
-                          )}
+                            );
+                          })()}
                           {unavailable && (
                             <p className="rounded-lg bg-surface-strong p-3 text-sm text-muted-text">
                               غير متاح: تتطلب الصيغة مادة {unavailable.label}.
