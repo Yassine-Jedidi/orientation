@@ -2,7 +2,15 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Search, Check, ArrowUp, X, CircleSlash2, ChevronLeft, Calculator } from "lucide-react";
+import {
+  Search,
+  Check,
+  ArrowUp,
+  X,
+  CircleSlash2,
+  ChevronLeft,
+  Calculator,
+} from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { BAC_ORDER } from "@/lib/bac-order";
@@ -28,7 +36,13 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Dialog,
@@ -206,7 +220,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   const getGenderUnavailableMessage = (licenseName: string) => {
     const requiredGender = getRequiredGender(licenseName);
-    if (!requiredGender || !userGender || requiredGender === userGender) return null;
+    if (!requiredGender || !userGender || requiredGender === userGender)
+      return null;
     return `غير مؤهل: هذه الإجازة مخصّصة ${requiredGender === "female" ? "للإناث" : "للذكور"}`;
   };
 
@@ -218,10 +233,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     institutionGovernorate?: string,
     licenseName?: string,
   ) => {
-    if (licenseName && !isGenderEligible(licenseName, userGender)) return "gender-unavailable";
+    if (licenseName && !isGenderEligible(licenseName, userGender))
+      return "gender-unavailable";
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
-    const effective = computeEffective(formula, programCode, institutionGovernorate);
+    const effective = computeEffective(
+      formula,
+      programCode,
+      institutionGovernorate,
+    );
     if (effective === null) return null;
     if (effective >= score) return "qualified";
     if (score > effective + 15) return "far";
@@ -388,7 +408,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   return (
     <div className="flex flex-col flex-1">
-
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
         <Card className="mb-6">
           <CardHeader>
@@ -486,9 +505,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 </SelectTrigger>
                 <SelectContent listClassName="max-h-72" showScrollbar>
                   <SelectItem value="all">كل الولايات</SelectItem>
-                  <SelectItem value={GREATER_TUNIS_FILTER}>تونس الكبرى</SelectItem>
+                  <SelectItem value={GREATER_TUNIS_FILTER}>
+                    تونس الكبرى
+                  </SelectItem>
                   {TUNISIA_GOVERNORATES.map((item) => (
-                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -644,7 +667,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     record.bacType,
                     record.formula,
                   );
-                  const genderUnavailable = getGenderUnavailableMessage(record.license);
+                  const genderUnavailable = getGenderUnavailableMessage(
+                    record.license,
+                  );
                   const statusColor =
                     status === "qualified"
                       ? "text-success"
@@ -656,20 +681,43 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
                   return (
                     <Dialog key={`${record.code}-${record.bacType}-${index}`}>
-                      <DialogTrigger render={<button type="button" className="block w-full text-right" />}>
-                        <Card className={`gap-0 py-0 ${status === "qualified" ? "bg-success/[0.04]" : status === "close" ? "bg-warning/[0.04]" : status === "far" ? "bg-error/[0.04]" : "bg-canvas"}`}>
+                      <DialogTrigger
+                        render={
+                          <button
+                            type="button"
+                            className="block w-full text-right"
+                          />
+                        }
+                      >
+                        <Card
+                          className={`gap-0 py-0 ${status === "qualified" ? "bg-success/[0.04]" : status === "close" ? "bg-warning/[0.04]" : status === "far" ? "bg-error/[0.04]" : "bg-canvas"}`}
+                        >
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex min-w-0 items-center gap-2 font-mono text-xs text-muted-text">
                                 <span>{record.code}</span>
-                                {status === "qualified" && <Check className="size-3.5 text-success" />}
-                                {status === "close" && <ArrowUp className="size-3.5 text-warning" />}
-                                {status === "far" && <X className="size-3.5 text-error" />}
-                                {(status === "unavailable" || status === "gender-unavailable") && <CircleSlash2 className="size-3.5 text-muted-text" />}
+                                {status === "qualified" && (
+                                  <Check className="size-3.5 text-success" />
+                                )}
+                                {status === "close" && (
+                                  <ArrowUp className="size-3.5 text-warning" />
+                                )}
+                                {status === "far" && (
+                                  <X className="size-3.5 text-error" />
+                                )}
+                                {(status === "unavailable" ||
+                                  status === "gender-unavailable") && (
+                                  <CircleSlash2 className="size-3.5 text-muted-text" />
+                                )}
                               </div>
                               <div className="shrink-0 text-left">
-                                <span className="block text-xs text-muted-text">الحد الأدنى</span>
-                                <strong className={`font-mono text-base tabular-nums ${statusColor}`} dir="ltr">
+                                <span className="block text-xs text-muted-text">
+                                  الحد الأدنى
+                                </span>
+                                <strong
+                                  className={`font-mono text-base tabular-nums ${statusColor}`}
+                                  dir="ltr"
+                                >
                                   {record.score.toFixed(4)}
                                 </strong>
                               </div>
@@ -678,7 +726,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
                               {record.license}
                             </h3>
-                            {genderUnavailable && <p className="mt-2 text-xs font-medium text-muted-text">{genderUnavailable}</p>}
+                            {genderUnavailable && (
+                              <p className="mt-2 text-xs font-medium text-muted-text">
+                                {genderUnavailable}
+                              </p>
+                            )}
                             <p className="mt-2 line-clamp-1 text-sm font-medium leading-5 text-body">
                               {record.university}
                             </p>
@@ -692,12 +744,22 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </span>
                               {hasGeographicBonus(record.code) &&
                                 isGenderEligible(record.license, userGender) &&
-                                (!userGovernorate || isSameGeographicBonusZone(userGovernorate, record.governorate)) && (
-                                <span className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink" dir="ltr">
-                                  +7%
-                                </span>
-                              )}
-                              <span className="min-w-0 flex-1 truncate text-left font-mono text-xs text-body" dir="ltr">
+                                (!userGovernorate ||
+                                  isSameGeographicBonusZone(
+                                    userGovernorate,
+                                    record.governorate,
+                                  )) && (
+                                  <span
+                                    className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink"
+                                    dir="ltr"
+                                  >
+                                    +7%
+                                  </span>
+                                )}
+                              <span
+                                className="min-w-0 flex-1 truncate text-left font-mono text-xs text-body"
+                                dir="ltr"
+                              >
                                 {record.formula ?? "FG"}
                               </span>
                             </div>
@@ -721,37 +783,78 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         <div className="space-y-4">
                           <div className="rounded-lg bg-surface-soft p-4">
                             <p className="text-xs text-muted-text">المؤسسة</p>
-                            <p className="mt-1 leading-6 text-ink">{record.institution}</p>
+                            <p className="mt-1 leading-6 text-ink">
+                              {record.institution}
+                            </p>
                           </div>
                           <div className="grid grid-cols-2 gap-3 text-sm">
                             <div className="rounded-lg bg-surface-card p-3">
-                              <span className="text-xs text-muted-text">شعبة الباكالوريا</span>
-                              <strong className="mt-1 block text-ink">{record.bacType}</strong>
+                              <span className="text-xs text-muted-text">
+                                شعبة الباكالوريا
+                              </span>
+                              <strong className="mt-1 block text-ink">
+                                {record.bacType}
+                              </strong>
                             </div>
                             <div className="rounded-lg bg-surface-card p-3">
-                              <span className="text-xs text-muted-text">الحد الأدنى</span>
-                              <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{record.score.toFixed(4)}</strong>
+                              <span className="text-xs text-muted-text">
+                                الحد الأدنى
+                              </span>
+                              <strong
+                                className="mt-1 block text-right font-mono text-ink"
+                                dir="ltr"
+                              >
+                                {record.score.toFixed(4)}
+                              </strong>
                             </div>
                           </div>
                           <div className="rounded-lg bg-surface-soft p-4">
-                            <p className="text-xs text-muted-text">صيغة الاحتساب</p>
-                            <p className="mt-1 break-all text-right font-mono text-sm leading-6 text-ink" dir="ltr">
+                            <p className="text-xs text-muted-text">
+                              صيغة الاحتساب
+                            </p>
+                            <p
+                              className="mt-1 break-all text-right font-mono text-sm leading-6 text-ink"
+                              dir="ltr"
+                            >
                               {record.formula ?? "FG"}
                             </p>
+                            {(() => {
+                              const calculation =
+                                userBacType === record.bacType
+                                  ? getCalculation(record.formula)
+                                  : null;
+                              if (!calculation) return null;
+                              return (
+                                <div
+                                  className="mt-2 border-t border-border/50 pt-2 text-right font-mono text-xs leading-relaxed text-muted-text"
+                                  dir="ltr"
+                                >
+                                  <div className="truncate">
+                                    = {calculation.substituted}
+                                  </div>
+                                  <div className="mt-1 font-semibold text-ink">
+                                    = {calculation.result.toFixed(4)}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                           {userScore === null && !genderUnavailable && (
                             <div className="rounded-lg bg-brand-mint/45 p-4 ring-1 ring-brand-mint/70">
                               <div className="flex items-start gap-3">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-mint text-ink">
-                                  <Calculator className="size-4" aria-hidden="true" />
+                                  <Calculator
+                                    className="size-4"
+                                    aria-hidden="true"
+                                  />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-semibold text-ink">
                                     احسب سكورك وشوف فرصتك
                                   </p>
                                   <p className="mt-1 text-sm leading-6 text-body">
-                                    احسب سكورك باش نوريولك قداش يفصلك على الحدّ الأدنى
-                                    لهالإجازة في المؤسسة هاذي.
+                                    احسب سكورك باش نوريولك قداش يفصلك على الحدّ
+                                    الأدنى لهالإجازة في المؤسسة هاذي.
                                   </p>
                                 </div>
                               </div>
@@ -764,47 +867,86 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </Button>
                             </div>
                           )}
-                          {userBacType === record.bacType && effective !== null && !unavailable && !genderUnavailable && (() => {
-                            const base = computeBaseScore(record.formula);
-                            const bonusApplied =
-                              useGeographicBonus &&
-                              isSameGeographicBonusZone(userGovernorate, record.governorate) &&
-                              hasGeographicBonus(record.code);
-                            const baseColor = base === null ? "text-muted-text"
-                              : base >= record.score ? "text-success"
-                              : record.score > base + 15 ? "text-error"
-                              : "text-warning";
-                            return (
-                            <div className="rounded-lg bg-brand-peach/25 p-4 text-sm">
-                              {bonusApplied && base !== null && (
-                                <div className="mb-3 pb-3 border-b border-border/50 grid grid-cols-2 gap-3">
-                                  <div>
-                                    <span className="text-xs text-muted-text">سكورك قبل التنفيل</span>
-                                    <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{base.toFixed(4)}</strong>
+                          {userBacType === record.bacType &&
+                            effective !== null &&
+                            !unavailable &&
+                            !genderUnavailable &&
+                            (() => {
+                              const base = computeBaseScore(record.formula);
+                              const bonusApplied =
+                                useGeographicBonus &&
+                                isSameGeographicBonusZone(
+                                  userGovernorate,
+                                  record.governorate,
+                                ) &&
+                                hasGeographicBonus(record.code);
+                              const baseColor =
+                                base === null
+                                  ? "text-muted-text"
+                                  : base >= record.score
+                                    ? "text-success"
+                                    : record.score > base + 15
+                                      ? "text-error"
+                                      : "text-warning";
+                              return (
+                                <div className="rounded-lg bg-brand-mint/25 p-4 text-sm">
+                                  {bonusApplied && base !== null && (
+                                    <div className="mb-3 pb-3 border-b border-border/50 grid grid-cols-2 gap-3">
+                                      <div>
+                                        <span className="text-xs text-muted-text">
+                                          سكورك قبل التنفيل
+                                        </span>
+                                        <strong
+                                          className="mt-1 block text-right font-mono text-ink"
+                                          dir="ltr"
+                                        >
+                                          {base.toFixed(4)}
+                                        </strong>
+                                      </div>
+                                      <div>
+                                        <span className="text-xs text-muted-text">
+                                          الفارق
+                                        </span>
+                                        <strong
+                                          className={`mt-1 block text-right font-mono ${baseColor}`}
+                                          dir="ltr"
+                                        >
+                                          {base >= record.score ? "+" : ""}
+                                          {(base - record.score).toFixed(4)}
+                                        </strong>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <span className="text-xs text-muted-text">
+                                        {bonusApplied
+                                          ? "سكورك بعد التنفيل"
+                                          : "سكورك"}
+                                      </span>
+                                      <strong
+                                        className="mt-1 block text-right font-mono text-ink"
+                                        dir="ltr"
+                                      >
+                                        {effective.toFixed(4)}
+                                      </strong>
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-muted-text">
+                                        الفارق
+                                      </span>
+                                      <strong
+                                        className={`mt-1 block text-right font-mono ${statusColor}`}
+                                        dir="ltr"
+                                      >
+                                        {effective >= record.score ? "+" : ""}
+                                        {(effective - record.score).toFixed(4)}
+                                      </strong>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <span className="text-xs text-muted-text">الفارق</span>
-                                    <strong className={`mt-1 block text-right font-mono ${baseColor}`} dir="ltr">
-                                      {base >= record.score ? "+" : ""}{(base - record.score).toFixed(4)}
-                                    </strong>
-                                  </div>
                                 </div>
-                              )}
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <span className="text-xs text-muted-text">{bonusApplied ? "سكورك بعد التنفيل" : "سكورك"}</span>
-                                  <strong className="mt-1 block text-right font-mono text-ink" dir="ltr">{effective.toFixed(4)}</strong>
-                                </div>
-                                <div>
-                                  <span className="text-xs text-muted-text">الفارق</span>
-                                  <strong className={`mt-1 block text-right font-mono ${statusColor}`} dir="ltr">
-                                    {effective >= record.score ? "+" : ""}{(effective - record.score).toFixed(4)}
-                                  </strong>
-                                </div>
-                              </div>
-                            </div>
-                            );
-                          })()}
+                              );
+                            })()}
                           {unavailable && (
                             <p className="rounded-lg bg-surface-strong p-3 text-sm text-muted-text">
                               غير متاح: تتطلب الصيغة مادة {unavailable.label}.
@@ -812,7 +954,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           )}
                           {genderUnavailable && (
                             <p className="flex items-center gap-2 rounded-lg bg-surface-strong p-3 text-sm font-medium text-muted-text">
-                              <CircleSlash2 className="size-4 shrink-0" /> {genderUnavailable}
+                              <CircleSlash2 className="size-4 shrink-0" />{" "}
+                              {genderUnavailable}
                             </p>
                           )}
                         </div>
@@ -824,356 +967,261 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
             </div>
 
             <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">الرمز</TableHead>
-                  <TableHead className="w-[190px]">الجامعة</TableHead>
-                  <TableHead className="hidden w-[250px] md:table-cell">
-                    المؤسسة
-                  </TableHead>
-                  <TableHead className="w-[210px]">الإجازة</TableHead>
-                  <TableHead className="w-[84px] text-center">
-                    التنفيل
-                  </TableHead>
-                  <TableHead className="w-[120px]">شعبة الباكالوريا</TableHead>
-                  <TableHead className="w-[180px]">الصيغة</TableHead>
-                  <TableHead className="w-[80px] text-right">النقاط</TableHead>
-                </TableRow>
-              </TableHeader>
-              {groupedView ? (
-                paginatedGroups.map((group) => {
-                  const bestIdx = group.branches.reduce(
-                    (maxIdx, b, i, arr) =>
-                      b.score > arr[maxIdx].score ? i : maxIdx,
-                    0,
-                  );
-                  const isHovered = hoveredGroup === group.key;
-                  const branchStatuses = group.branches.map((b) =>
-                    getRowStatus(
-                      b.bacType,
-                      b.score,
-                      b.formula,
-                      b.code,
-                      b.governorate,
-                      b.license,
-                    ),
-                  );
-                  const anyQualified = branchStatuses.includes("qualified");
-                  const anyClose = branchStatuses.includes("close");
-                  const anyFar = branchStatuses.includes("far");
-                  const allUnavailable = branchStatuses.every(
-                    (status) => status === "unavailable" || status === "gender-unavailable",
-                  );
-                  const groupIcon = anyQualified
-                    ? { icon: Check, color: "text-success" }
-                    : anyClose
-                      ? { icon: ArrowUp, color: "text-warning" }
-                      : anyFar
-                        ? { icon: X, color: "text-error" }
-                        : allUnavailable
-                          ? { icon: CircleSlash2, color: "text-muted-text" }
-                          : null;
-                  return (
-                    <tbody
-                      key={group.key}
-                      onMouseEnter={() => setHoveredGroup(group.key)}
-                      onMouseLeave={() => setHoveredGroup(null)}
-                    >
-                      {group.branches.map((branch, branchIndex) => {
-                        const status = getRowStatus(
-                          branch.bacType,
-                          branch.score,
-                          branch.formula,
-                          branch.code,
-                          branch.governorate,
-                          branch.license,
-                        );
-                        const bgClass = getRowColorClasses(status);
-                        return (
-                          <TableRow
-                            key={`${group.key}-${branch.bacType}-${branchIndex}`}
-                            className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
-                          >
-                            {branchIndex === 0 && (
-                              <>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  {group.code}
-                                  {groupIcon && (
-                                    <groupIcon.icon
-                                      className={`size-3.5 inline align-middle ms-1 ${groupIcon.color}`}
-                                    />
-                                  )}
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  <span className="line-clamp-2 whitespace-normal leading-5">
-                                    {group.university}
-                                  </span>
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`hidden max-w-xs align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  <Tooltip>
-                                    <TooltipTrigger
-                                      delay={500}
-                                      render={
-                                        <span className="line-clamp-2 whitespace-normal leading-5" />
-                                      }
-                                    >
-                                      {group.institution}
-                                    </TooltipTrigger>
-                                    <TooltipPortal>
-                                      <TooltipPositioner sideOffset={8}>
-                                        <TooltipPopup>
-                                          <TooltipArrow />
-                                          {group.institution}
-                                        </TooltipPopup>
-                                      </TooltipPositioner>
-                                    </TooltipPortal>
-                                  </Tooltip>
-                                  <span className="mt-1 block text-xs font-medium text-muted-text">
-                                    ولاية {group.governorate}
-                                  </span>
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  <Tooltip>
-                                    <TooltipTrigger
-                                      delay={500}
-                                      render={
-                                        <span className="line-clamp-2 whitespace-normal leading-5" />
-                                      }
-                                    >
-                                      {group.license}
-                                    </TooltipTrigger>
-                                    <TooltipPortal>
-                                      <TooltipPositioner sideOffset={8}>
-                                        <TooltipPopup>
-                                          <TooltipArrow />
-                                          {group.license}
-                                        </TooltipPopup>
-                                      </TooltipPositioner>
-                                    </TooltipPortal>
-                                  </Tooltip>
-                                  {getGenderUnavailableMessage(group.license) && (
-                                    <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
-                                      <CircleSlash2 className="size-3.5" /> {getGenderUnavailableMessage(group.license)}
-                                    </span>
-                                  )}
-                                </TableCell>
-                                <TableCell
-                                  rowSpan={group.branches.length}
-                                  className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                >
-                                  {hasGeographicBonus(group.code) &&
-                                  isGenderEligible(group.license, userGender) &&
-                                  (userGovernorate === null || isSameGeographicBonusZone(userGovernorate, group.governorate)) ? (
-                                    <span
-                                      className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
-                                      dir="ltr"
-                                    >
-                                      +7%
-                                    </span>
-                                  ) : (
-                                    <span className="text-muted-soft">—</span>
-                                  )}
-                                </TableCell>
-                              </>
-                            )}
-                            <TableCell>{branch.bacType}</TableCell>
-                            <TableCell
-                              className="max-w-48 font-mono text-xs"
-                              dir="ltr"
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">الرمز</TableHead>
+                    <TableHead className="w-[190px]">الجامعة</TableHead>
+                    <TableHead className="hidden w-[250px] md:table-cell">
+                      المؤسسة
+                    </TableHead>
+                    <TableHead className="w-[210px]">الإجازة</TableHead>
+                    <TableHead className="w-[84px] text-center">
+                      التنفيل
+                    </TableHead>
+                    <TableHead className="w-[120px]">
+                      شعبة الباكالوريا
+                    </TableHead>
+                    <TableHead className="w-[180px]">الصيغة</TableHead>
+                    <TableHead className="w-[80px] text-right">
+                      النقاط
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                {groupedView ? (
+                  paginatedGroups.map((group) => {
+                    const bestIdx = group.branches.reduce(
+                      (maxIdx, b, i, arr) =>
+                        b.score > arr[maxIdx].score ? i : maxIdx,
+                      0,
+                    );
+                    const isHovered = hoveredGroup === group.key;
+                    const branchStatuses = group.branches.map((b) =>
+                      getRowStatus(
+                        b.bacType,
+                        b.score,
+                        b.formula,
+                        b.code,
+                        b.governorate,
+                        b.license,
+                      ),
+                    );
+                    const anyQualified = branchStatuses.includes("qualified");
+                    const anyClose = branchStatuses.includes("close");
+                    const anyFar = branchStatuses.includes("far");
+                    const allUnavailable = branchStatuses.every(
+                      (status) =>
+                        status === "unavailable" ||
+                        status === "gender-unavailable",
+                    );
+                    const groupIcon = anyQualified
+                      ? { icon: Check, color: "text-success" }
+                      : anyClose
+                        ? { icon: ArrowUp, color: "text-warning" }
+                        : anyFar
+                          ? { icon: X, color: "text-error" }
+                          : allUnavailable
+                            ? { icon: CircleSlash2, color: "text-muted-text" }
+                            : null;
+                    return (
+                      <tbody
+                        key={group.key}
+                        onMouseEnter={() => setHoveredGroup(group.key)}
+                        onMouseLeave={() => setHoveredGroup(null)}
+                      >
+                        {group.branches.map((branch, branchIndex) => {
+                          const status = getRowStatus(
+                            branch.bacType,
+                            branch.score,
+                            branch.formula,
+                            branch.code,
+                            branch.governorate,
+                            branch.license,
+                          );
+                          const bgClass = getRowColorClasses(status);
+                          return (
+                            <TableRow
+                              key={`${group.key}-${branch.bacType}-${branchIndex}`}
+                              className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                             >
-                              <Popover>
-                                <PopoverTrigger
-                                  disabled={Boolean(
-                                    getUnavailableOptionalSubject(
-                                      branch.bacType,
-                                      branch.formula,
-                                    ),
-                                  ) || !isGenderEligible(branch.license, userGender)}
-                                  openOnHover
-                                  delay={500}
-                                  render={
-                                    <button
-                                      type="button"
-                                      className="block w-full cursor-help truncate bg-transparent p-0 text-right"
-                                    />
-                                  }
-                                >
-                                  <span className="block truncate" dir="ltr">
-                                    {branch.formula ?? "—"}
-                                  </span>
-                                  {getUnavailableOptionalSubject(
-                                    branch.bacType,
-                                    branch.formula,
-                                  ) && (
-                                    <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
-                                      <CircleSlash2 className="size-3" />
-                                      غير متاح · يتطلب{" "}
-                                      {
+                              {branchIndex === 0 && (
+                                <>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    {group.code}
+                                    {groupIcon && (
+                                      <groupIcon.icon
+                                        className={`size-3.5 inline align-middle ms-1 ${groupIcon.color}`}
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    <span className="line-clamp-2 whitespace-normal leading-5">
+                                      {group.university}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`hidden max-w-xs align-top md:table-cell ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    <Tooltip>
+                                      <TooltipTrigger
+                                        delay={500}
+                                        render={
+                                          <span className="line-clamp-2 whitespace-normal leading-5" />
+                                        }
+                                      >
+                                        {group.institution}
+                                      </TooltipTrigger>
+                                      <TooltipPortal>
+                                        <TooltipPositioner sideOffset={8}>
+                                          <TooltipPopup>
+                                            <TooltipArrow />
+                                            {group.institution}
+                                          </TooltipPopup>
+                                        </TooltipPositioner>
+                                      </TooltipPortal>
+                                    </Tooltip>
+                                    <span className="mt-1 block text-xs font-medium text-muted-text">
+                                      ولاية {group.governorate}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    <Tooltip>
+                                      <TooltipTrigger
+                                        delay={500}
+                                        render={
+                                          <span className="line-clamp-2 whitespace-normal leading-5" />
+                                        }
+                                      >
+                                        {group.license}
+                                      </TooltipTrigger>
+                                      <TooltipPortal>
+                                        <TooltipPositioner sideOffset={8}>
+                                          <TooltipPopup>
+                                            <TooltipArrow />
+                                            {group.license}
+                                          </TooltipPopup>
+                                        </TooltipPositioner>
+                                      </TooltipPortal>
+                                    </Tooltip>
+                                    {getGenderUnavailableMessage(
+                                      group.license,
+                                    ) && (
+                                      <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                                        <CircleSlash2 className="size-3.5" />{" "}
+                                        {getGenderUnavailableMessage(
+                                          group.license,
+                                        )}
+                                      </span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    {hasGeographicBonus(group.code) &&
+                                    isGenderEligible(
+                                      group.license,
+                                      userGender,
+                                    ) &&
+                                    (userGovernorate === null ||
+                                      isSameGeographicBonusZone(
+                                        userGovernorate,
+                                        group.governorate,
+                                      )) ? (
+                                      <span
+                                        className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
+                                        dir="ltr"
+                                      >
+                                        +7%
+                                      </span>
+                                    ) : (
+                                      <span className="text-muted-soft">—</span>
+                                    )}
+                                  </TableCell>
+                                </>
+                              )}
+                              <TableCell>{branch.bacType}</TableCell>
+                              <TableCell
+                                className="max-w-48 font-mono text-xs"
+                                dir="ltr"
+                              >
+                                <Popover>
+                                  <PopoverTrigger
+                                    disabled={
+                                      Boolean(
                                         getUnavailableOptionalSubject(
                                           branch.bacType,
                                           branch.formula,
-                                        )?.label
-                                      }
-                                    </span>
-                                  )}
-                                </PopoverTrigger>
-                                <PopoverPortal>
-                                  <PopoverPositioner sideOffset={8}>
-                                    <PopoverPopup>
-                                      <PopoverArrow />
-                                      {(() => {
-                                        const calculation =
-                                          userBacType === branch.bacType
-                                            ? getCalculation(branch.formula)
-                                            : null;
-                                        if (!calculation)
-                                          return branch.formula ?? "—";
-                                        return (
-                                          <span
-                                            className="block whitespace-nowrap text-xs leading-relaxed"
-                                            dir="ltr"
-                                          >
-                                            <span className="block">
-                                              {branch.formula}
-                                            </span>
-                                            <span className="block text-muted-text">
-                                              = {calculation.substituted}
-                                            </span>
-                                            <span className="block font-semibold text-ink">
-                                              = {calculation.result.toFixed(4)}
-                                            </span>
-                                          </span>
-                                        );
-                                      })()}
-                                    </PopoverPopup>
-                                  </PopoverPositioner>
-                                </PopoverPortal>
-                              </Popover>
-                            </TableCell>
-                            <TableCell className="text-right font-medium tabular-nums">
-                              {userBacType === branch.bacType &&
-                              userScore !== null && isGenderEligible(branch.license, userGender) ? (
-                                <Popover>
-                                  <PopoverTrigger
-                                    disabled={Boolean(
-                                      getUnavailableOptionalSubject(
-                                        branch.bacType,
-                                        branch.formula,
-                                      ),
-                                    )}
+                                        ),
+                                      ) ||
+                                      !isGenderEligible(
+                                        branch.license,
+                                        userGender,
+                                      )
+                                    }
                                     openOnHover
                                     delay={500}
                                     render={
                                       <button
                                         type="button"
-                                        className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                        className="block w-full cursor-help truncate bg-transparent p-0 text-right"
                                       />
                                     }
                                   >
-                                    {branch.score.toFixed(4)}
+                                    <span className="block truncate" dir="ltr">
+                                      {branch.formula ?? "—"}
+                                    </span>
+                                    {getUnavailableOptionalSubject(
+                                      branch.bacType,
+                                      branch.formula,
+                                    ) && (
+                                      <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
+                                        <CircleSlash2 className="size-3" />
+                                        غير متاح · يتطلب{" "}
+                                        {
+                                          getUnavailableOptionalSubject(
+                                            branch.bacType,
+                                            branch.formula,
+                                          )?.label
+                                        }
+                                      </span>
+                                    )}
                                   </PopoverTrigger>
                                   <PopoverPortal>
                                     <PopoverPositioner sideOffset={8}>
                                       <PopoverPopup>
                                         <PopoverArrow />
                                         {(() => {
-                                          const base = computeBaseScore(
-                                            branch.formula,
-                                          );
-                                          const eff = computeEffective(
-                                            branch.formula,
-                                            branch.code,
-                                            branch.governorate,
-                                          );
-                                          if (
-                                            eff === null ||
-                                            userBacType !== branch.bacType
-                                          )
-                                            return null;
-                                          const bonusApplied =
-                                            useGeographicBonus &&
-                                            isSameGeographicBonusZone(userGovernorate, branch.governorate) &&
-                                            hasGeographicBonus(branch.code);
+                                          const calculation =
+                                            userBacType === branch.bacType
+                                              ? getCalculation(branch.formula)
+                                              : null;
+                                          if (!calculation)
+                                            return branch.formula ?? "—";
                                           return (
-                                            <span className="whitespace-nowrap text-xs leading-relaxed">
-                                              {bonusApplied &&
-                                                base !== null && (
-                                                  <>
-                                                    <span className="block">
-                                                      السكور قبل التنفيل:{" "}
-                                                      <b
-                                                        dir="ltr"
-                                                        className="inline-block tabular-nums"
-                                                      >
-                                                        {base.toFixed(4)}
-                                                      </b>
-                                                    </span>
-                                                    <span className="block text-success">
-                                                      التنفيل:{" "}
-                                                      <b
-                                                        dir="ltr"
-                                                        className="inline-block tabular-nums"
-                                                      >
-                                                        × 1.07
-                                                      </b>
-                                                    </span>
-                                                  </>
-                                                )}
+                                            <span
+                                              className="block whitespace-nowrap text-xs leading-relaxed"
+                                              dir="ltr"
+                                            >
                                               <span className="block">
-                                                {bonusApplied
-                                                  ? "سكورك بعد التنفيل"
-                                                  : "سكورك"}
-                                                :{" "}
-                                                <b
-                                                  dir="ltr"
-                                                  className="inline-block tabular-nums"
-                                                >
-                                                  {eff.toFixed(4)}
-                                                </b>
+                                                {branch.formula}
                                               </span>
-                                              <span className="block">
-                                                الحد:{" "}
-                                                <b
-                                                  dir="ltr"
-                                                  className="inline-block tabular-nums"
-                                                >
-                                                  {branch.score.toFixed(4)}
-                                                </b>
+                                              <span className="block text-muted-text">
+                                                = {calculation.substituted}
                                               </span>
-                                              <span className="block text-right">
-                                                <span className="text-ink">
-                                                  الفارق:{" "}
-                                                </span>
-                                                <b
-                                                  dir="ltr"
-                                                  className={`inline-block tabular-nums ${
-                                                    eff >= branch.score
-                                                      ? "text-success"
-                                                      : branch.score - eff <= 15
-                                                        ? "text-warning"
-                                                        : "text-error"
-                                                  }`}
-                                                >
-                                                  {eff >= branch.score
-                                                    ? "+"
-                                                    : ""}
-                                                  {(eff - branch.score).toFixed(
-                                                    4,
-                                                  )}
-                                                </b>
+                                              <span className="block font-semibold text-ink">
+                                                ={" "}
+                                                {calculation.result.toFixed(4)}
                                               </span>
                                             </span>
                                           );
@@ -1182,336 +1230,357 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     </PopoverPositioner>
                                   </PopoverPortal>
                                 </Popover>
-                              ) : (
-                                branch.score.toFixed(4)
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </tbody>
-                  );
-                })
-              ) : (
-                <TableBody>
-                  {resultCount === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="text-center text-muted-text py-12"
-                      >
-                        لا توجد نتائج تطابق بحثك
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedRows.map((r, i) => (
-                      <TableRow
-                        key={`${r.code}-${r.bacType}-${i}`}
-                        className={getRowColorClasses(
-                          getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ),
-                          true,
-                        )}
-                      >
-                        <TableCell className="font-mono text-xs">
-                          {r.code}
-                          {getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ) === "qualified" && (
-                            <Check className="size-3.5 text-success inline align-middle ms-1" />
-                          )}
-                          {getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ) === "close" && (
-                            <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
-                          )}
-                          {getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ) === "far" && (
-                            <X className="size-3.5 text-error inline align-middle ms-1" />
-                          )}
-                          {getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ) === "unavailable" || getRowStatus(
-                            r.bacType,
-                            r.score,
-                            r.formula,
-                            r.code,
-                            r.governorate,
-                            r.license,
-                          ) === "gender-unavailable" ? (
-                            <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
-                          ) : null}
-                        </TableCell>
-                        <TableCell>
-                          <span className="line-clamp-2 whitespace-normal leading-5">
-                            {r.university}
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden max-w-xs md:table-cell">
-                          <Tooltip>
-                            <TooltipTrigger
-                              delay={500}
-                              render={
-                                <span className="line-clamp-2 whitespace-normal leading-5" />
-                              }
-                            >
-                              {r.institution}
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                              <TooltipPositioner sideOffset={8}>
-                                <TooltipPopup>
-                                  <TooltipArrow />
-                                  {r.institution}
-                                </TooltipPopup>
-                              </TooltipPositioner>
-                            </TooltipPortal>
-                          </Tooltip>
-                          <span className="mt-1 block text-xs font-medium text-muted-text">
-                            ولاية {r.governorate}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip>
-                            <TooltipTrigger
-                              delay={500}
-                              render={
-                                <span className="line-clamp-2 whitespace-normal leading-5" />
-                              }
-                            >
-                              {r.license}
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                              <TooltipPositioner sideOffset={8}>
-                                <TooltipPopup>
-                                  <TooltipArrow />
-                                  {r.license}
-                                </TooltipPopup>
-                              </TooltipPositioner>
-                            </TooltipPortal>
-                          </Tooltip>
-                          {getGenderUnavailableMessage(r.license) && (
-                            <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
-                              <CircleSlash2 className="size-3.5" /> {getGenderUnavailableMessage(r.license)}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {hasGeographicBonus(r.code) &&
-                          isGenderEligible(r.license, userGender) &&
-                          (userGovernorate === null || isSameGeographicBonusZone(userGovernorate, r.governorate)) ? (
-                            <span
-                              className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
-                              dir="ltr"
-                            >
-                              +7%
-                            </span>
-                          ) : (
-                            <span className="text-muted-soft">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>{r.bacType}</TableCell>
+                              </TableCell>
+                              <TableCell className="text-right font-medium tabular-nums">
+                                {userBacType === branch.bacType &&
+                                userScore !== null &&
+                                isGenderEligible(branch.license, userGender) ? (
+                                  <Popover>
+                                    <PopoverTrigger
+                                      disabled={Boolean(
+                                        getUnavailableOptionalSubject(
+                                          branch.bacType,
+                                          branch.formula,
+                                        ),
+                                      )}
+                                      openOnHover
+                                      delay={500}
+                                      render={
+                                        <button
+                                          type="button"
+                                          className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                        />
+                                      }
+                                    >
+                                      {branch.score.toFixed(4)}
+                                    </PopoverTrigger>
+                                    <PopoverPortal>
+                                      <PopoverPositioner sideOffset={8}>
+                                        <PopoverPopup>
+                                          <PopoverArrow />
+                                          {(() => {
+                                            const base = computeBaseScore(
+                                              branch.formula,
+                                            );
+                                            const eff = computeEffective(
+                                              branch.formula,
+                                              branch.code,
+                                              branch.governorate,
+                                            );
+                                            if (
+                                              eff === null ||
+                                              userBacType !== branch.bacType
+                                            )
+                                              return null;
+                                            const bonusApplied =
+                                              useGeographicBonus &&
+                                              isSameGeographicBonusZone(
+                                                userGovernorate,
+                                                branch.governorate,
+                                              ) &&
+                                              hasGeographicBonus(branch.code);
+                                            return (
+                                              <span className="whitespace-nowrap text-xs leading-relaxed">
+                                                {bonusApplied &&
+                                                  base !== null && (
+                                                    <>
+                                                      <span className="block">
+                                                        السكور قبل التنفيل:{" "}
+                                                        <b
+                                                          dir="ltr"
+                                                          className="inline-block tabular-nums"
+                                                        >
+                                                          {base.toFixed(4)}
+                                                        </b>
+                                                      </span>
+                                                      <span className="block text-success">
+                                                        التنفيل:{" "}
+                                                        <b
+                                                          dir="ltr"
+                                                          className="inline-block tabular-nums"
+                                                        >
+                                                          × 1.07
+                                                        </b>
+                                                      </span>
+                                                    </>
+                                                  )}
+                                                <span className="block">
+                                                  {bonusApplied
+                                                    ? "سكورك بعد التنفيل"
+                                                    : "سكورك"}
+                                                  :{" "}
+                                                  <b
+                                                    dir="ltr"
+                                                    className="inline-block tabular-nums"
+                                                  >
+                                                    {eff.toFixed(4)}
+                                                  </b>
+                                                </span>
+                                                <span className="block">
+                                                  الحد:{" "}
+                                                  <b
+                                                    dir="ltr"
+                                                    className="inline-block tabular-nums"
+                                                  >
+                                                    {branch.score.toFixed(4)}
+                                                  </b>
+                                                </span>
+                                                <span className="block text-right">
+                                                  <span className="text-ink">
+                                                    الفارق:{" "}
+                                                  </span>
+                                                  <b
+                                                    dir="ltr"
+                                                    className={`inline-block tabular-nums ${
+                                                      eff >= branch.score
+                                                        ? "text-success"
+                                                        : branch.score - eff <=
+                                                            15
+                                                          ? "text-warning"
+                                                          : "text-error"
+                                                    }`}
+                                                  >
+                                                    {eff >= branch.score
+                                                      ? "+"
+                                                      : ""}
+                                                    {(
+                                                      eff - branch.score
+                                                    ).toFixed(4)}
+                                                  </b>
+                                                </span>
+                                              </span>
+                                            );
+                                          })()}
+                                        </PopoverPopup>
+                                      </PopoverPositioner>
+                                    </PopoverPortal>
+                                  </Popover>
+                                ) : (
+                                  branch.score.toFixed(4)
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </tbody>
+                    );
+                  })
+                ) : (
+                  <TableBody>
+                    {resultCount === 0 ? (
+                      <TableRow>
                         <TableCell
-                          className="max-w-48 font-mono text-xs"
-                          dir="ltr"
+                          colSpan={8}
+                          className="text-center text-muted-text py-12"
                         >
-                          <Popover>
-                            <PopoverTrigger
-                              disabled={Boolean(
-                                getUnavailableOptionalSubject(
-                                  r.bacType,
-                                  r.formula,
-                                ),
-                              ) || !isGenderEligible(r.license, userGender)}
-                              openOnHover
-                              delay={500}
-                              render={
-                                <button
-                                  type="button"
-                                  className="block w-full cursor-help truncate bg-transparent p-0 text-right"
-                                />
-                              }
-                            >
-                              <span className="block truncate" dir="ltr">
-                                {r.formula ?? "—"}
+                          لا توجد نتائج تطابق بحثك
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedRows.map((r, i) => (
+                        <TableRow
+                          key={`${r.code}-${r.bacType}-${i}`}
+                          className={getRowColorClasses(
+                            getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ),
+                            true,
+                          )}
+                        >
+                          <TableCell className="font-mono text-xs">
+                            {r.code}
+                            {getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ) === "qualified" && (
+                              <Check className="size-3.5 text-success inline align-middle ms-1" />
+                            )}
+                            {getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ) === "close" && (
+                              <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
+                            )}
+                            {getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ) === "far" && (
+                              <X className="size-3.5 text-error inline align-middle ms-1" />
+                            )}
+                            {getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ) === "unavailable" ||
+                            getRowStatus(
+                              r.bacType,
+                              r.score,
+                              r.formula,
+                              r.code,
+                              r.governorate,
+                              r.license,
+                            ) === "gender-unavailable" ? (
+                              <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
+                            ) : null}
+                          </TableCell>
+                          <TableCell>
+                            <span className="line-clamp-2 whitespace-normal leading-5">
+                              {r.university}
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden max-w-xs md:table-cell">
+                            <Tooltip>
+                              <TooltipTrigger
+                                delay={500}
+                                render={
+                                  <span className="line-clamp-2 whitespace-normal leading-5" />
+                                }
+                              >
+                                {r.institution}
+                              </TooltipTrigger>
+                              <TooltipPortal>
+                                <TooltipPositioner sideOffset={8}>
+                                  <TooltipPopup>
+                                    <TooltipArrow />
+                                    {r.institution}
+                                  </TooltipPopup>
+                                </TooltipPositioner>
+                              </TooltipPortal>
+                            </Tooltip>
+                            <span className="mt-1 block text-xs font-medium text-muted-text">
+                              ولاية {r.governorate}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip>
+                              <TooltipTrigger
+                                delay={500}
+                                render={
+                                  <span className="line-clamp-2 whitespace-normal leading-5" />
+                                }
+                              >
+                                {r.license}
+                              </TooltipTrigger>
+                              <TooltipPortal>
+                                <TooltipPositioner sideOffset={8}>
+                                  <TooltipPopup>
+                                    <TooltipArrow />
+                                    {r.license}
+                                  </TooltipPopup>
+                                </TooltipPositioner>
+                              </TooltipPortal>
+                            </Tooltip>
+                            {getGenderUnavailableMessage(r.license) && (
+                              <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                                <CircleSlash2 className="size-3.5" />{" "}
+                                {getGenderUnavailableMessage(r.license)}
                               </span>
-                              {getUnavailableOptionalSubject(
-                                r.bacType,
-                                r.formula,
-                              ) && (
-                                <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
-                                  <CircleSlash2 className="size-3" />
-                                  غير متاح · يتطلب{" "}
-                                  {
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {hasGeographicBonus(r.code) &&
+                            isGenderEligible(r.license, userGender) &&
+                            (userGovernorate === null ||
+                              isSameGeographicBonusZone(
+                                userGovernorate,
+                                r.governorate,
+                              )) ? (
+                              <span
+                                className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
+                                dir="ltr"
+                              >
+                                +7%
+                              </span>
+                            ) : (
+                              <span className="text-muted-soft">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>{r.bacType}</TableCell>
+                          <TableCell
+                            className="max-w-48 font-mono text-xs"
+                            dir="ltr"
+                          >
+                            <Popover>
+                              <PopoverTrigger
+                                disabled={
+                                  Boolean(
                                     getUnavailableOptionalSubject(
                                       r.bacType,
                                       r.formula,
-                                    )?.label
-                                  }
-                                </span>
-                              )}
-                            </PopoverTrigger>
-                            <PopoverPortal>
-                              <PopoverPositioner sideOffset={8}>
-                                <PopoverPopup>
-                                  <PopoverArrow />
-                                  {(() => {
-                                    const calculation =
-                                      userBacType === r.bacType
-                                        ? getCalculation(r.formula)
-                                        : null;
-                                    if (!calculation) return r.formula ?? "—";
-                                    return (
-                                      <span
-                                        className="block whitespace-nowrap text-xs leading-relaxed"
-                                        dir="ltr"
-                                      >
-                                        <span className="block">
-                                          {r.formula}
-                                        </span>
-                                        <span className="block text-muted-text">
-                                          = {calculation.substituted}
-                                        </span>
-                                        <span className="block font-semibold text-ink">
-                                          = {calculation.result.toFixed(4)}
-                                        </span>
-                                      </span>
-                                    );
-                                  })()}
-                                </PopoverPopup>
-                              </PopoverPositioner>
-                            </PopoverPortal>
-                          </Popover>
-                        </TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">
-                          {userBacType === r.bacType && userScore !== null && isGenderEligible(r.license, userGender) ? (
-                            <Popover>
-                              <PopoverTrigger
-                                disabled={Boolean(
-                                  getUnavailableOptionalSubject(
-                                    r.bacType,
-                                    r.formula,
-                                  ),
-                                )}
+                                    ),
+                                  ) || !isGenderEligible(r.license, userGender)
+                                }
                                 openOnHover
                                 delay={500}
                                 render={
                                   <button
                                     type="button"
-                                    className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                    className="block w-full cursor-help truncate bg-transparent p-0 text-right"
                                   />
                                 }
                               >
-                                {r.score.toFixed(4)}
+                                <span className="block truncate" dir="ltr">
+                                  {r.formula ?? "—"}
+                                </span>
+                                {getUnavailableOptionalSubject(
+                                  r.bacType,
+                                  r.formula,
+                                ) && (
+                                  <span className="mt-1 flex items-center gap-1 font-sans text-[11px] text-muted-text">
+                                    <CircleSlash2 className="size-3" />
+                                    غير متاح · يتطلب{" "}
+                                    {
+                                      getUnavailableOptionalSubject(
+                                        r.bacType,
+                                        r.formula,
+                                      )?.label
+                                    }
+                                  </span>
+                                )}
                               </PopoverTrigger>
                               <PopoverPortal>
                                 <PopoverPositioner sideOffset={8}>
                                   <PopoverPopup>
                                     <PopoverArrow />
                                     {(() => {
-                                      const base = computeBaseScore(r.formula);
-                                      const eff = computeEffective(
-                                        r.formula,
-                                        r.code,
-                                        r.governorate,
-                                      );
-                                      if (
-                                        eff === null ||
-                                        userBacType !== r.bacType
-                                      )
-                                        return null;
-                                      const bonusApplied =
-                                        useGeographicBonus &&
-                                        isSameGeographicBonusZone(userGovernorate, r.governorate) &&
-                                        hasGeographicBonus(r.code);
+                                      const calculation =
+                                        userBacType === r.bacType
+                                          ? getCalculation(r.formula)
+                                          : null;
+                                      if (!calculation) return r.formula ?? "—";
                                       return (
-                                        <span className="whitespace-nowrap text-xs leading-relaxed">
-                                          {bonusApplied && base !== null && (
-                                            <>
-                                              <span className="block">
-                                                السكور قبل التنفيل:{" "}
-                                                <b
-                                                  dir="ltr"
-                                                  className="inline-block tabular-nums"
-                                                >
-                                                  {base.toFixed(4)}
-                                                </b>
-                                              </span>
-                                              <span className="block text-success">
-                                                التنفيل:{" "}
-                                                <b
-                                                  dir="ltr"
-                                                  className="inline-block tabular-nums"
-                                                >
-                                                  × 1.07
-                                                </b>
-                                              </span>
-                                            </>
-                                          )}
+                                        <span
+                                          className="block whitespace-nowrap text-xs leading-relaxed"
+                                          dir="ltr"
+                                        >
                                           <span className="block">
-                                            {bonusApplied
-                                              ? "سكورك بعد التنفيل"
-                                              : "سكورك"}
-                                            :{" "}
-                                            <b
-                                              dir="ltr"
-                                              className="inline-block tabular-nums"
-                                            >
-                                              {eff.toFixed(4)}
-                                            </b>
+                                            {r.formula}
                                           </span>
-                                          <span className="block">
-                                            الحد:{" "}
-                                            <b
-                                              dir="ltr"
-                                              className="inline-block tabular-nums"
-                                            >
-                                              {r.score.toFixed(4)}
-                                            </b>
+                                          <span className="block text-muted-text">
+                                            = {calculation.substituted}
                                           </span>
-                                          <span className="block text-right">
-                                            <span className="text-ink">
-                                              الفارق:{" "}
-                                            </span>
-                                            <b
-                                              dir="ltr"
-                                              className={`inline-block tabular-nums ${
-                                                eff >= r.score
-                                                  ? "text-success"
-                                                  : r.score - eff <= 15
-                                                    ? "text-warning"
-                                                    : "text-error"
-                                              }`}
-                                            >
-                                              {eff >= r.score ? "+" : ""}
-                                              {(eff - r.score).toFixed(4)}
-                                            </b>
+                                          <span className="block font-semibold text-ink">
+                                            = {calculation.result.toFixed(4)}
                                           </span>
                                         </span>
                                       );
@@ -1520,16 +1589,135 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </PopoverPositioner>
                               </PopoverPortal>
                             </Popover>
-                          ) : (
-                            r.score.toFixed(4)
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              )}
-            </Table>
+                          </TableCell>
+                          <TableCell className="text-right font-medium tabular-nums">
+                            {userBacType === r.bacType &&
+                            userScore !== null &&
+                            isGenderEligible(r.license, userGender) ? (
+                              <Popover>
+                                <PopoverTrigger
+                                  disabled={Boolean(
+                                    getUnavailableOptionalSubject(
+                                      r.bacType,
+                                      r.formula,
+                                    ),
+                                  )}
+                                  openOnHover
+                                  delay={500}
+                                  render={
+                                    <button
+                                      type="button"
+                                      className="cursor-help bg-transparent p-0 font-medium tabular-nums"
+                                    />
+                                  }
+                                >
+                                  {r.score.toFixed(4)}
+                                </PopoverTrigger>
+                                <PopoverPortal>
+                                  <PopoverPositioner sideOffset={8}>
+                                    <PopoverPopup>
+                                      <PopoverArrow />
+                                      {(() => {
+                                        const base = computeBaseScore(
+                                          r.formula,
+                                        );
+                                        const eff = computeEffective(
+                                          r.formula,
+                                          r.code,
+                                          r.governorate,
+                                        );
+                                        if (
+                                          eff === null ||
+                                          userBacType !== r.bacType
+                                        )
+                                          return null;
+                                        const bonusApplied =
+                                          useGeographicBonus &&
+                                          isSameGeographicBonusZone(
+                                            userGovernorate,
+                                            r.governorate,
+                                          ) &&
+                                          hasGeographicBonus(r.code);
+                                        return (
+                                          <span className="whitespace-nowrap text-xs leading-relaxed">
+                                            {bonusApplied && base !== null && (
+                                              <>
+                                                <span className="block">
+                                                  السكور قبل التنفيل:{" "}
+                                                  <b
+                                                    dir="ltr"
+                                                    className="inline-block tabular-nums"
+                                                  >
+                                                    {base.toFixed(4)}
+                                                  </b>
+                                                </span>
+                                                <span className="block text-success">
+                                                  التنفيل:{" "}
+                                                  <b
+                                                    dir="ltr"
+                                                    className="inline-block tabular-nums"
+                                                  >
+                                                    × 1.07
+                                                  </b>
+                                                </span>
+                                              </>
+                                            )}
+                                            <span className="block">
+                                              {bonusApplied
+                                                ? "سكورك بعد التنفيل"
+                                                : "سكورك"}
+                                              :{" "}
+                                              <b
+                                                dir="ltr"
+                                                className="inline-block tabular-nums"
+                                              >
+                                                {eff.toFixed(4)}
+                                              </b>
+                                            </span>
+                                            <span className="block">
+                                              الحد:{" "}
+                                              <b
+                                                dir="ltr"
+                                                className="inline-block tabular-nums"
+                                              >
+                                                {r.score.toFixed(4)}
+                                              </b>
+                                            </span>
+                                            <span className="block text-right">
+                                              <span className="text-ink">
+                                                الفارق:{" "}
+                                              </span>
+                                              <b
+                                                dir="ltr"
+                                                className={`inline-block tabular-nums ${
+                                                  eff >= r.score
+                                                    ? "text-success"
+                                                    : r.score - eff <= 15
+                                                      ? "text-warning"
+                                                      : "text-error"
+                                                }`}
+                                              >
+                                                {eff >= r.score ? "+" : ""}
+                                                {(eff - r.score).toFixed(4)}
+                                              </b>
+                                            </span>
+                                          </span>
+                                        );
+                                      })()}
+                                    </PopoverPopup>
+                                  </PopoverPositioner>
+                                </PopoverPortal>
+                              </Popover>
+                            ) : (
+                              r.score.toFixed(4)
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                )}
+              </Table>
             </div>
           </CardContent>
           <div className="-mt-(--card-spacing) border-t border-border flex min-h-14 items-center justify-center px-4 py-2">
