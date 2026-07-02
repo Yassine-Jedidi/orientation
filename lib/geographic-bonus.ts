@@ -10,6 +10,17 @@ const GEOGRAPHIC_BONUS_NATIONAL_CODES = new Set([
 
 export const GEOGRAPHIC_BONUS_FACTOR = 1.07;
 
+const GREATER_TUNIS_GOVERNORATES = new Set([
+  "تونس",
+  "أريانة",
+  "بن عروس",
+  "منوبة",
+]);
+
+export function isGreaterTunisGovernorate(governorate: string): boolean {
+  return GREATER_TUNIS_GOVERNORATES.has(governorate);
+}
+
 /** The guide identifies eligible licences by the final three digits of their code. */
 export function hasGeographicBonus(programCode: string): boolean {
   return GEOGRAPHIC_BONUS_NATIONAL_CODES.has(programCode.slice(-3));
@@ -17,6 +28,33 @@ export function hasGeographicBonus(programCode: string): boolean {
 
 export function applyGeographicBonus(score: number): number {
   return score * GEOGRAPHIC_BONUS_FACTOR;
+}
+
+/** Greater Tunis is one geographic area for the geographic bonus. */
+export function isSameGeographicBonusZone(
+  userGovernorate: string | null,
+  institutionGovernorate: string,
+): boolean {
+  if (!userGovernorate) return false;
+  if (userGovernorate === institutionGovernorate) return true;
+
+  return (
+    isGreaterTunisGovernorate(userGovernorate) &&
+    isGreaterTunisGovernorate(institutionGovernorate)
+  );
+}
+
+export function isGeographicBonusApplicable(
+  programCode: string,
+  userGovernorate: string | null,
+  institutionGovernorate: string,
+  enabled = true,
+): boolean {
+  return (
+    enabled &&
+    isSameGeographicBonusZone(userGovernorate, institutionGovernorate) &&
+    hasGeographicBonus(programCode)
+  );
 }
 
 export function getScoreWithGeographicBonus(

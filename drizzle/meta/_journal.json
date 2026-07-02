@@ -43,6 +43,13 @@
       "when": 1782771830275,
       "tag": "0005_fix_grade_precision",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782949632224,
+      "tag": "0006_regular_bushwacker",
+      "breakpoints": true
     }
   ]
 }

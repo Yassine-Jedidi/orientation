@@ -2,10 +2,11 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { studentProfile, studentScore } from "@/db/schema";
+import { studentProfile, studentScore, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { calculateFg } from "@/lib/fg";
 import { getBacTypeCode, getBacTypeLabel } from "@/lib/bac-types";
+import { TUNISIA_GOVERNORATES, type Governorate } from "@/lib/governorates";
 
 function roundToTwo(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -20,16 +21,21 @@ export async function GET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [saved, profile] = await Promise.all([
+  const [saved, profile, account] = await Promise.all([
     db.query.studentScore.findFirst({
       where: eq(studentScore.userId, userId),
     }),
     db.query.studentProfile.findFirst({
       where: eq(studentProfile.userId, userId),
     }),
+    db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: { governorate: true },
+    }),
   ]);
 
   return NextResponse.json({
+    governorate: account?.governorate ?? null,
     bacType: profile
       ? getBacTypeLabel(profile.bacType) ?? profile.bacType
       : saved
@@ -46,24 +52,42 @@ export async function PATCH(request: Request) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { bacType?: unknown }
+    | { bacType?: unknown; governorate?: unknown }
     | null;
   const bacTypeCode =
     typeof body?.bacType === "string" ? getBacTypeCode(body.bacType) : null;
+  const governorate =
+    typeof body?.governorate === "string" &&
+    TUNISIA_GOVERNORATES.includes(body.governorate as Governorate)
+      ? (body.governorate as Governorate)
+      : null;
 
-  if (!bacTypeCode) {
-    return NextResponse.json({ error: "Invalid bac type" }, { status: 400 });
+  if (!bacTypeCode && !governorate) {
+    return NextResponse.json({ error: "Invalid profile data" }, { status: 400 });
   }
 
-  await db
-    .insert(studentProfile)
-    .values({ userId, bacType: bacTypeCode })
-    .onConflictDoUpdate({
-      target: studentProfile.userId,
-      set: { bacType: bacTypeCode, updatedAt: new Date() },
-    });
+  await Promise.all([
+    bacTypeCode
+      ? db
+          .insert(studentProfile)
+          .values({ userId, bacType: bacTypeCode })
+          .onConflictDoUpdate({
+            target: studentProfile.userId,
+            set: { bacType: bacTypeCode, updatedAt: new Date() },
+          })
+      : Promise.resolve(),
+    governorate
+      ? db
+          .update(user)
+          .set({ governorate, updatedAt: new Date() })
+          .where(eq(user.id, userId))
+      : Promise.resolve(),
+  ]);
 
-  return NextResponse.json({ bacType: body?.bacType });
+  return NextResponse.json({
+    bacType: bacTypeCode ? body?.bacType : undefined,
+    governorate: governorate ?? undefined,
+  });
 }
 
 export async function PUT(request: Request) {

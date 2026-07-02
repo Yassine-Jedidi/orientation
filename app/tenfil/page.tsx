@@ -51,7 +51,7 @@ export default function GeographicBonusPage() {
               </h1>
               <p className="mt-5 max-w-2xl text-body-md leading-8 text-body">
                 يُسند تنفيل قدره 7% من مجموع النقاط عند طلب اختصاص مشمول
-                وموجود في ولايتك.
+                وموجود في ولايتك. وتُعامل ولايات تونس الكبرى كفضاء جغرافي واحد.
               </p>
             </div>
             <div className="rounded-xl bg-brand-teal p-6 text-white md:p-8">
@@ -93,8 +93,21 @@ export default function GeographicBonusPage() {
             </div>
           </div>
 
+          <div className="mb-8 rounded-xl bg-brand-ochre/35 p-6 ring-1 ring-brand-ochre/70">
+            <p className="text-sm font-semibold text-ink">خصوصية تونس الكبرى</p>
+            <p className="mt-2 text-sm leading-7 text-body">
+              ولايات تونس وأريانة وبن عروس ومنوبة تُعتبر فضاءً جغرافيًا واحدًا
+              في احتساب التنفيل. لذلك يمكن للمترشح من إحدى هذه الولايات أن
+              ينتفع بالتنفيل في مؤسسة موجودة في أي ولاية أخرى منها، إذا كانت
+              الشعبة مشمولة بالتنفيل.
+            </p>
+          </div>
+
           <p className="mb-6 text-sm leading-7 text-muted-text">
-            لتحديد مركز الولاية، يُعتمد المعهد الأصلي مباشرة أو مركز الامتحان.
+            دليل التوجيه الجامعي 2026، الصفحة 18: لتحديد الولاية، يُعتمد المعهد
+            الأصلي أو مركز الامتحان، وعند غياب الاختصاص يُعتمد أقرب مؤسسة إلى
+            مركز الولاية. ملاحظة تونس الكبرى مذكورة صراحة في أدلة التوجيه
+            السابقة، ولا تتكرر حرفيًا في نسخة دليل 2026 المتوفرة لدينا.
           </p>
 
           <GeographicBonusDirectory {...lists} />

@@ -15,7 +15,7 @@ export function AuthNav() {
 
   if (!session) {
     return (
-      <Button variant="outline" nativeButton={false} render={<Link href="/connexion" />}>
+      <Button nativeButton={false} render={<Link href="/connexion" />}>
         تسجيل الدخول
       </Button>
     );

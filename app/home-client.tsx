@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { Search, Check, ArrowUp, X, CircleSlash2, ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { Search, Check, ArrowUp, X, CircleSlash2, ChevronLeft, Calculator } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
+import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { authClient } from "@/lib/auth-client";
 import { SiteHeader } from "@/components/site-header";
@@ -50,6 +52,9 @@ import {
 import {
   getScoreWithGeographicBonus,
   hasGeographicBonus,
+  isGreaterTunisGovernorate,
+  isGeographicBonusApplicable,
+  isSameGeographicBonusZone,
 } from "@/lib/geographic-bonus";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
@@ -67,6 +72,7 @@ interface LicenseGroup {
   key: string;
   university: string;
   institution: string;
+  governorate: string;
   code: string;
   license: string;
   branches: ScoreRecord[];
@@ -74,6 +80,18 @@ interface LicenseGroup {
 
 const ROWS_PER_PAGE = 25;
 const LICENSES_PER_PAGE = 10;
+const GREATER_TUNIS_FILTER = "greater-tunis";
+
+function matchesGovernorateFilter(
+  selectedGovernorate: string,
+  recordGovernorate: string,
+): boolean {
+  if (selectedGovernorate === "all") return true;
+  if (selectedGovernorate === GREATER_TUNIS_FILTER) {
+    return isGreaterTunisGovernorate(recordGovernorate);
+  }
+  return selectedGovernorate === recordGovernorate;
+}
 
 function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
   const groups = new Map<string, LicenseGroup>();
@@ -96,6 +114,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       key,
       university: record.university,
       institution: record.institution,
+      governorate: record.governorate,
       code: record.code,
       license: record.license,
       branches: [record],
@@ -116,6 +135,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [search, setSearch] = useState("");
   const [bacType, setBacType] = useState<string>("all");
   const [university, setUniversity] = useState<string>("all");
+  const [governorate, setGovernorate] = useState<string>("all");
   const [institution, setInstitution] = useState<string | null>(null);
   const [license, setLicense] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -130,6 +150,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   );
   const [onlyMyBac, setOnlyMyBac] = useState(false);
   const [useGeographicBonus, setUseGeographicBonus] = useState(true);
+  const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const userScoreFetched = useRef(false);
 
   const computeBaseScore = (formula?: string | null) => {
@@ -139,11 +160,24 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
       : userScore;
   };
 
-  const computeEffective = (formula?: string | null, programCode?: string) => {
+  const computeEffective = (
+    formula?: string | null,
+    programCode?: string,
+    institutionGovernorate?: string,
+  ) => {
     const score = computeBaseScore(formula);
     if (score === null) return null;
     return programCode
-      ? getScoreWithGeographicBonus(score, programCode, useGeographicBonus)
+      ? getScoreWithGeographicBonus(
+          score,
+          programCode,
+          isGeographicBonusApplicable(
+            programCode,
+            userGovernorate,
+            institutionGovernorate ?? "",
+            useGeographicBonus,
+          ),
+        )
       : score;
   };
 
@@ -173,10 +207,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     score: number,
     formula?: string | null,
     programCode?: string,
+    institutionGovernorate?: string,
   ) => {
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
-    const effective = computeEffective(formula, programCode);
+    const effective = computeEffective(formula, programCode, institutionGovernorate);
     if (effective === null) return null;
     if (effective >= score) return "qualified";
     if (score > effective + 15) return "far";
@@ -221,6 +256,14 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           setUserBacType(payload.bacType);
           setOnlyMyBac(true);
         }
+        if (payload.governorate) {
+          setUserGovernorate(payload.governorate);
+          setGovernorate(
+            isGreaterTunisGovernorate(payload.governorate)
+              ? GREATER_TUNIS_FILTER
+              : payload.governorate,
+          );
+        }
         if (payload.score?.fg != null) {
           setUserScore(Number(payload.score.fg));
         }
@@ -246,29 +289,32 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const universities = useMemo(() => {
     const available = data.filter(
       (record) =>
+        matchesGovernorateFilter(governorate, record.governorate) &&
         (!institution || record.institution === institution) &&
         (!license || record.license === license),
     );
     return [...new Set(available.map((record) => record.university))].sort();
-  }, [data, institution, license]);
+  }, [data, governorate, institution, license]);
 
   const institutions = useMemo(() => {
     const available = data.filter(
       (record) =>
+        matchesGovernorateFilter(governorate, record.governorate) &&
         (university === "all" || record.university === university) &&
         (!license || record.license === license),
     );
     return [...new Set(available.map((record) => record.institution))].sort();
-  }, [data, university, license]);
+  }, [data, governorate, university, license]);
 
   const licenses = useMemo(() => {
     const available = data.filter(
       (record) =>
+        matchesGovernorateFilter(governorate, record.governorate) &&
         (university === "all" || record.university === university) &&
         (!institution || record.institution === institution),
     );
     return [...new Set(available.map((record) => record.license))].sort();
-  }, [data, university, institution]);
+  }, [data, governorate, university, institution]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -278,6 +324,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           return false;
         if (onlyMyBac && userBacType && r.bacType !== userBacType) return false;
         if (university !== "all" && r.university !== university) return false;
+        if (!matchesGovernorateFilter(governorate, r.governorate)) return false;
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
         if (minScore && r.score > parseFloat(minScore)) return false;
@@ -299,6 +346,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     search,
     bacType,
     university,
+    governorate,
     institution,
     license,
     minScore,
@@ -412,7 +460,32 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-[280px_1fr_1fr]">
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-[220px_280px_1fr_1fr]">
+              <Select
+                value={governorate}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  setGovernorate(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="الولاية">
+                    {governorate === "all"
+                      ? "كل الولايات"
+                      : governorate === GREATER_TUNIS_FILTER
+                        ? "تونس الكبرى"
+                        : governorate}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent listClassName="max-h-72" showScrollbar>
+                  <SelectItem value="all">كل الولايات</SelectItem>
+                  <SelectItem value={GREATER_TUNIS_FILTER}>تونس الكبرى</SelectItem>
+                  {TUNISIA_GOVERNORATES.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select
                 value={university}
                 onValueChange={(v) => {
@@ -503,6 +576,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               {(search ||
                 bacType !== "all" ||
                 university !== "all" ||
+                governorate !== "all" ||
                 institution ||
                 license ||
                 minScore) && (
@@ -512,6 +586,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     setSearch("");
                     setBacType("all");
                     setUniversity("all");
+                    setGovernorate("all");
                     setInstitution(null);
                     setLicense(null);
                     setMinScore("");
@@ -551,8 +626,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     record.score,
                     record.formula,
                     record.code,
+                    record.governorate,
                   );
-                  const effective = computeEffective(record.formula, record.code);
+                  const effective = computeEffective(
+                    record.formula,
+                    record.code,
+                    record.governorate,
+                  );
                   const unavailable = getUnavailableOptionalSubject(
                     record.bacType,
                     record.formula,
@@ -601,7 +681,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <span className="rounded-full bg-surface-card px-2.5 py-1 font-medium text-ink">
                                 {record.bacType}
                               </span>
-                              {hasGeographicBonus(record.code) && (
+                              {hasGeographicBonus(record.code) &&
+                                isSameGeographicBonusZone(userGovernorate, record.governorate) && (
                                 <span className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink" dir="ltr">
                                   +7%
                                 </span>
@@ -648,9 +729,37 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {record.formula ?? "FG"}
                             </p>
                           </div>
+                          {userScore === null && (
+                            <div className="rounded-lg bg-brand-mint/45 p-4 ring-1 ring-brand-mint/70">
+                              <div className="flex items-start gap-3">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-mint text-ink">
+                                  <Calculator className="size-4" aria-hidden="true" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-ink">
+                                    احسب سكورك وشوف فرصتك
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-body">
+                                    احسب سكورك باش نوريولك قداش يفصلك على الحدّ الأدنى
+                                    لهالإجازة في المؤسسة هاذي.
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                nativeButton={false}
+                                render={<Link href="/calculatrice" />}
+                                className="mt-4 w-full"
+                              >
+                                نحسب سكوري
+                              </Button>
+                            </div>
+                          )}
                           {userBacType === record.bacType && effective !== null && !unavailable && (() => {
                             const base = computeBaseScore(record.formula);
-                            const bonusApplied = useGeographicBonus && hasGeographicBonus(record.code);
+                            const bonusApplied =
+                              useGeographicBonus &&
+                              isSameGeographicBonusZone(userGovernorate, record.governorate) &&
+                              hasGeographicBonus(record.code);
                             const baseColor = base === null ? "text-muted-text"
                               : base >= record.score ? "text-success"
                               : record.score > base + 15 ? "text-error"
@@ -726,7 +835,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   );
                   const isHovered = hoveredGroup === group.key;
                   const branchStatuses = group.branches.map((b) =>
-                    getRowStatus(b.bacType, b.score, b.formula, b.code),
+                    getRowStatus(
+                      b.bacType,
+                      b.score,
+                      b.formula,
+                      b.code,
+                      b.governorate,
+                    ),
                   );
                   const anyQualified = branchStatuses.includes("qualified");
                   const anyClose = branchStatuses.includes("close");
@@ -755,6 +870,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           branch.score,
                           branch.formula,
                           branch.code,
+                          branch.governorate,
                         );
                         const bgClass = getRowColorClasses(status);
                         return (
@@ -805,6 +921,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       </TooltipPositioner>
                                     </TooltipPortal>
                                   </Tooltip>
+                                  <span className="mt-1 block text-xs font-medium text-muted-text">
+                                    ولاية {group.governorate}
+                                  </span>
                                 </TableCell>
                                 <TableCell
                                   rowSpan={group.branches.length}
@@ -833,7 +952,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   rowSpan={group.branches.length}
                                   className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
-                                  {hasGeographicBonus(group.code) ? (
+                                  {hasGeographicBonus(group.code) &&
+                                  isSameGeographicBonusZone(userGovernorate, group.governorate) ? (
                                     <span
                                       className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                                       dir="ltr"
@@ -953,6 +1073,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                           const eff = computeEffective(
                                             branch.formula,
                                             branch.code,
+                                            branch.governorate,
                                           );
                                           if (
                                             eff === null ||
@@ -961,6 +1082,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             return null;
                                           const bonusApplied =
                                             useGeographicBonus &&
+                                            isSameGeographicBonusZone(userGovernorate, branch.governorate) &&
                                             hasGeographicBonus(branch.code);
                                           return (
                                             <span className="whitespace-nowrap text-xs leading-relaxed">
@@ -1063,7 +1185,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                       <TableRow
                         key={`${r.code}-${r.bacType}-${i}`}
                         className={getRowColorClasses(
-                          getRowStatus(r.bacType, r.score, r.formula, r.code),
+                          getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                            r.governorate,
+                          ),
                           true,
                         )}
                       >
@@ -1074,6 +1202,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.score,
                             r.formula,
                             r.code,
+                            r.governorate,
                           ) === "qualified" && (
                             <Check className="size-3.5 text-success inline align-middle ms-1" />
                           )}
@@ -1082,6 +1211,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.score,
                             r.formula,
                             r.code,
+                            r.governorate,
                           ) === "close" && (
                             <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
                           )}
@@ -1090,6 +1220,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.score,
                             r.formula,
                             r.code,
+                            r.governorate,
                           ) === "far" && (
                             <X className="size-3.5 text-error inline align-middle ms-1" />
                           )}
@@ -1098,6 +1229,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.score,
                             r.formula,
                             r.code,
+                            r.governorate,
                           ) === "unavailable" && (
                             <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
                           )}
@@ -1126,6 +1258,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </TooltipPositioner>
                             </TooltipPortal>
                           </Tooltip>
+                          <span className="mt-1 block text-xs font-medium text-muted-text">
+                            ولاية {r.governorate}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Tooltip>
@@ -1148,7 +1283,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           </Tooltip>
                         </TableCell>
                         <TableCell className="text-center">
-                          {hasGeographicBonus(r.code) ? (
+                          {hasGeographicBonus(r.code) &&
+                          isSameGeographicBonusZone(userGovernorate, r.governorate) ? (
                             <span
                               className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                               dir="ltr"
@@ -1262,6 +1398,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       const eff = computeEffective(
                                         r.formula,
                                         r.code,
+                                        r.governorate,
                                       );
                                       if (
                                         eff === null ||
@@ -1270,6 +1407,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         return null;
                                       const bonusApplied =
                                         useGeographicBonus &&
+                                        isSameGeographicBonusZone(userGovernorate, r.governorate) &&
                                         hasGeographicBonus(r.code);
                                       return (
                                         <span className="whitespace-nowrap text-xs leading-relaxed">

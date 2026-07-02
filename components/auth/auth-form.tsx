@@ -6,6 +6,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type AuthFormProps = { mode: "sign-in" | "sign-up" };
 
@@ -15,6 +23,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [pending, setPending] = useState(false);
   const [googlePending, setGooglePending] = useState(false);
   const [error, setError] = useState("");
+  const [governorate, setGovernorate] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,6 +39,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           name: String(formData.get("name") ?? "").trim(),
           email,
           password,
+          governorate,
         })
       : await authClient.signIn.email({ email, password });
 
@@ -85,11 +95,31 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
       {isSignUp && (
+        <div className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-ink">
             الاسم
           </label>
           <Input id="name" name="name" autoComplete="name" required minLength={2} />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="governorate" className="text-sm font-medium text-ink">
+            ولايتك
+          </label>
+          <Select value={governorate} onValueChange={(value) => setGovernorate(value ?? "")}>
+            <SelectTrigger id="governorate" className="w-full" aria-required="true">
+              <SelectValue placeholder="اختر ولايتك" />
+            </SelectTrigger>
+            <SelectContent listClassName="max-h-72" showScrollbar>
+              {TUNISIA_GOVERNORATES.map((item) => (
+                <SelectItem key={item} value={item}>{item}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-text">
+            تُستعمل لاحتساب التنفيل الجغرافي فقط في مؤسسات ولايتك.
+          </p>
+        </div>
         </div>
       )}
 
@@ -131,7 +161,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" className="w-full" disabled={pending || (isSignUp && !governorate)}>
         {pending
           ? "جارٍ المتابعة..."
           : isSignUp
