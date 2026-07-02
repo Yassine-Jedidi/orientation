@@ -6,6 +6,7 @@ import { Search, Check, ArrowUp, X, CircleSlash2, ChevronLeft, Calculator } from
 import type { ScoreRecord } from "@/lib/types";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { BAC_ORDER } from "@/lib/bac-order";
+import { getRequiredGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { authClient } from "@/lib/auth-client";
 import { SiteHeader } from "@/components/site-header";
 import { Input } from "@/components/ui/input";
@@ -151,6 +152,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [onlyMyBac, setOnlyMyBac] = useState(false);
   const [useGeographicBonus, setUseGeographicBonus] = useState(true);
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
+  const [userGender, setUserGender] = useState<Gender | null>(null);
   const userScoreFetched = useRef(false);
 
   const computeBaseScore = (formula?: string | null) => {
@@ -202,13 +204,21 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     );
   };
 
+  const getGenderUnavailableMessage = (licenseName: string) => {
+    const requiredGender = getRequiredGender(licenseName);
+    if (!requiredGender || !userGender || requiredGender === userGender) return null;
+    return `غير مؤهل: هذه الإجازة مخصّصة ${requiredGender === "female" ? "للإناث" : "للذكور"}`;
+  };
+
   const getRowStatus = (
     bacType: string,
     score: number,
     formula?: string | null,
     programCode?: string,
     institutionGovernorate?: string,
+    licenseName?: string,
   ) => {
+    if (licenseName && !isGenderEligible(licenseName, userGender)) return "gender-unavailable";
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
     const effective = computeEffective(formula, programCode, institutionGovernorate);
@@ -229,7 +239,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           ? "[&>td]:bg-warning/5 hover:[&>td]:bg-warning/10"
           : status === "far"
             ? "[&>td]:bg-error/5 hover:[&>td]:bg-error/10"
-            : status === "unavailable"
+            : status === "unavailable" || status === "gender-unavailable"
               ? "[&>td]:bg-surface-strong/35 hover:[&>td]:bg-surface-strong/60"
               : ""
       : "";
@@ -240,7 +250,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           ? "bg-warning/5 hover:bg-warning/10"
           : status === "far"
             ? "bg-error/5 hover:bg-error/10"
-            : status === "unavailable"
+            : status === "unavailable" || status === "gender-unavailable"
               ? "bg-surface-strong/35 text-muted-text hover:bg-surface-strong/60"
               : "hover:bg-surface-soft/50";
     return `${rowColors} ${cellColors}`;
@@ -264,6 +274,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               : payload.governorate,
           );
         }
+        if (payload.gender) setUserGender(payload.gender as Gender);
         if (payload.score?.fg != null) {
           setUserScore(Number(payload.score.fg));
         }
@@ -627,6 +638,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     record.formula,
                     record.code,
                     record.governorate,
+                    record.license,
                   );
                   const effective = computeEffective(
                     record.formula,
@@ -637,6 +649,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     record.bacType,
                     record.formula,
                   );
+                  const genderUnavailable = getGenderUnavailableMessage(record.license);
                   const statusColor =
                     status === "qualified"
                       ? "text-success"
@@ -657,7 +670,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 {status === "qualified" && <Check className="size-3.5 text-success" />}
                                 {status === "close" && <ArrowUp className="size-3.5 text-warning" />}
                                 {status === "far" && <X className="size-3.5 text-error" />}
-                                {status === "unavailable" && <CircleSlash2 className="size-3.5 text-muted-text" />}
+                                {(status === "unavailable" || status === "gender-unavailable") && <CircleSlash2 className="size-3.5 text-muted-text" />}
                               </div>
                               <div className="shrink-0 text-left">
                                 <span className="block text-xs text-muted-text">الحد الأدنى</span>
@@ -670,6 +683,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
                               {record.license}
                             </h3>
+                            {genderUnavailable && <p className="mt-2 text-xs font-medium text-muted-text">{genderUnavailable}</p>}
                             <p className="mt-2 line-clamp-1 text-sm font-medium leading-5 text-body">
                               {record.university}
                             </p>
@@ -682,6 +696,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 {record.bacType}
                               </span>
                               {hasGeographicBonus(record.code) &&
+                                isGenderEligible(record.license, userGender) &&
                                 isSameGeographicBonusZone(userGovernorate, record.governorate) && (
                                 <span className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink" dir="ltr">
                                   +7%
@@ -729,7 +744,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {record.formula ?? "FG"}
                             </p>
                           </div>
-                          {userScore === null && (
+                          {userScore === null && !genderUnavailable && (
                             <div className="rounded-lg bg-brand-mint/45 p-4 ring-1 ring-brand-mint/70">
                               <div className="flex items-start gap-3">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-mint text-ink">
@@ -754,7 +769,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </Button>
                             </div>
                           )}
-                          {userBacType === record.bacType && effective !== null && !unavailable && (() => {
+                          {userBacType === record.bacType && effective !== null && !unavailable && !genderUnavailable && (() => {
                             const base = computeBaseScore(record.formula);
                             const bonusApplied =
                               useGeographicBonus &&
@@ -800,6 +815,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               غير متاح: تتطلب الصيغة مادة {unavailable.label}.
                             </p>
                           )}
+                          {genderUnavailable && (
+                            <p className="flex items-center gap-2 rounded-lg bg-surface-strong p-3 text-sm font-medium text-muted-text">
+                              <CircleSlash2 className="size-4 shrink-0" /> {genderUnavailable}
+                            </p>
+                          )}
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -841,13 +861,14 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                       b.formula,
                       b.code,
                       b.governorate,
+                      b.license,
                     ),
                   );
                   const anyQualified = branchStatuses.includes("qualified");
                   const anyClose = branchStatuses.includes("close");
                   const anyFar = branchStatuses.includes("far");
                   const allUnavailable = branchStatuses.every(
-                    (status) => status === "unavailable",
+                    (status) => status === "unavailable" || status === "gender-unavailable",
                   );
                   const groupIcon = anyQualified
                     ? { icon: Check, color: "text-success" }
@@ -871,6 +892,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           branch.formula,
                           branch.code,
                           branch.governorate,
+                          branch.license,
                         );
                         const bgClass = getRowColorClasses(status);
                         return (
@@ -947,12 +969,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       </TooltipPositioner>
                                     </TooltipPortal>
                                   </Tooltip>
+                                  {getGenderUnavailableMessage(group.license) && (
+                                    <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                                      <CircleSlash2 className="size-3.5" /> {getGenderUnavailableMessage(group.license)}
+                                    </span>
+                                  )}
                                 </TableCell>
                                 <TableCell
                                   rowSpan={group.branches.length}
                                   className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                 >
                                   {hasGeographicBonus(group.code) &&
+                                  isGenderEligible(group.license, userGender) &&
                                   isSameGeographicBonusZone(userGovernorate, group.governorate) ? (
                                     <span
                                       className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
@@ -978,7 +1006,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       branch.bacType,
                                       branch.formula,
                                     ),
-                                  )}
+                                  ) || !isGenderEligible(branch.license, userGender)}
                                   openOnHover
                                   delay={500}
                                   render={
@@ -1042,7 +1070,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </TableCell>
                             <TableCell className="text-right font-medium tabular-nums">
                               {userBacType === branch.bacType &&
-                              userScore !== null ? (
+                              userScore !== null && isGenderEligible(branch.license, userGender) ? (
                                 <Popover>
                                   <PopoverTrigger
                                     disabled={Boolean(
@@ -1191,6 +1219,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.formula,
                             r.code,
                             r.governorate,
+                            r.license,
                           ),
                           true,
                         )}
@@ -1203,6 +1232,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.formula,
                             r.code,
                             r.governorate,
+                            r.license,
                           ) === "qualified" && (
                             <Check className="size-3.5 text-success inline align-middle ms-1" />
                           )}
@@ -1212,6 +1242,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.formula,
                             r.code,
                             r.governorate,
+                            r.license,
                           ) === "close" && (
                             <ArrowUp className="size-3.5 text-warning inline align-middle ms-1" />
                           )}
@@ -1221,6 +1252,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.formula,
                             r.code,
                             r.governorate,
+                            r.license,
                           ) === "far" && (
                             <X className="size-3.5 text-error inline align-middle ms-1" />
                           )}
@@ -1230,9 +1262,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             r.formula,
                             r.code,
                             r.governorate,
-                          ) === "unavailable" && (
+                            r.license,
+                          ) === "unavailable" || getRowStatus(
+                            r.bacType,
+                            r.score,
+                            r.formula,
+                            r.code,
+                            r.governorate,
+                            r.license,
+                          ) === "gender-unavailable" ? (
                             <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
-                          )}
+                          ) : null}
                         </TableCell>
                         <TableCell>
                           <span className="line-clamp-2 whitespace-normal leading-5">
@@ -1281,9 +1321,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </TooltipPositioner>
                             </TooltipPortal>
                           </Tooltip>
+                          {getGenderUnavailableMessage(r.license) && (
+                            <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                              <CircleSlash2 className="size-3.5" /> {getGenderUnavailableMessage(r.license)}
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell className="text-center">
                           {hasGeographicBonus(r.code) &&
+                          isGenderEligible(r.license, userGender) &&
                           isSameGeographicBonusZone(userGovernorate, r.governorate) ? (
                             <span
                               className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
@@ -1307,7 +1353,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   r.bacType,
                                   r.formula,
                                 ),
-                              )}
+                              ) || !isGenderEligible(r.license, userGender)}
                               openOnHover
                               delay={500}
                               render={
@@ -1369,7 +1415,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           </Popover>
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
-                          {userBacType === r.bacType && userScore !== null ? (
+                          {userBacType === r.bacType && userScore !== null && isGenderEligible(r.license, userGender) ? (
                             <Popover>
                               <PopoverTrigger
                                 disabled={Boolean(

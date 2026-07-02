@@ -50,6 +50,13 @@
       "when": 1782949632224,
       "tag": "0006_regular_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782952712095,
+      "tag": "0007_tiresome_tempest",
+      "breakpoints": true
     }
   ]
 }

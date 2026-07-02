@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { calculateFg } from "@/lib/fg";
 import { getBacTypeCode, getBacTypeLabel } from "@/lib/bac-types";
 import { TUNISIA_GOVERNORATES, type Governorate } from "@/lib/governorates";
+import { isGender, type Gender } from "@/lib/gender";
 
 function roundToTwo(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -30,12 +31,13 @@ export async function GET() {
     }),
     db.query.user.findFirst({
       where: eq(user.id, userId),
-      columns: { governorate: true },
+      columns: { governorate: true, gender: true },
     }),
   ]);
 
   return NextResponse.json({
     governorate: account?.governorate ?? null,
+    gender: isGender(account?.gender) ? account.gender : null,
     bacType: profile
       ? getBacTypeLabel(profile.bacType) ?? profile.bacType
       : saved
@@ -52,7 +54,7 @@ export async function PATCH(request: Request) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { bacType?: unknown; governorate?: unknown }
+    | { bacType?: unknown; governorate?: unknown; gender?: unknown }
     | null;
   const bacTypeCode =
     typeof body?.bacType === "string" ? getBacTypeCode(body.bacType) : null;
@@ -61,8 +63,13 @@ export async function PATCH(request: Request) {
     TUNISIA_GOVERNORATES.includes(body.governorate as Governorate)
       ? (body.governorate as Governorate)
       : null;
+  const gender = isGender(body?.gender) ? (body.gender as Gender) : null;
 
-  if (!bacTypeCode && !governorate) {
+  const hasInvalidGovernorate =
+    body?.governorate !== undefined && !governorate;
+  const hasInvalidGender = body?.gender !== undefined && !gender;
+
+  if (hasInvalidGovernorate || hasInvalidGender || (!bacTypeCode && !governorate && !gender)) {
     return NextResponse.json({ error: "Invalid profile data" }, { status: 400 });
   }
 
@@ -76,10 +83,14 @@ export async function PATCH(request: Request) {
             set: { bacType: bacTypeCode, updatedAt: new Date() },
           })
       : Promise.resolve(),
-    governorate
+    governorate || gender
       ? db
           .update(user)
-          .set({ governorate, updatedAt: new Date() })
+          .set({
+            ...(governorate ? { governorate } : {}),
+            ...(gender ? { gender } : {}),
+            updatedAt: new Date(),
+          })
           .where(eq(user.id, userId))
       : Promise.resolve(),
   ]);
@@ -87,6 +98,7 @@ export async function PATCH(request: Request) {
   return NextResponse.json({
     bacType: bacTypeCode ? body?.bacType : undefined,
     governorate: governorate ?? undefined,
+    gender: gender ?? undefined,
   });
 }
 

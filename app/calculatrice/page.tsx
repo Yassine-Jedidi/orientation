@@ -233,7 +233,7 @@ export default function CalculatorPage() {
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="اختر شعبتك" />
+                <SelectValue placeholder="اختار شعبتك" />
               </SelectTrigger>
               <SelectContent>
                 {bacTypes.map((bt) => (
@@ -348,10 +348,10 @@ export default function CalculatorPage() {
                             value={optionalSubject || null}
                             onValueChange={(value) => value && selectOptionalSubject(value)}
                           >
-                            <SelectTrigger className="w-40" aria-label="اختر المادة الاختيارية">
+                            <SelectTrigger className="w-40" aria-label="اختار المادة الاختيارية">
                               <SelectValue>
                                 {optionalSubjects.find(({ code }) => code === optionalSubject)?.label
-                                  ?? "اختر المادة"}
+                                  ?? "اختار المادة"}
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
@@ -384,7 +384,7 @@ export default function CalculatorPage() {
                           />
                         </div>
                         {grades.OPT !== undefined && !optionalSubject && (
-                          <p className="text-xs text-body">اختر المادة لربط النقطة المحفوظة بها.</p>
+                          <p className="text-xs text-body">اختار المادة لربط النقطة المحفوظة بها.</p>
                         )}
                       </div>
                     ) : (

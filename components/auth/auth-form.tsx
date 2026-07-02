@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
+import { GENDERS, GENDER_LABELS, type Gender } from "@/lib/gender";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [googlePending, setGooglePending] = useState(false);
   const [error, setError] = useState("");
   const [governorate, setGovernorate] = useState("");
+  const [gender, setGender] = useState<Gender | "">("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,6 +42,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           email,
           password,
           governorate,
+          gender,
         })
       : await authClient.signIn.email({ email, password });
 
@@ -106,9 +109,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           <label htmlFor="governorate" className="text-sm font-medium text-ink">
             ولايتك
           </label>
-          <Select value={governorate} onValueChange={(value) => setGovernorate(value ?? "")}>
+          <Select value={governorate} onValueChange={(value) => setGovernorate(value ?? "")} items={TUNISIA_GOVERNORATES.map((g) => ({ value: g, label: g }))}>
             <SelectTrigger id="governorate" className="w-full" aria-required="true">
-              <SelectValue placeholder="اختر ولايتك" />
+              <SelectValue placeholder="اختار ولايتك" />
             </SelectTrigger>
             <SelectContent listClassName="max-h-72" showScrollbar>
               {TUNISIA_GOVERNORATES.map((item) => (
@@ -118,6 +121,24 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Select>
           <p className="text-xs text-muted-text">
             تُستعمل لاحتساب التنفيل الجغرافي فقط في مؤسسات ولايتك.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="gender" className="text-sm font-medium text-ink">
+            الجنس
+          </label>
+          <Select value={gender} onValueChange={(value) => setGender(value as Gender)} items={GENDERS.map((g) => ({ value: g, label: GENDER_LABELS[g] }))}>
+            <SelectTrigger id="gender" className="w-full" aria-required="true">
+              <SelectValue placeholder="اختار الجنس" />
+            </SelectTrigger>
+            <SelectContent>
+              {GENDERS.map((item) => (
+                <SelectItem key={item} value={item}>{GENDER_LABELS[item]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-text">
+            يُستعمل لإظهار الشعب المتاحة لك وتخصيص صورتك الرمزية.
           </p>
         </div>
         </div>
@@ -161,7 +182,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={pending || (isSignUp && !governorate)}>
+      <Button type="submit" className="w-full" disabled={pending || (isSignUp && (!governorate || !gender))}>
         {pending
           ? "جارٍ المتابعة..."
           : isSignUp
