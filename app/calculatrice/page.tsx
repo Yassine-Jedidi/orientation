@@ -58,6 +58,7 @@ export default function CalculatorPage() {
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [optionalSubject, setOptionalSubject] = useState("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [isLoadingSavedData, setIsLoadingSavedData] = useState(true);
   const loadedSavedScore = useRef(false);
   const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; optionalSubject: string; saved: boolean }>>({});
 
@@ -68,7 +69,12 @@ export default function CalculatorPage() {
   }, []);
 
   useEffect(() => {
-    if (!session || loadedSavedScore.current) return;
+    if (sessionPending) return;
+    if (!session) {
+      setTimeout(() => setIsLoadingSavedData(false), 0);
+      return;
+    }
+    if (loadedSavedScore.current) return;
     loadedSavedScore.current = true;
 
     fetch("/api/student-score")
@@ -90,8 +96,11 @@ export default function CalculatorPage() {
         setGrades(loadedGrades);
         setOptionalSubject(loadedOptionalSubject);
         formCache.current[payload.bacType] = { mg, grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true };
+      })
+      .finally(() => {
+        setIsLoadingSavedData(false);
       });
-  }, [session]);
+  }, [session, sessionPending]);
 
   const bacTypes = useMemo(
     () =>
@@ -210,6 +219,19 @@ export default function CalculatorPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bacType: value }),
     });
+  }
+
+  if (isLoadingSavedData) {
+    return (
+      <div className="flex flex-col flex-1 bg-canvas">
+        <main className="mx-auto w-full max-w-xl flex-1 px-6 py-24 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-10 animate-spin rounded-full border-4 border-brand-teal border-t-transparent" />
+            <p className="text-sm font-medium text-muted-text">جارٍ تحميل البيانات...</p>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (

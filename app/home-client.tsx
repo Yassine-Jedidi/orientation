@@ -692,7 +692,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </span>
                               {hasGeographicBonus(record.code) &&
                                 isGenderEligible(record.license, userGender) &&
-                                isSameGeographicBonusZone(userGovernorate, record.governorate) && (
+                                (!userGovernorate || isSameGeographicBonusZone(userGovernorate, record.governorate)) && (
                                 <span className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink" dir="ltr">
                                   +7%
                                 </span>
@@ -976,7 +976,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 >
                                   {hasGeographicBonus(group.code) &&
                                   isGenderEligible(group.license, userGender) &&
-                                  isSameGeographicBonusZone(userGovernorate, group.governorate) ? (
+                                  (userGovernorate === null || isSameGeographicBonusZone(userGovernorate, group.governorate)) ? (
                                     <span
                                       className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                                       dir="ltr"
@@ -1325,7 +1325,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         <TableCell className="text-center">
                           {hasGeographicBonus(r.code) &&
                           isGenderEligible(r.license, userGender) &&
-                          isSameGeographicBonusZone(userGovernorate, r.governorate) ? (
+                          (userGovernorate === null || isSameGeographicBonusZone(userGovernorate, r.governorate)) ? (
                             <span
                               className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                               dir="ltr"
