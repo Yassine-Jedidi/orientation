@@ -160,7 +160,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [page, setPage] = useState(1);
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (resultsCardRef.current) {
+      const top =
+        resultsCardRef.current.getBoundingClientRect().top +
+        window.scrollY -
+        16;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
   };
   const [userBacType, setUserBacType] = useState<string | null>(null);
   const [userScore, setUserScore] = useState<number | null>(null);
@@ -172,6 +178,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userGender, setUserGender] = useState<Gender | null>(null);
   const userScoreFetched = useRef(false);
+  const resultsCardRef = useRef<HTMLDivElement>(null);
 
   const computeBaseScore = (formula?: string | null) => {
     if (userScore === null) return null;
@@ -635,7 +642,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           </CardContent>
         </Card>
 
-        <Card className="pb-0">
+        <Card ref={resultsCardRef} className="pb-0">
           <CardHeader>
             <CardTitle>
               النتائج{" "}
