@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { usePathname } from "next/navigation";
 
 type PageId = "guide" | "calculator" | "tenfil";
 
@@ -29,15 +30,8 @@ const destinations = [
   { id: "tenfil", href: "/tenfil", label: "التنفيل الجغرافي" },
 ] as const;
 
-export function SiteHeader({
-  current,
-  title,
-  subtitle,
-}: {
-  current: PageId;
-  title: string;
-  subtitle: string;
-}) {
+export function SiteHeader() {
+  const pathname = usePathname();
   const { data: session, isPending } = authClient.useSession();
   const [mounted, setMounted] = useState(false);
   const [hasSessionCookie, setHasSessionCookie] = useState(false);
@@ -45,7 +39,6 @@ export function SiteHeader({
   const [gender, setGender] = useState<Gender | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-  const links = destinations.filter((destination) => destination.id !== current);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -68,6 +61,26 @@ export function SiteHeader({
       .catch(() => undefined);
     return () => controller.abort();
   }, [session?.user]);
+
+  if (pathname === "/connexion" || pathname === "/inscription") {
+    return null;
+  }
+
+  let current: PageId = "guide";
+  let title = "دليل التوجيه الجامعي";
+  let subtitle = "استشارة معدلات التوجيه حسب الشعب والباكالوريا";
+
+  if (pathname === "/calculatrice") {
+    current = "calculator";
+    title = "احسب سكورك";
+    subtitle = "احسب معدلك التوجيهي (FG) حسب مواد شعبتك";
+  } else if (pathname === "/tenfil") {
+    current = "tenfil";
+    title = "التنفيل الجغرافي";
+    subtitle = "قواعد التنفيل وقائمة الشعب المشمولة بنسبة 7%";
+  }
+
+  const links = destinations.filter((destination) => destination.id !== current);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_Arabic } from "next/font/google";
 import { GovernorateOnboarding } from "@/components/profile/governorate-onboarding";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RootLayout({
       className={`${inter.variable} ${notoArabic.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
+        <SiteHeader />
         {children}
         <GovernorateOnboarding />
       </body>

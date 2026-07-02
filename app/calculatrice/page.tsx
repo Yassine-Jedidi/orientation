@@ -6,7 +6,7 @@ import { Check, Save } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SiteHeader } from "@/components/site-header";
+
 import {
   Select,
   SelectContent,
@@ -214,11 +214,7 @@ export default function CalculatorPage() {
 
   return (
     <div className="flex flex-col flex-1">
-      <SiteHeader
-        current="calculator"
-        title="احسب سكورك"
-        subtitle="احسب معدلك التوجيهي (FG) حسب مواد شعبتك"
-      />
+
 
       <main className="mx-auto w-full max-w-xl flex-1 px-6 py-6">
         <Card className="mb-6">

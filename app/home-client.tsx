@@ -8,7 +8,7 @@ import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { getRequiredGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { authClient } from "@/lib/auth-client";
-import { SiteHeader } from "@/components/site-header";
+
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -388,11 +388,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   return (
     <div className="flex flex-col flex-1">
-      <SiteHeader
-        current="guide"
-        title="دليل التوجيه الجامعي"
-        subtitle="استشارة معدلات التوجيه حسب الشعب والباكالوريا"
-      />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
         <Card className="mb-6">

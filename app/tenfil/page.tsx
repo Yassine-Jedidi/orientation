@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { SiteHeader } from "@/components/site-header";
+
 import { GeographicBonusDirectory } from "./geographic-bonus-directory";
 
 export interface GeographicBonusLicense {
@@ -33,11 +33,7 @@ export default function GeographicBonusPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <SiteHeader
-        current="tenfil"
-        title="التنفيل الجغرافي"
-        subtitle="قواعد التنفيل وقائمة الشعب المشمولة بنسبة 7%"
-      />
+
 
       <main>
         <section className="border-b border-border bg-surface-soft">
