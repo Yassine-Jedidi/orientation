@@ -158,6 +158,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [groupedView, setGroupedView] = useState(false);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const [userBacType, setUserBacType] = useState<string | null>(null);
   const [userScore, setUserScore] = useState<number | null>(null);
   const [userGrades, setUserGrades] = useState<Record<string, number> | null>(
@@ -1724,7 +1728,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
             <Pagination
               page={page}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
             />
           </div>
         </Card>
