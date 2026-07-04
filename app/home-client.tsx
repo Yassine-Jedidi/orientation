@@ -10,6 +10,7 @@ import {
   CircleSlash2,
   ChevronLeft,
   Calculator,
+  TriangleAlert,
 } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
@@ -93,6 +94,7 @@ interface LicenseGroup {
   license: string;
   speciality: string[];
   duration?: number;
+  notes?: string[];
   branches: ScoreRecord[];
 }
 
@@ -140,6 +142,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       license: record.license,
       speciality: record.speciality ?? [],
       duration: record.duration,
+      notes: record.notes,
       branches: [record],
     });
   });
@@ -779,6 +782,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             {record.duration && (
                               <p className="mt-1 text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
                             )}
+                            {record.notes && record.notes.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {record.notes.map((note) => (
+                                  <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
+                                    <TriangleAlert className="size-3 shrink-0" />
+                                    {note}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
                             {record.speciality && record.speciality.length > 0 && (
                               <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                 {record.speciality.map((s) => (
@@ -849,6 +862,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
+                          {record.notes && record.notes.length > 0 && (
+                            <div className="space-y-1">
+                              {record.notes.map((note) => (
+                                <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
+                                  <TriangleAlert className="size-3 shrink-0" />
+                                  {note}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                           {record.speciality && record.speciality.length > 0 && (
                             <div className="flex flex-wrap items-start gap-1">
                               {record.speciality.map((s) => (
@@ -1162,6 +1185,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     </Tooltip>
                                     {group.duration && (
                                       <p className="mt-1 text-xs leading-5 text-muted-text">{group.duration} سنوات</p>
+                                    )}
+                                    {group.notes && group.notes.length > 0 && (
+                                      <div className="mt-2 space-y-1">
+                                        {group.notes.map((note) => (
+                                          <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
+                                            <TriangleAlert className="size-3 shrink-0" />
+                                            {note}
+                                          </p>
+                                        ))}
+                                      </div>
                                     )}
                                     {group.speciality.length > 0 && (
                                       <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
@@ -1561,6 +1594,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </Tooltip>
                             {r.duration && (
                               <p className="mt-1 text-xs leading-5 text-muted-text">{r.duration} سنوات</p>
+                            )}
+                            {r.notes && r.notes.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {r.notes.map((note) => (
+                                  <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
+                                    <TriangleAlert className="size-3 shrink-0" />
+                                    {note}
+                                  </p>
+                                ))}
+                              </div>
                             )}
                             {r.speciality && r.speciality.length > 0 && (
                               <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">

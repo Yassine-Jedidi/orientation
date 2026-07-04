@@ -10,4 +10,5 @@ export interface ScoreRecord {
   formula?: string;
   speciality?: string[];
   duration?: number;
+  notes?: string[];
 }
