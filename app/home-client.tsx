@@ -297,12 +297,14 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   useEffect(() => {
     if (!session) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setUserBacType(null);
       setUserScore(null);
       setUserGrades(null);
       setOnlyMyBac(false);
       setUserGovernorate(null);
       setUserGender(null);
+      /* eslint-enable react-hooks/set-state-in-effect */
       userScoreFetched.current = false;
       return;
     }
@@ -773,11 +775,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {record.license}
                             </h3>
                             {record.speciality && record.speciality.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
+                              <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                 {record.speciality.map((s) => (
                                   <span
                                     key={s}
-                                    className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                    className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
                                   >
                                     {s}
                                   </span>
@@ -840,12 +842,12 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         </DialogHeader>
                         <div className="space-y-4">
                           {record.speciality && record.speciality.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap items-start gap-1">
                               {record.speciality.map((s) => (
-                                <span
-                                  key={s}
-                                  className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
-                                >
+                                  <span
+                                    key={s}
+                                    className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
+                                  >
                                   {s}
                                 </span>
                               ))}
@@ -1130,7 +1132,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   </TableCell>
                                    <TableCell
                                     rowSpan={group.branches.length}
-                                    className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                    className={`align-top font-medium max-w-[210px] ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                   >
                                     <Tooltip>
                                       <TooltipTrigger
@@ -1151,11 +1153,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       </TooltipPortal>
                                     </Tooltip>
                                     {group.speciality.length > 0 && (
-                                      <div className="mt-2 flex flex-wrap gap-1">
+                                      <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                         {group.speciality.map((s) => (
                                           <span
                                             key={s}
-                                            className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                            className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
                                           >
                                             {s}
                                           </span>
@@ -1547,11 +1549,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </TooltipPortal>
                             </Tooltip>
                             {r.speciality && r.speciality.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
+                              <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                 {r.speciality.map((s) => (
                                   <span
                                     key={s}
-                                    className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                    className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
                                   >
                                     {s}
                                   </span>
