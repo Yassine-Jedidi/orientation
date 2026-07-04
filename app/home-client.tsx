@@ -16,6 +16,7 @@ import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { BAC_ORDER } from "@/lib/bac-order";
 import { getRequiredGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { authClient } from "@/lib/auth-client";
+import { normalizeArabicSearch } from "@/lib/arabic-search";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
@@ -364,7 +365,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   }, [data, governorate, university, institution]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = normalizeArabicSearch(search);
     return data
       .filter((r) => {
         if (bacType !== "all" && r.bacType !== bacType && !onlyMyBac)
@@ -378,10 +379,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
         if (q) {
           const match =
-            r.institution.toLowerCase().includes(q) ||
-            r.license.toLowerCase().includes(q) ||
-            r.code.includes(q) ||
-            r.university.toLowerCase().includes(q);
+            normalizeArabicSearch(r.institution).includes(q) ||
+            normalizeArabicSearch(r.license).includes(q) ||
+            normalizeArabicSearch(r.code).includes(q) ||
+            normalizeArabicSearch(r.university).includes(q);
           if (!match) return false;
         }
         return true;

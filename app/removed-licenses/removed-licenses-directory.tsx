@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AddedLicense, RemovedLicense } from "./page";
+import { normalizeArabicSearch } from "@/lib/arabic-search";
 
 type ComparisonView = "removed" | "added";
 
@@ -28,16 +29,16 @@ export function RemovedLicensesDirectory({
   );
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("ar");
+    const needle = normalizeArabicSearch(query);
     return licenses.filter((license) => {
       const matchesQuery = !needle || [license.code, license.license, license.institution, license.university]
-        .some((value) => value.toLocaleLowerCase("ar").includes(needle));
+        .some((value) => normalizeArabicSearch(value).includes(needle));
       return matchesQuery && (university === "all" || license.university === university);
     });
   }, [licenses, query, university]);
 
   const filteredAdded = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("ar");
+    const needle = normalizeArabicSearch(query);
     if (!needle) return addedLicenses;
     return addedLicenses.filter((license) =>
       [
@@ -47,7 +48,7 @@ export function RemovedLicensesDirectory({
         license.university,
         String(license.guidePage),
       ]
-        .some((value) => value.toLocaleLowerCase("ar").includes(needle)),
+        .some((value) => normalizeArabicSearch(value).includes(needle)),
     );
   }, [addedLicenses, query]);
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { GeographicBonusLicense } from "./page";
+import { normalizeArabicSearch } from "@/lib/arabic-search";
 
 type ListKind = "eligible" | "excluded";
 
@@ -21,12 +22,12 @@ export function GeographicBonusDirectory({
   const [query, setQuery] = useState("");
   const source = active === "eligible" ? eligible : excluded;
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("ar");
+    const normalized = normalizeArabicSearch(query);
     if (!normalized) return source;
     return source.filter(
       (license) =>
-        license.code.includes(normalized) ||
-        license.name.toLocaleLowerCase("ar").includes(normalized),
+        normalizeArabicSearch(license.code).includes(normalized) ||
+        normalizeArabicSearch(license.name).includes(normalized),
     );
   }, [query, source]);
 

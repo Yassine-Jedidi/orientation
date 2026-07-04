@@ -5,6 +5,7 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox"
 import { CheckIcon, SearchIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { normalizeArabicSearch } from "@/lib/arabic-search"
 
 type ComboboxProps = {
   items: string[]
@@ -14,16 +15,6 @@ type ComboboxProps = {
   searchPlaceholder: string
   emptyMessage: string
   className?: string
-}
-
-function normalizeArabic(value: string) {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0640\u064B-\u065F\u0670]/g, "")
-    .replace(/[أإآٱ]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ة/g, "ه")
-    .toLocaleLowerCase("ar")
 }
 
 function Combobox({
@@ -41,7 +32,7 @@ function Combobox({
       value={value}
       onValueChange={onValueChange}
       filter={(item, query) =>
-        normalizeArabic(item).includes(normalizeArabic(query.trim()))
+        normalizeArabicSearch(item).includes(normalizeArabicSearch(query))
       }
       autoHighlight
     >
