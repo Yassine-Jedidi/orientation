@@ -22,13 +22,13 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { usePathname } from "next/navigation";
 
-type PageId = "guide" | "calculator" | "tenfil" | "removed";
+type PageId = "guide" | "calculator" | "tenfil" | "changes";
 
 const destinations = [
   { id: "guide", href: "/", label: "دليل التوجيه" },
   { id: "calculator", href: "/calculatrice", label: "احسب سكورك" },
   { id: "tenfil", href: "/tenfil", label: "التنفيل الجغرافي" },
-  { id: "removed", href: "/removed-licenses", label: "الشعب غير المتوفرة" },
+  { id: "changes", href: "/changements-filieres", label: "تغييرات دليل 2026" },
 ] as const;
 
 export function SiteHeader() {
@@ -79,10 +79,10 @@ export function SiteHeader() {
     current = "tenfil";
     title = "التنفيل الجغرافي";
     subtitle = "قواعد التنفيل وقائمة الشعب المشمولة بنسبة 7%";
-  } else if (pathname === "/removed-licenses") {
-    current = "removed";
-    title = "الشعب غير المتوفرة";
-    subtitle = "مقارنة عروض التوجيه بين دليلَي 2025 و2026";
+  } else if (pathname === "/changements-filieres" || pathname === "/license-changes" || pathname === "/removed-licenses") {
+    current = "changes";
+    title = "تغييرات دليل التوجيه 2026";
+    subtitle = "الشعب الجديدة وغير المدرجة مقارنة بدليل 2025";
   }
 
   const links = destinations.filter((destination) => destination.id !== current);

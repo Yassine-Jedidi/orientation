@@ -97,6 +97,9 @@ const ROWS_PER_PAGE = 25;
 const LICENSES_PER_PAGE = 10;
 const GREATER_TUNIS_FILTER = "greater-tunis";
 
+const formatScore = (score: number | null) =>
+  score === null ? "جديدة" : score.toFixed(4);
+
 function matchesGovernorateFilter(
   selectedGovernorate: string,
   recordGovernorate: string,
@@ -155,6 +158,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [license, setLicense] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [minScore, setMinScore] = useState("");
+  const [onlyNewLicenses, setOnlyNewLicenses] = useState(false);
   const [groupedView, setGroupedView] = useState(false);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -238,7 +242,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   const getRowStatus = (
     bacType: string,
-    score: number,
+    score: number | null,
     formula?: string | null,
     programCode?: string,
     institutionGovernorate?: string,
@@ -246,6 +250,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   ) => {
     if (licenseName && !isGenderEligible(licenseName, userGender))
       return "gender-unavailable";
+    if (score === null) return "new";
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
     const effective = computeEffective(
@@ -369,7 +374,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (!matchesGovernorateFilter(governorate, r.governorate)) return false;
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
-        if (minScore && r.score > parseFloat(minScore)) return false;
+        if (onlyNewLicenses && r.score !== null) return false;
+        if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
         if (q) {
           const match =
             r.institution.toLowerCase().includes(q) ||
@@ -381,7 +387,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         return true;
       })
       .sort((a, b) =>
-        sortDir === "desc" ? b.score - a.score : a.score - b.score,
+        sortDir === "desc"
+          ? (b.score ?? -Infinity) - (a.score ?? -Infinity)
+          : (a.score ?? Infinity) - (b.score ?? Infinity),
       );
   }, [
     data,
@@ -392,6 +400,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     institution,
     license,
     minScore,
+    onlyNewLicenses,
     sortDir,
     onlyMyBac,
     userBacType,
@@ -572,6 +581,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               />
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-start gap-3 border-t border-border pt-4">
+              <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                <Switch
+                  checked={onlyNewLicenses}
+                  onCheckedChange={(value) => {
+                    setOnlyNewLicenses(value);
+                    setPage(1);
+                  }}
+                  aria-label="عرض الشعب الجديدة في دليل 2026 فقط"
+                />
+                الشعب الجديدة فقط
+              </label>
               {session && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
@@ -619,6 +639,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 governorate !== "all" ||
                 institution ||
                 license ||
+                onlyNewLicenses ||
                 minScore) && (
                 <Button
                   variant="outline"
@@ -629,6 +650,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     setGovernorate("all");
                     setInstitution(null);
                     setLicense(null);
+                    setOnlyNewLicenses(false);
                     setMinScore("");
                     setSortDir("desc");
                     setPage(1);
@@ -729,7 +751,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   className={`font-mono text-base tabular-nums ${statusColor}`}
                                   dir="ltr"
                                 >
-                                  {record.score.toFixed(4)}
+                                  {formatScore(record.score)}
                                 </strong>
                               </div>
                             </div>
@@ -815,7 +837,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 className="mt-1 block text-right font-mono text-ink"
                                 dir="ltr"
                               >
-                                {record.score.toFixed(4)}
+                                {formatScore(record.score)}
                               </strong>
                             </div>
                           </div>
@@ -883,6 +905,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             !unavailable &&
                             !genderUnavailable &&
                             (() => {
+                              if (record.score === null) return null;
                               const base = computeBaseScore(record.formula);
                               const bonusApplied =
                                 useGeographicBonus &&
@@ -982,11 +1005,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[80px]">الرمز</TableHead>
+                    <TableHead className="w-[210px]">الإجازة</TableHead>
                     <TableHead className="w-[190px]">الجامعة</TableHead>
                     <TableHead className="hidden w-[250px] md:table-cell">
                       المؤسسة
                     </TableHead>
-                    <TableHead className="w-[210px]">الإجازة</TableHead>
                     <TableHead className="w-[84px] text-center">
                       التنفيل
                     </TableHead>
@@ -1003,7 +1026,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   paginatedGroups.map((group) => {
                     const bestIdx = group.branches.reduce(
                       (maxIdx, b, i, arr) =>
-                        b.score > arr[maxIdx].score ? i : maxIdx,
+                        (b.score ?? -Infinity) > (arr[maxIdx].score ?? -Infinity) ? i : maxIdx,
                       0,
                     );
                     const isHovered = hoveredGroup === group.key;
@@ -1068,6 +1091,39 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       />
                                     )}
                                   </TableCell>
+                                   <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    <Tooltip>
+                                      <TooltipTrigger
+                                        delay={500}
+                                        render={
+                                          <span className="line-clamp-2 whitespace-normal leading-5" />
+                                        }
+                                      >
+                                        {group.license}
+                                      </TooltipTrigger>
+                                      <TooltipPortal>
+                                        <TooltipPositioner sideOffset={8}>
+                                          <TooltipPopup>
+                                            <TooltipArrow />
+                                            {group.license}
+                                          </TooltipPopup>
+                                        </TooltipPositioner>
+                                      </TooltipPortal>
+                                    </Tooltip>
+                                    {getGenderUnavailableMessage(
+                                      group.license,
+                                    ) && (
+                                      <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                                        <CircleSlash2 className="size-3.5" />{" "}
+                                        {getGenderUnavailableMessage(
+                                          group.license,
+                                        )}
+                                      </span>
+                                    )}
+                                  </TableCell>
                                   <TableCell
                                     rowSpan={group.branches.length}
                                     className={`align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
@@ -1101,39 +1157,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     <span className="mt-1 block text-xs font-medium text-muted-text">
                                       ولاية {group.governorate}
                                     </span>
-                                  </TableCell>
-                                  <TableCell
-                                    rowSpan={group.branches.length}
-                                    className={`align-top font-medium ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
-                                  >
-                                    <Tooltip>
-                                      <TooltipTrigger
-                                        delay={500}
-                                        render={
-                                          <span className="line-clamp-2 whitespace-normal leading-5" />
-                                        }
-                                      >
-                                        {group.license}
-                                      </TooltipTrigger>
-                                      <TooltipPortal>
-                                        <TooltipPositioner sideOffset={8}>
-                                          <TooltipPopup>
-                                            <TooltipArrow />
-                                            {group.license}
-                                          </TooltipPopup>
-                                        </TooltipPositioner>
-                                      </TooltipPortal>
-                                    </Tooltip>
-                                    {getGenderUnavailableMessage(
-                                      group.license,
-                                    ) && (
-                                      <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
-                                        <CircleSlash2 className="size-3.5" />{" "}
-                                        {getGenderUnavailableMessage(
-                                          group.license,
-                                        )}
-                                      </span>
-                                    )}
                                   </TableCell>
                                   <TableCell
                                     rowSpan={group.branches.length}
@@ -1263,7 +1286,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         />
                                       }
                                     >
-                                      {branch.score.toFixed(4)}
+                                      {formatScore(branch.score)}
                                     </PopoverTrigger>
                                     <PopoverPortal>
                                       <PopoverPositioner sideOffset={8}>
@@ -1280,6 +1303,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             );
                                             if (
                                               eff === null ||
+                                              branch.score === null ||
                                               userBacType !== branch.bacType
                                             )
                                               return null;
@@ -1333,7 +1357,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                                     dir="ltr"
                                                     className="inline-block tabular-nums"
                                                   >
-                                                    {branch.score.toFixed(4)}
+                                                    {formatScore(branch.score)}
                                                   </b>
                                                 </span>
                                                 <span className="block text-right">
@@ -1367,7 +1391,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     </PopoverPortal>
                                   </Popover>
                                 ) : (
-                                  branch.score.toFixed(4)
+                                  formatScore(branch.score)
                                 )}
                               </TableCell>
                             </TableRow>
@@ -1454,6 +1478,32 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
                             ) : null}
                           </TableCell>
+                           <TableCell>
+                            <Tooltip>
+                              <TooltipTrigger
+                                delay={500}
+                                render={
+                                  <span className="line-clamp-2 whitespace-normal leading-5" />
+                                }
+                              >
+                                {r.license}
+                              </TooltipTrigger>
+                              <TooltipPortal>
+                                <TooltipPositioner sideOffset={8}>
+                                  <TooltipPopup>
+                                    <TooltipArrow />
+                                    {r.license}
+                                  </TooltipPopup>
+                                </TooltipPositioner>
+                              </TooltipPortal>
+                            </Tooltip>
+                            {getGenderUnavailableMessage(r.license) && (
+                              <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
+                                <CircleSlash2 className="size-3.5" />{" "}
+                                {getGenderUnavailableMessage(r.license)}
+                              </span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <span className="line-clamp-2 whitespace-normal leading-5">
                               {r.university}
@@ -1481,32 +1531,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <span className="mt-1 block text-xs font-medium text-muted-text">
                               ولاية {r.governorate}
                             </span>
-                          </TableCell>
-                          <TableCell>
-                            <Tooltip>
-                              <TooltipTrigger
-                                delay={500}
-                                render={
-                                  <span className="line-clamp-2 whitespace-normal leading-5" />
-                                }
-                              >
-                                {r.license}
-                              </TooltipTrigger>
-                              <TooltipPortal>
-                                <TooltipPositioner sideOffset={8}>
-                                  <TooltipPopup>
-                                    <TooltipArrow />
-                                    {r.license}
-                                  </TooltipPopup>
-                                </TooltipPositioner>
-                              </TooltipPortal>
-                            </Tooltip>
-                            {getGenderUnavailableMessage(r.license) && (
-                              <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
-                                <CircleSlash2 className="size-3.5" />{" "}
-                                {getGenderUnavailableMessage(r.license)}
-                              </span>
-                            )}
                           </TableCell>
                           <TableCell className="text-center">
                             {hasGeographicBonus(r.code) &&
@@ -1622,7 +1646,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     />
                                   }
                                 >
-                                  {r.score.toFixed(4)}
+                                  {formatScore(r.score)}
                                 </PopoverTrigger>
                                 <PopoverPortal>
                                   <PopoverPositioner sideOffset={8}>
@@ -1639,6 +1663,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         );
                                         if (
                                           eff === null ||
+                                          r.score === null ||
                                           userBacType !== r.bacType
                                         )
                                           return null;
@@ -1691,7 +1716,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                                 dir="ltr"
                                                 className="inline-block tabular-nums"
                                               >
-                                                {r.score.toFixed(4)}
+                                                {formatScore(r.score)}
                                               </b>
                                             </span>
                                             <span className="block text-right">
@@ -1720,7 +1745,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </PopoverPortal>
                               </Popover>
                             ) : (
-                              r.score.toFixed(4)
+                              formatScore(r.score)
                             )}
                           </TableCell>
                         </TableRow>
