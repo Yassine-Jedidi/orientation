@@ -91,6 +91,7 @@ interface LicenseGroup {
   governorate: string;
   code: string;
   license: string;
+  speciality: string[];
   branches: ScoreRecord[];
 }
 
@@ -136,6 +137,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       governorate: record.governorate,
       code: record.code,
       license: record.license,
+      speciality: record.speciality ?? [],
       branches: [record],
     });
   });
@@ -591,7 +593,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   }}
                   aria-label="عرض الشعب الجديدة في دليل 2026 فقط"
                 />
-                الشعب الجديدة فقط
+                الإجازات الجديدة فقط
               </label>
               {session && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
@@ -760,6 +762,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
                               {record.license}
                             </h3>
+                            {record.speciality && record.speciality.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {record.speciality.map((s) => (
+                                  <span
+                                    key={s}
+                                    className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                  >
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                             {genderUnavailable && (
                               <p className="mt-2 text-xs font-medium text-muted-text">
                                 {genderUnavailable}
@@ -815,6 +829,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
+                          {record.speciality && record.speciality.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {record.speciality.map((s) => (
+                                <span
+                                  key={s}
+                                  className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <div className="rounded-lg bg-surface-soft p-4">
                             <p className="text-xs text-muted-text">المؤسسة</p>
                             <p className="mt-1 leading-6 text-ink">
@@ -1114,6 +1140,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         </TooltipPositioner>
                                       </TooltipPortal>
                                     </Tooltip>
+                                    {group.speciality.length > 0 && (
+                                      <div className="mt-2 flex flex-wrap gap-1">
+                                        {group.speciality.map((s) => (
+                                          <span
+                                            key={s}
+                                            className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                          >
+                                            {s}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
                                     {getGenderUnavailableMessage(
                                       group.license,
                                     ) && (
@@ -1498,6 +1536,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </TooltipPositioner>
                               </TooltipPortal>
                             </Tooltip>
+                            {r.speciality && r.speciality.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {r.speciality.map((s) => (
+                                  <span
+                                    key={s}
+                                    className="inline-block rounded-full bg-brand-peach/60 px-2 py-0.5 text-xs leading-5 text-ink"
+                                  >
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                             {getGenderUnavailableMessage(r.license) && (
                               <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted-text">
                                 <CircleSlash2 className="size-3.5" />{" "}

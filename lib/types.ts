@@ -8,4 +8,5 @@ export interface ScoreRecord {
   bacType: string;
   score: number | null;
   formula?: string;
+  speciality?: string[];
 }
