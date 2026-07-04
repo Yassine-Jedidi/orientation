@@ -92,6 +92,7 @@ interface LicenseGroup {
   code: string;
   license: string;
   speciality: string[];
+  duration?: number;
   branches: ScoreRecord[];
 }
 
@@ -138,6 +139,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       code: record.code,
       license: record.license,
       speciality: record.speciality ?? [],
+      duration: record.duration,
       branches: [record],
     });
   });
@@ -774,6 +776,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
                               {record.license}
                             </h3>
+                            {record.duration && (
+                              <p className="mt-1 text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
+                            )}
                             {record.speciality && record.speciality.length > 0 && (
                               <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                 {record.speciality.map((s) => (
@@ -836,6 +841,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           <DialogTitle className="pe-10 text-right text-title-md leading-7">
                             {record.license}
                           </DialogTitle>
+                          {record.duration && (
+                            <p className="pe-10 text-right text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
+                          )}
                           <DialogDescription className="text-right">
                             الرمز {record.code} · {record.university}
                           </DialogDescription>
@@ -1152,6 +1160,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         </TooltipPositioner>
                                       </TooltipPortal>
                                     </Tooltip>
+                                    {group.duration && (
+                                      <p className="mt-1 text-xs leading-5 text-muted-text">{group.duration} سنوات</p>
+                                    )}
                                     {group.speciality.length > 0 && (
                                       <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                         {group.speciality.map((s) => (
@@ -1548,6 +1559,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </TooltipPositioner>
                               </TooltipPortal>
                             </Tooltip>
+                            {r.duration && (
+                              <p className="mt-1 text-xs leading-5 text-muted-text">{r.duration} سنوات</p>
+                            )}
                             {r.speciality && r.speciality.length > 0 && (
                               <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
                                 {r.speciality.map((s) => (

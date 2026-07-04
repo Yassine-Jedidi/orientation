@@ -9,4 +9,5 @@ export interface ScoreRecord {
   score: number | null;
   formula?: string;
   speciality?: string[];
+  duration?: number;
 }
