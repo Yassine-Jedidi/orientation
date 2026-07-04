@@ -296,7 +296,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   };
 
   useEffect(() => {
-    if (!session || userScoreFetched.current) return;
+    if (!session) {
+      setUserBacType(null);
+      setUserScore(null);
+      setUserGrades(null);
+      setOnlyMyBac(false);
+      setUserGovernorate(null);
+      setUserGender(null);
+      userScoreFetched.current = false;
+      return;
+    }
+    if (userScoreFetched.current) return;
     userScoreFetched.current = true;
     fetch("/api/student-score")
       .then((r) => r.json())
