@@ -22,13 +22,14 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { usePathname } from "next/navigation";
 
-type PageId = "guide" | "calculator" | "tenfil" | "changes";
+type PageId = "guide" | "calculator" | "tenfil" | "changes" | "favorites";
 
 const destinations = [
   { id: "guide", href: "/", label: "دليل التوجيه" },
   { id: "calculator", href: "/calculatrice", label: "احسب سكورك" },
   { id: "tenfil", href: "/tenfil", label: "التنفيل الجغرافي" },
   { id: "changes", href: "/changements-filieres", label: "تغييرات دليل 2026" },
+  { id: "favorites", href: "/favorites", label: "المفضلة" },
 ] as const;
 
 export function SiteHeader() {
@@ -83,6 +84,10 @@ export function SiteHeader() {
     current = "changes";
     title = "تغييرات دليل التوجيه 2026";
     subtitle = "الشعب الجديدة وغير المدرجة مقارنة بدليل 2025";
+  } else if (pathname === "/favorites") {
+    current = "favorites";
+    title = "المفضلة";
+    subtitle = "الإجازات التي أضفتها إلى المفضلة";
   }
 
   const links = destinations.filter((destination) => destination.id !== current);
@@ -149,7 +154,7 @@ export function SiteHeader() {
               <Button
                 key={link.id}
                 nativeButton={false}
-                variant={link.id === "calculator" ? "brand-mint" : link.id === "tenfil" ? "brand-lavender" : "brand-peach"}
+                variant={link.id === "calculator" ? "brand-mint" : link.id === "tenfil" ? "brand-lavender" : link.id === "favorites" ? "brand-pink" : "brand-peach"}
                 render={<Link href={link.href} />}
               >
                 {link.label}

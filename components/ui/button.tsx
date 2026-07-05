@@ -20,6 +20,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         "brand-mint":
           "bg-brand-mint/50 text-ink hover:bg-brand-mint/70 border-brand-mint/80",
+        "brand-pink":
+          "bg-brand-pink/30 text-ink hover:bg-brand-pink/50 border-brand-pink/60",
         "brand-peach":
           "bg-brand-peach/50 text-ink hover:bg-brand-peach/70 border-brand-peach/80",
         "brand-lavender":

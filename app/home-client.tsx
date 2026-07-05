@@ -19,6 +19,8 @@ import { getRequiredGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { authClient } from "@/lib/auth-client";
 import { normalizeArabicSearch } from "@/lib/arabic-search";
 import { getLocalScore } from "@/lib/local-score";
+import { useFavorites } from "@/lib/use-favorites";
+import { FavoriteButton } from "@/components/favorite-button";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
@@ -172,6 +174,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [minScore, setMinScore] = useState("");
   const [onlyNewLicenses, setOnlyNewLicenses] = useState(false);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [groupedView, setGroupedView] = useState(false);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -194,6 +197,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [useGeographicBonus, setUseGeographicBonus] = useState(true);
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userGender, setUserGender] = useState<Gender | null>(null);
+  const { isFavorite } = useFavorites();
   const userScoreFetched = useRef(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
 
@@ -441,6 +445,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
         if (onlyNewLicenses && r.score !== null) return false;
+        if (onlyFavorites && !isFavorite(r.code, r.bacType)) return false;
         if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
         if (q) {
           const match =
@@ -469,9 +474,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     license,
     minScore,
     onlyNewLicenses,
+    onlyFavorites,
     sortDir,
     onlyMyBac,
     userBacType,
+    isFavorite,
   ]);
 
   const filteredLicenseGroups = useMemo(
@@ -660,6 +667,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 />
                 الإجازات الجديدة فقط
               </label>
+              <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
+                <Switch
+                  checked={onlyFavorites}
+                  onCheckedChange={(value) => {
+                    setOnlyFavorites(value);
+                    setPage(1);
+                  }}
+                  aria-label="عرض المفضلة فقط"
+                />
+                المفضلة فقط
+              </label>
               {userBacType && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
@@ -719,6 +737,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     setInstitution(null);
                     setLicense(null);
                     setOnlyNewLicenses(false);
+                    setOnlyFavorites(false);
                     setMinScore("");
                     setSortDir("desc");
                     setPage(1);
@@ -810,6 +829,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   status === "gender-unavailable") && (
                                   <CircleSlash2 className="size-3.5 text-muted-text" />
                                 )}
+                                <FavoriteButton code={record.code} bacType={record.bacType} size="xs" />
                               </div>
                               <div className="shrink-0 text-left">
                                 <span className="block text-xs text-muted-text">
@@ -1150,20 +1170,21 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px]">الرمز</TableHead>
-                    <TableHead className="w-[210px]">الإجازة</TableHead>
-                    <TableHead className="w-[190px]">الجامعة</TableHead>
-                    <TableHead className="hidden w-[250px] md:table-cell">
+                    <TableHead className="w-[36px]"></TableHead>
+                    <TableHead className="w-[72px]">الرمز</TableHead>
+                    <TableHead className="w-[180px] xl:w-[200px]">الإجازة</TableHead>
+                    <TableHead className="w-[160px] xl:w-[180px]">الجامعة</TableHead>
+                    <TableHead className="hidden w-[200px] xl:w-[220px] md:table-cell">
                       المؤسسة
                     </TableHead>
-                    <TableHead className="w-[84px] text-center">
+                    <TableHead className="w-[60px] text-center">
                       التنفيل
                     </TableHead>
-                    <TableHead className="w-[120px]">
-                      شعبة الباكالوريا
+                    <TableHead className="w-[100px]">
+                      الشعبة
                     </TableHead>
-                    <TableHead className="w-[180px]">الصيغة</TableHead>
-                    <TableHead className="w-[80px] text-right">
+                    <TableHead className="w-[140px] xl:w-[150px]">الصيغة</TableHead>
+                    <TableHead className="w-[84px] text-right">
                       النقاط
                     </TableHead>
                   </TableRow>
@@ -1224,6 +1245,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               key={`${group.key}-${branch.bacType}-${branchIndex}`}
                               className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                             >
+                              <TableCell className="p-2">
+                                <FavoriteButton code={branch.code} bacType={branch.bacType} size="xs" />
+                              </TableCell>
                               {branchIndex === 0 && (
                                 <>
                                   <TableCell
@@ -1604,6 +1628,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             true,
                           )}
                         >
+                          <TableCell className="p-2">
+                            <FavoriteButton code={r.code} bacType={r.bacType} size="xs" />
+                          </TableCell>
                           <TableCell className="font-mono text-xs">
                             {r.code}
                             {getRowStatus(

@@ -149,4 +149,26 @@ export const studentProfile = pgTable(
   (table) => [uniqueIndex("student_profile_user_id_unique").on(table.userId)],
 );
 
+export const favorite = pgTable(
+  "favorite",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    bacType: text("bac_type").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("favorite_user_code_bac_unique").on(
+      table.userId,
+      table.code,
+      table.bacType,
+    ),
+  ],
+);
+
 export const authSchema = { user, session, account, verification };
