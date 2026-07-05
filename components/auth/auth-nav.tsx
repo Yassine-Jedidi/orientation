@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { clearLocalScore } from "@/lib/local-score";
 
 export function AuthNav() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export function AuthNav() {
     <Button
       variant="destructive"
       onClick={async () => {
+        clearLocalScore();
         await authClient.signOut();
         router.refresh();
       }}

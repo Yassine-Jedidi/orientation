@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo, Fragment, useRef } from "react";
-import Link from "next/link";
 import { Check, Save } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,8 @@ import { getBacFormula, ABBREVIATIONS } from "@/lib/bac-formulas";
 import { authClient } from "@/lib/auth-client";
 import { calculateFg } from "@/lib/fg";
 import { getBacOptionalSubjects, getBacSubjects } from "@/lib/bac-subjects";
+import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
+import { getLocalScore, saveLocalScore } from "@/lib/local-score";
 
 function normalize(v: string): string {
   return (v ?? "").replace(",", ".");
@@ -54,6 +55,7 @@ export default function CalculatorPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const [data, setData] = useState<ScoreRecord[]>([]);
   const [bacType, setBacType] = useState("");
+  const [governorate, setGovernorate] = useState("");
   const [mgInput, setMgInput] = useState("");
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [optionalSubject, setOptionalSubject] = useState("");
@@ -71,6 +73,25 @@ export default function CalculatorPage() {
   useEffect(() => {
     if (sessionPending) return;
     if (!session) {
+      const local = getLocalScore();
+      if (local) {
+        /* eslint-disable react-hooks/set-state-in-effect */
+        setBacType(local.bacType);
+        setGovernorate(local.governorate);
+        setMgInput(local.generalAverage.toFixed(2));
+        const loadedGrades = Object.fromEntries(
+          Object.entries(local.grades).map(
+            ([code, grade]) => [code, Number(grade).toFixed(2)],
+          ),
+        );
+        setGrades(loadedGrades);
+        const loadedOptionalSubject = getBacOptionalSubjects(local.bacType).find(
+          ({ code }) => loadedGrades[code] !== undefined,
+        )?.code ?? "";
+        setOptionalSubject(loadedOptionalSubject);
+        formCache.current[local.bacType] = { mg: local.generalAverage.toFixed(2), grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true };
+        /* eslint-enable react-hooks/set-state-in-effect */
+      }
       setTimeout(() => setIsLoadingSavedData(false), 0);
       return;
     }
@@ -152,6 +173,21 @@ export default function CalculatorPage() {
     return calculated ? { mg, ...calculated } : null;
   }, [mgInput, numericGrades, hasErrors, bacType]);
 
+  useEffect(() => {
+    if (result && bacType && governorate && !session) {
+      saveLocalScore({
+        bacType,
+        generalAverage: result.mg,
+        grades: numericGrades,
+        fg: result.fg,
+        fgRegional: result.fgRegional,
+        governorate,
+      });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSaveState("saved");
+    }
+  }, [result, bacType, governorate, numericGrades, session]);
+
   function setGrade(code: string, value: string) {
     const normalized = normalize(value);
     if (!isTwoDecimalInput(normalized)) return;
@@ -179,6 +215,20 @@ export default function CalculatorPage() {
   async function saveScore() {
     if (!result) return;
     setSaveState("saving");
+
+    if (!session) {
+      saveLocalScore({
+        bacType,
+        generalAverage: result.mg,
+        grades: numericGrades,
+        fg: result.fg,
+        fgRegional: result.fgRegional,
+        governorate,
+      });
+      setSaveState("saved");
+      return;
+    }
+
     const response = await fetch("/api/student-score", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -257,6 +307,26 @@ export default function CalculatorPage() {
                 {bacTypes.map((bt) => (
                   <SelectItem key={bt} value={bt}>
                     {bt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>الولاية</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={governorate} onValueChange={(v) => { if (v) setGovernorate(v); }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="اختار ولايتك" />
+              </SelectTrigger>
+              <SelectContent>
+                {TUNISIA_GOVERNORATES.map((gov) => (
+                  <SelectItem key={gov} value={gov}>
+                    {gov}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -471,7 +541,7 @@ export default function CalculatorPage() {
                 <CardFooter className="justify-between gap-3 bg-canvas/70">
                   {sessionPending ? (
                     <div className="h-11 w-full animate-pulse rounded-md bg-surface-strong" />
-                  ) : session ? (
+                  ) : (
                     <>
                       <div className="text-sm text-body" aria-live="polite">
                         {saveState === "saved" && (
@@ -499,14 +569,10 @@ export default function CalculatorPage() {
                             ? "تحديث النتيجة"
                             : "حفظ النتيجة"}
                       </Button>
+                      {!session && (
+                        <p className="text-xs text-body">سجّل الدخول لحفظ نتيجتك عبر الأجهزة.</p>
+                      )}
                     </>
-                  ) : (
-                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm text-body">سجّل الدخول للاحتفاظ بنتيجتك والعودة إليها لاحقاً.</p>
-                      <Button nativeButton={false} render={<Link href="/connexion" />}>
-                        تسجيل الدخول للحفظ
-                      </Button>
-                    </div>
                   )}
                 </CardFooter>
               </Card>

@@ -18,6 +18,7 @@ import { BAC_ORDER } from "@/lib/bac-order";
 import { getRequiredGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { authClient } from "@/lib/auth-client";
 import { normalizeArabicSearch } from "@/lib/arabic-search";
+import { getLocalScore } from "@/lib/local-score";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
@@ -303,12 +304,30 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   useEffect(() => {
     if (!session) {
       /* eslint-disable react-hooks/set-state-in-effect */
-      setUserBacType(null);
-      setUserScore(null);
-      setUserGrades(null);
-      setOnlyMyBac(false);
-      setUserGovernorate(null);
-      setUserGender(null);
+      const local = getLocalScore();
+      if (local) {
+        setUserBacType(local.bacType);
+        setUserScore(local.fg);
+        const grades: Record<string, number> = {};
+        for (const [k, v] of Object.entries(local.grades)) {
+          grades[k] = Number(v);
+        }
+        setUserGrades(grades);
+        setOnlyMyBac(true);
+        setUserGovernorate(local.governorate);
+        setGovernorate(
+          isGreaterTunisGovernorate(local.governorate)
+            ? GREATER_TUNIS_FILTER
+            : local.governorate,
+        );
+      } else {
+        setUserBacType(null);
+        setUserScore(null);
+        setUserGrades(null);
+        setOnlyMyBac(false);
+        setUserGovernorate(null);
+        setUserGender(null);
+      }
       /* eslint-enable react-hooks/set-state-in-effect */
       userScoreFetched.current = false;
       return;
@@ -333,13 +352,35 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (payload.gender) setUserGender(payload.gender as Gender);
         if (payload.score?.fg != null) {
           setUserScore(Number(payload.score.fg));
+          setUserGrades(
+            payload.score.grades
+              ? Object.fromEntries(
+                  Object.entries(payload.score.grades).map(([k, v]) => [
+                    k,
+                    Number(v),
+                  ]),
+                )
+              : null,
+          );
+          return;
         }
-        if (payload.score?.grades) {
+        // API has no saved score — fall back to localStorage
+        const local = getLocalScore();
+        if (local) {
+          setUserBacType(local.bacType);
+          setUserScore(local.fg);
           const grades: Record<string, number> = {};
-          for (const [k, v] of Object.entries(payload.score.grades)) {
+          for (const [k, v] of Object.entries(local.grades)) {
             grades[k] = Number(v);
           }
           setUserGrades(grades);
+          setOnlyMyBac(true);
+          setUserGovernorate(local.governorate);
+          setGovernorate(
+            isGreaterTunisGovernorate(local.governorate)
+              ? GREATER_TUNIS_FILTER
+              : local.governorate,
+          );
         }
       })
       .catch(() => {});
@@ -612,7 +653,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 />
                 الإجازات الجديدة فقط
               </label>
-              {session && (
+              {userBacType && (
                 <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
                     checked={onlyMyBac}
@@ -625,7 +666,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   شعبتي فقط
                 </label>
               )}
-              {session && userScore !== null && (
+              {userScore !== null && (
                 <label className="flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
                   <Switch
                     checked={useGeographicBonus}
