@@ -11,4 +11,6 @@ export interface ScoreRecord {
   speciality?: string[];
   duration?: number;
   notes?: string[];
+  degree_fr?: string;
+  university_abbreviation?: string;
 }

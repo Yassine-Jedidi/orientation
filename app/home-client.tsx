@@ -96,6 +96,8 @@ interface LicenseGroup {
   speciality: string[];
   duration?: number;
   notes?: string[];
+  degree_fr?: string;
+  university_abbreviation?: string;
   branches: ScoreRecord[];
 }
 
@@ -144,6 +146,8 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       speciality: record.speciality ?? [],
       duration: record.duration,
       notes: record.notes,
+      degree_fr: record.degree_fr,
+      university_abbreviation: record.university_abbreviation,
       branches: [record],
     });
   });
@@ -442,7 +446,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
             normalizeArabicSearch(r.institution).includes(q) ||
             normalizeArabicSearch(r.license).includes(q) ||
             normalizeArabicSearch(r.code).includes(q) ||
-            normalizeArabicSearch(r.university).includes(q);
+            normalizeArabicSearch(r.university).includes(q) ||
+            normalizeArabicSearch(r.degree_fr ?? "").includes(q) ||
+            normalizeArabicSearch(r.university_abbreviation ?? "").includes(q);
           if (!match) return false;
         }
         return true;
@@ -820,15 +826,26 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <h3 className="mt-3 line-clamp-2 text-title-sm font-semibold leading-6 text-ink">
                               {record.license}
                             </h3>
+                            {record.degree_fr && (
+                              <p className="text-xs leading-5 text-muted-text">
+                                {record.degree_fr}
+                              </p>
+                            )}
                             {record.duration && (
                               <p className="mt-1 text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
                             )}
                             {record.notes && record.notes.length > 0 && (
                               <div className="mt-2 space-y-1">
                                 {record.notes.map((note) => (
-                                  <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
-                                    <TriangleAlert className="size-3 shrink-0" />
-                                    {note}
+                                  <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                    <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                    {note.startsWith("http") ? (
+                                      <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                        دليل التوجيه (PDF)
+                                      </a>
+                                    ) : (
+                                      note
+                                    )}
                                   </p>
                                 ))}
                               </div>
@@ -855,6 +872,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </p>
                             <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-text">
                               {record.institution}
+                              {record.university_abbreviation && (
+                                <span className="font-mono"> ({record.university_abbreviation})</span>
+                              )}
                             </p>
 
                             <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-caption">
@@ -895,6 +915,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           <DialogTitle className="pe-10 text-right text-title-md leading-7">
                             {record.license}
                           </DialogTitle>
+                          {record.degree_fr && (
+                            <p className="pe-10 text-right text-xs leading-5 text-muted-text">
+                              {record.degree_fr}
+                            </p>
+                          )}
                           {record.duration && (
                             <p className="pe-10 text-right text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
                           )}
@@ -906,9 +931,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           {record.notes && record.notes.length > 0 && (
                             <div className="space-y-1">
                               {record.notes.map((note) => (
-                                <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
-                                  <TriangleAlert className="size-3 shrink-0" />
-                                  {note}
+                                <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                  <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                  {note.startsWith("http") ? (
+                                    <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                      دليل التوجيه (PDF)
+                                    </a>
+                                  ) : (
+                                    note
+                                  )}
                                 </p>
                               ))}
                             </div>
@@ -929,6 +960,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <p className="text-xs text-muted-text">المؤسسة</p>
                             <p className="mt-1 leading-6 text-ink">
                               {record.institution}
+                              {record.university_abbreviation && (
+                                <span className="font-mono"> ({record.university_abbreviation})</span>
+                              )}
                             </p>
                           </div>
                           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1230,9 +1264,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     {group.notes && group.notes.length > 0 && (
                                       <div className="mt-2 space-y-1">
                                         {group.notes.map((note) => (
-                                          <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
-                                            <TriangleAlert className="size-3 shrink-0" />
-                                            {note}
+                                          <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                            <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                            {note.startsWith("http") ? (
+                                              <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                                دليل التوجيه (PDF)
+                                              </a>
+                                            ) : (
+                                              note
+                                            )}
                                           </p>
                                         ))}
                                       </div>
@@ -1639,9 +1679,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             {r.notes && r.notes.length > 0 && (
                               <div className="mt-2 space-y-1">
                                 {r.notes.map((note) => (
-                                  <p key={note} className="flex items-center gap-1 text-xs leading-5 text-warning">
-                                    <TriangleAlert className="size-3 shrink-0" />
-                                    {note}
+                                  <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                    <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                    {note.startsWith("http") ? (
+                                      <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                        دليل التوجيه (PDF)
+                                      </a>
+                                    ) : (
+                                      note
+                                    )}
                                   </p>
                                 ))}
                               </div>
