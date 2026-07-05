@@ -13,4 +13,5 @@ export interface ScoreRecord {
   notes?: string[];
   degree_fr?: string;
   university_abbreviation?: string;
+  geo_bonus_eligible?: boolean;
 }

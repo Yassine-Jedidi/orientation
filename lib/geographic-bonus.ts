@@ -21,9 +21,15 @@ export function isGreaterTunisGovernorate(governorate: string): boolean {
   return GREATER_TUNIS_GOVERNORATES.has(governorate);
 }
 
-/** The guide identifies eligible licences by the final three digits of their code. */
-export function hasGeographicBonus(programCode: string): boolean {
-  return GEOGRAPHIC_BONUS_NATIONAL_CODES.has(programCode.slice(-3));
+export function hasGeographicBonus(
+  input: string | { code?: string; geo_bonus_eligible?: boolean },
+): boolean {
+  if (typeof input === "string") {
+    return GEOGRAPHIC_BONUS_NATIONAL_CODES.has(input.slice(-3));
+  }
+  if (input.geo_bonus_eligible !== undefined) return input.geo_bonus_eligible;
+  if (!input.code) return false;
+  return GEOGRAPHIC_BONUS_NATIONAL_CODES.has(input.code.slice(-3));
 }
 
 export function applyGeographicBonus(score: number): number {
@@ -45,7 +51,7 @@ export function isSameGeographicBonusZone(
 }
 
 export function isGeographicBonusApplicable(
-  programCode: string,
+  input: string | { code?: string; geo_bonus_eligible?: boolean },
   userGovernorate: string | null,
   institutionGovernorate: string,
   enabled = true,
@@ -53,16 +59,16 @@ export function isGeographicBonusApplicable(
   return (
     enabled &&
     isSameGeographicBonusZone(userGovernorate, institutionGovernorate) &&
-    hasGeographicBonus(programCode)
+    hasGeographicBonus(input)
   );
 }
 
 export function getScoreWithGeographicBonus(
   score: number,
-  programCode: string,
+  input: string | { code?: string; geo_bonus_eligible?: boolean },
   enabled: boolean,
 ): number {
-  return enabled && hasGeographicBonus(programCode)
+  return enabled && hasGeographicBonus(input)
     ? applyGeographicBonus(score)
     : score;
 }

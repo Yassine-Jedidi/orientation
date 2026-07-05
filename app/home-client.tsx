@@ -206,23 +206,24 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   const computeEffective = (
     formula?: string | null,
-    programCode?: string,
+    program?: string | { code?: string; geo_bonus_eligible?: boolean },
     institutionGovernorate?: string,
   ) => {
     const score = computeBaseScore(formula);
     if (score === null) return null;
-    return programCode
-      ? getScoreWithGeographicBonus(
-          score,
-          programCode,
-          isGeographicBonusApplicable(
-            programCode,
-            userGovernorate,
-            institutionGovernorate ?? "",
-            useGeographicBonus,
-          ),
-        )
-      : score;
+    if (!program) return score;
+    const input = typeof program === "string" ? { code: program } : program;
+    if (!input.code) return score;
+    return getScoreWithGeographicBonus(
+      score,
+      input,
+      isGeographicBonusApplicable(
+        input,
+        userGovernorate,
+        institutionGovernorate ?? "",
+        useGeographicBonus,
+      ),
+    );
   };
 
   const getCalculation = (formula?: string | null) => {
@@ -881,7 +882,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <span className="rounded-full bg-surface-card px-2.5 py-1 font-medium text-ink">
                                 {record.bacType}
                               </span>
-                              {hasGeographicBonus(record.code) &&
+                              {hasGeographicBonus(record) &&
                                 isGenderEligible(record.license, userGender) &&
                                 (!userGovernorate ||
                                   isSameGeographicBonusZone(
@@ -1058,7 +1059,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   userGovernorate,
                                   record.governorate,
                                 ) &&
-                                hasGeographicBonus(record.code);
+                                hasGeographicBonus(record);
                               const baseColor =
                                 base === null
                                   ? "text-muted-text"
@@ -1338,7 +1339,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     rowSpan={group.branches.length}
                                     className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                   >
-                                    {hasGeographicBonus(group.code) &&
+                                    {hasGeographicBonus(group) &&
                                     isGenderEligible(
                                       group.license,
                                       userGender,
@@ -1489,7 +1490,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                                 userGovernorate,
                                                 branch.governorate,
                                               ) &&
-                                              hasGeographicBonus(branch.code);
+                                              hasGeographicBonus(branch);
                                             return (
                                               <span className="whitespace-nowrap text-xs leading-relaxed">
                                                 {bonusApplied &&
