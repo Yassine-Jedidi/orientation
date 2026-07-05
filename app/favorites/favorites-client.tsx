@@ -29,8 +29,8 @@ export function FavoritesClient({ initialData }: Props) {
 
   if (favoriteRecords.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        <Card>
+      <div className="mx-auto w-full max-w-2xl px-6 py-12">
+        <Card className="w-full">
           <CardContent className="flex flex-col items-center gap-4 py-16">
             <Heart className="size-12 text-muted-soft" />
             <p className="text-body text-muted-text">لا توجد إجازات في المفضلة بعد</p>

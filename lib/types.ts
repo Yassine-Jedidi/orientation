@@ -14,4 +14,8 @@ export interface ScoreRecord {
   degree_fr?: string;
   university_abbreviation?: string;
   geo_bonus_eligible?: boolean;
+  category?: string | null;
+  university_city?: string | null;
+  university_delegation?: string | null;
+  university_fr?: string | null;
 }

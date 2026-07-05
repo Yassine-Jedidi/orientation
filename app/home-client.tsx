@@ -99,6 +99,7 @@ interface LicenseGroup {
   duration?: number;
   notes?: string[];
   degree_fr?: string;
+  category?: string;
   university_abbreviation?: string;
   branches: ScoreRecord[];
 }
@@ -149,6 +150,7 @@ function groupByLicense(records: ScoreRecord[]): LicenseGroup[] {
       duration: record.duration,
       notes: record.notes,
       degree_fr: record.degree_fr,
+      category: record.category ?? undefined,
       university_abbreviation: record.university_abbreviation,
       branches: [record],
     });
@@ -171,6 +173,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [governorate, setGovernorate] = useState<string>("all");
   const [institution, setInstitution] = useState<string | null>(null);
   const [license, setLicense] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>("all");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [minScore, setMinScore] = useState("");
   const [onlyNewLicenses, setOnlyNewLicenses] = useState(false);
@@ -410,7 +413,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (!institution || record.institution === institution) &&
         (!license || record.license === license),
     );
-    return [...new Set(available.map((record) => record.university))].sort();
+    return [...new Set(available.map((record) => record.university))].filter(Boolean).sort();
   }, [data, governorate, institution, license]);
 
   const institutions = useMemo(() => {
@@ -420,7 +423,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (university === "all" || record.university === university) &&
         (!license || record.license === license),
     );
-    return [...new Set(available.map((record) => record.institution))].sort();
+    return [...new Set(available.map((record) => record.institution))].filter(Boolean).sort();
   }, [data, governorate, university, license]);
 
   const licenses = useMemo(() => {
@@ -430,8 +433,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (university === "all" || record.university === university) &&
         (!institution || record.institution === institution),
     );
-    return [...new Set(available.map((record) => record.license))].sort();
+    return [...new Set(available.map((record) => record.license))].filter(Boolean).sort();
   }, [data, governorate, university, institution]);
+
+  const categories = useMemo(
+    () => [...new Set(data.map((r) => r.category).filter(Boolean))].sort(),
+    [data],
+  );
 
   const filtered = useMemo(() => {
     const q = normalizeArabicSearch(search);
@@ -444,6 +452,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (!matchesGovernorateFilter(governorate, r.governorate)) return false;
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
+        if (category !== "all" && r.category !== category) return false;
         if (onlyNewLicenses && r.score !== null) return false;
         if (onlyFavorites && !isFavorite(r.code, r.bacType)) return false;
         if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
@@ -580,7 +589,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-[220px_280px_1fr_1fr]">
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-[220px_1fr_1fr]">
               <Select
                 value={governorate}
                 onValueChange={(value) => {
@@ -610,28 +619,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={university}
-                onValueChange={(v) => {
-                  if (!v) return;
-                  setUniversity(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="الجامعة">
-                    {university === "all" ? "كل الجامعات" : university}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent listClassName="max-h-72" showScrollbar>
-                  <SelectItem value="all">كل الجامعات</SelectItem>
-                  {universities.map((u) => (
-                    <SelectItem key={u} value={u}>
-                      {u}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Combobox
                 items={institutions}
                 value={institution}
@@ -654,6 +641,52 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 searchPlaceholder="ابحث عن شعبة جامعية..."
                 emptyMessage="لا توجد شعبة مطابقة"
               />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-4 border-t border-border pt-4">
+              <Select
+                value={category}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  setCategory(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-[360px]">
+                  <SelectValue placeholder="التصنيف">
+                    {category === "all" ? "كل التصنيفات" : category}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent listClassName="max-h-72" showScrollbar>
+                  <SelectItem value="all">كل التصنيفات</SelectItem>
+                  {categories.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={university}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setUniversity(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-[240px]">
+                  <SelectValue placeholder="الجامعة">
+                    {university === "all" ? "كل الجامعات" : university}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent listClassName="max-h-72" showScrollbar>
+                  <SelectItem value="all">كل الجامعات</SelectItem>
+                  {universities.map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-start gap-3 border-t border-border pt-4">
               <label className="inline-flex min-h-11 items-center gap-3 rounded-md px-2 text-sm font-medium text-ink transition-colors hover:bg-surface-strong/70">
@@ -725,6 +758,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 governorate !== "all" ||
                 institution ||
                 license ||
+                category !== "all" ||
                 onlyNewLicenses ||
                 minScore) && (
                 <Button
@@ -736,6 +770,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     setGovernorate("all");
                     setInstitution(null);
                     setLicense(null);
+                    setCategory("all");
                     setOnlyNewLicenses(false);
                     setOnlyFavorites(false);
                     setMinScore("");
@@ -855,11 +890,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             {record.duration && (
                               <p className="mt-1 text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
                             )}
+                            {record.category && (
+                              <span className="mt-1 inline-block rounded-full bg-brand-lavender/50 px-2 py-0.5 text-xs leading-5 text-ink">
+                                {record.category}
+                              </span>
+                            )}
                             {record.notes && record.notes.length > 0 && (
-                              <div className="mt-2 space-y-1">
+                              <div className="mt-2 flex flex-wrap gap-2">
                                 {record.notes.map((note) => (
-                                  <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
-                                    <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                  <span key={note} className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words">
+                                    <TriangleAlert className="size-3 shrink-0" />
                                     {note.startsWith("http") ? (
                                       <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
                                         دليل التوجيه (PDF)
@@ -867,7 +907,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     ) : (
                                       note
                                     )}
-                                  </p>
+                                  </span>
                                 ))}
                               </div>
                             )}
@@ -888,14 +928,22 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 {genderUnavailable}
                               </p>
                             )}
-                            <p className="mt-2 line-clamp-1 text-sm font-medium leading-5 text-body">
+                            <p className="mt-2 line-clamp-1 text-sm leading-5 text-muted-text">
                               {record.university}
                             </p>
-                            <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-text">
+                            <p className="mt-1 line-clamp-2 text-sm font-medium leading-5 text-body">
                               {record.institution}
-                              {record.university_abbreviation && (
-                                <span className="font-mono"> ({record.university_abbreviation})</span>
-                              )}
+                            </p>
+                            {record.university_fr && (
+                              <p className="mt-1 text-xs leading-5 text-muted-text line-clamp-1">
+                                {record.university_fr}
+                                {record.university_abbreviation && (
+                                  <span className="font-mono"> ({record.university_abbreviation})</span>
+                                )}
+                              </p>
+                            )}
+                            <p className="mt-1 text-xs leading-5 text-muted-text">
+                              ولاية {record.governorate}
                             </p>
 
                             <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-caption">
@@ -932,7 +980,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                       </DialogTrigger>
 
                       <DialogContent className="top-auto! bottom-0! left-0! w-full! max-w-none! translate-x-0! translate-y-0! rounded-b-none rounded-t-xl p-5 [&_[data-slot=dialog-close]]:right-auto [&_[data-slot=dialog-close]]:left-3 [&_[data-slot=dialog-close]]:top-3">
-                        <DialogHeader>
+                        <DialogHeader className="gap-1">
                           <DialogTitle className="pe-10 text-right text-title-md leading-7">
                             {record.license}
                           </DialogTitle>
@@ -941,19 +989,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {record.degree_fr}
                             </p>
                           )}
-                          {record.duration && (
-                            <p className="pe-10 text-right text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
-                          )}
                           <DialogDescription className="text-right">
+                            {record.duration && <span>{record.duration} سنوات · </span>}
                             الرمز {record.code} · {record.university}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {record.notes && record.notes.length > 0 && (
-                            <div className="space-y-1">
+                            <div className="flex flex-wrap gap-2">
                               {record.notes.map((note) => (
-                                <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
-                                  <TriangleAlert className="size-3 shrink-0 mt-0.5" />
+                                <span key={note} className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words">
+                                  <TriangleAlert className="size-3 shrink-0" />
                                   {note.startsWith("http") ? (
                                     <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
                                       دليل التوجيه (PDF)
@@ -961,8 +1007,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   ) : (
                                     note
                                   )}
-                                </p>
+                                </span>
                               ))}
+                            </div>
+                          )}
+                          {record.category && (
+                            <div>
+                              <span className="w-fit rounded-full bg-brand-lavender/50 px-2 py-0.5 text-xs leading-5 text-ink">
+                                {record.category}
+                              </span>
                             </div>
                           )}
                           {record.speciality && record.speciality.length > 0 && (
@@ -981,9 +1034,17 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <p className="text-xs text-muted-text">المؤسسة</p>
                             <p className="mt-1 leading-6 text-ink">
                               {record.institution}
-                              {record.university_abbreviation && (
-                                <span className="font-mono"> ({record.university_abbreviation})</span>
-                              )}
+                            </p>
+                            {record.university_fr && (
+                              <p className="text-xs leading-5 text-muted-text">
+                                {record.university_fr}
+                                {record.university_abbreviation && (
+                                  <span className="font-mono"> ({record.university_abbreviation})</span>
+                                )}
+                              </p>
+                            )}
+                            <p className="mt-1 text-xs text-muted-text">
+                              ولاية {record.governorate}
                             </p>
                           </div>
                           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1285,6 +1346,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     </Tooltip>
                                     {group.duration && (
                                       <p className="mt-1 text-xs leading-5 text-muted-text">{group.duration} سنوات</p>
+                                    )}
+                                    {group.category && (
+                                      <p className="mt-1 text-xs leading-5 text-muted-text">{group.category}</p>
                                     )}
                                     {group.notes && group.notes.length > 0 && (
                                       <div className="mt-2 space-y-1">
