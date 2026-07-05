@@ -59080,5 +59080,1488 @@
     "degree_fr": "Licence en sciences de la vie et de l'environnement",
     "university_abbreviation": "ISBB",
     "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "آداب",
+    "score": 105.9349,
+    "formula": "FG+HG",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "رياضيات",
+    "score": 121.665,
+    "formula": "FG+PH",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "علوم تجريبية",
+    "score": 113.735,
+    "formula": "FG+PH",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "إقتصاد وتصرف",
+    "score": 104.3331,
+    "formula": "FG+HG",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "العلوم التقنية",
+    "score": 107.7748,
+    "formula": "FG+PH",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد الوطني للشغل والدراسات الإجتماعية بتونس",
+    "code": "10347",
+    "license": "الاجازة في علوم الشغل",
+    "bacType": "علوم الإعلامية",
+    "score": 105.29,
+    "formula": "FG+PH",
+    "speciality": [
+      "علوم الشغل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences du travail",
+    "university_abbreviation": "INTEST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للأعمال بتونس",
+    "code": "10377",
+    "license": "البكالوريوس في إدارة الأعمال",
+    "bacType": "رياضيات",
+    "score": 155.03,
+    "formula": "FG+Max((Ang-15),0)+Max((M-12),0)",
+    "speciality": [
+      "التسويق",
+      "المالية",
+      "المحاسبة",
+      "تحليل الأعمال",
+      "تكنولوجيا المعلومات",
+      "الاقتصاد الدولي"
+    ],
+    "duration": 3,
+    "notes": [
+      "تدرس باللغة الإنقليزية",
+      "شعبة تتطلب اختبار"
+    ],
+    "degree_fr": "Bachelor in Business Administration",
+    "university_abbreviation": "TBS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للأعمال بتونس",
+    "code": "10377",
+    "license": "البكالوريوس في إدارة الأعمال",
+    "bacType": "علوم تجريبية",
+    "score": 163.105,
+    "formula": "FG+Max((Ang-15),0)+Max((M-12),0)",
+    "speciality": [
+      "التسويق",
+      "المالية",
+      "المحاسبة",
+      "تحليل الأعمال",
+      "تكنولوجيا المعلومات",
+      "الاقتصاد الدولي"
+    ],
+    "duration": 3,
+    "notes": [
+      "تدرس باللغة الإنقليزية",
+      "شعبة تتطلب اختبار"
+    ],
+    "degree_fr": "Bachelor in Business Administration",
+    "university_abbreviation": "TBS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للأعمال بتونس",
+    "code": "10377",
+    "license": "البكالوريوس في إدارة الأعمال",
+    "bacType": "إقتصاد وتصرف",
+    "score": 162.025,
+    "formula": "FG+Max((Ang-15),0)+Max((M-12),0)",
+    "speciality": [
+      "التسويق",
+      "المالية",
+      "المحاسبة",
+      "تحليل الأعمال",
+      "تكنولوجيا المعلومات",
+      "الاقتصاد الدولي"
+    ],
+    "duration": 3,
+    "notes": [
+      "تدرس باللغة الإنقليزية",
+      "شعبة تتطلب اختبار"
+    ],
+    "degree_fr": "Bachelor in Business Administration",
+    "university_abbreviation": "TBS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للأعمال بتونس",
+    "code": "10377",
+    "license": "البكالوريوس في إدارة الأعمال",
+    "bacType": "العلوم التقنية",
+    "score": 162.61,
+    "formula": "FG+Max((Ang-15),0)+Max((M-12),0)",
+    "speciality": [
+      "التسويق",
+      "المالية",
+      "المحاسبة",
+      "تحليل الأعمال",
+      "تكنولوجيا المعلومات",
+      "الاقتصاد الدولي"
+    ],
+    "duration": 3,
+    "notes": [
+      "تدرس باللغة الإنقليزية",
+      "شعبة تتطلب اختبار"
+    ],
+    "degree_fr": "Bachelor in Business Administration",
+    "university_abbreviation": "TBS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للأعمال بتونس",
+    "code": "10377",
+    "license": "البكالوريوس في إدارة الأعمال",
+    "bacType": "علوم الإعلامية",
+    "score": 162.325,
+    "formula": "FG+Max((Ang-15),0)+Max((M-12),0)",
+    "speciality": [
+      "التسويق",
+      "المالية",
+      "المحاسبة",
+      "تحليل الأعمال",
+      "تكنولوجيا المعلومات",
+      "الاقتصاد الدولي"
+    ],
+    "duration": 3,
+    "notes": [
+      "تدرس باللغة الإنقليزية",
+      "شعبة تتطلب اختبار"
+    ],
+    "degree_fr": "Bachelor in Business Administration",
+    "university_abbreviation": "TBS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "كلية العلوم بتونس",
+    "code": "10832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 140.2217,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "FST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "كلية العلوم بتونس",
+    "code": "10832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 111.1188,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "FST",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "11832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 158.0833,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "11832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 115.6783,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للدراسات التحضيرية في البيولوجيا والجيولوجيا بسكرة",
+    "code": "12832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 126.3933,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "ISEPBGS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للدراسات التحضيرية في البيولوجيا والجيولوجيا بسكرة",
+    "code": "12832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 107.9783,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "ISEPBGS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد التحضيري للدراسات الهندسية ببنزرت",
+    "code": "20832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 100.265,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد التحضيري للدراسات الهندسية ببنزرت",
+    "code": "20832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 103.7222,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "كلية العلوم بصفاقس",
+    "code": "40832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 113.685,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "FSS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "كلية العلوم بصفاقس",
+    "code": "40832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 96.9033,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "FSS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد التحضيري للدراسات الهندسية بصفاقس",
+    "code": "41832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 139.27,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد التحضيري للدراسات الهندسية بصفاقس",
+    "code": "41832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 101.5883,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIS",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "المعهد التحضيري للدراسات الهندسية بقابس",
+    "code": "50832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "رياضيات",
+    "score": 105.8108,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIGB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "المعهد التحضيري للدراسات الهندسية بقابس",
+    "code": "50832",
+    "license": "مرحلة تحضيرية علمية",
+    "bacType": "علوم تجريبية",
+    "score": 90.7356,
+    "formula": "FG+(M+SP+SVT)/3",
+    "speciality": [
+      "بيولوجيا - جيولوجيا"
+    ],
+    "duration": 5,
+    "degree_fr": "Cycle préparatoire scientifique",
+    "university_abbreviation": "IPEIGB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بتونس",
+    "code": "10754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "آداب",
+    "score": 139.7206,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "notes": [
+      "علوم الحياة والأرض إجبارية"
+    ],
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTST",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بتونس",
+    "code": "10754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "رياضيات",
+    "score": 138.9556,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTST",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بتونس",
+    "code": "10754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "علوم تجريبية",
+    "score": 148.516,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTST",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بتونس",
+    "code": "10754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "رياضة",
+    "score": 176.978,
+    "formula": "FG+SB",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTST",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "آداب",
+    "score": 129.4219,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "رياضيات",
+    "score": 143.7278,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "علوم تجريبية",
+    "score": 149.8803,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30754",
+    "license": "الإجازة في الرعاية الصحية للطفل",
+    "bacType": "رياضة",
+    "score": 179.1287,
+    "formula": "FG+SB",
+    "speciality": [
+      "الرعـايـة الصحية للطفل"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins pédiatriques",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "10759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "رياضيات",
+    "score": 119.8186,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "تكنولوجيات التصوير الطبي",
+      "الإعلامية الطبية",
+      "الأنظمة الإلكترونية المحمولة",
+      "تكنولوجيات الأجهزة الطبية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "10759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "علوم تجريبية",
+    "score": 129.0955,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "تكنولوجيات التصوير الطبي",
+      "الإعلامية الطبية",
+      "الأنظمة الإلكترونية المحمولة",
+      "تكنولوجيات الأجهزة الطبية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "10759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "العلوم التقنية",
+    "score": 120.1075,
+    "formula": "FG+SP",
+    "speciality": [
+      "تكنولوجيات التصوير الطبي",
+      "الإعلامية الطبية",
+      "الأنظمة الإلكترونية المحمولة",
+      "تكنولوجيات الأجهزة الطبية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للتكنولوجيات الطبية بتونس",
+    "code": "10759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "علوم الإعلامية",
+    "score": 131.289,
+    "formula": "FG+SP",
+    "speciality": [
+      "تكنولوجيات التصوير الطبي",
+      "الإعلامية الطبية",
+      "الأنظمة الإلكترونية المحمولة",
+      "تكنولوجيات الأجهزة الطبية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISTMT",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد العالي للبيوتكنولوجيا بصفاقس",
+    "code": "40759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "رياضيات",
+    "score": 97.74,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "الصحة الرقمية والمعلوماتية الطبية",
+      "المعدات الطبية والأنظمة الذكية",
+      "هندسة معدات التصوير الطبي"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISBS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد العالي للبيوتكنولوجيا بصفاقس",
+    "code": "40759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "علوم تجريبية",
+    "score": 133.6858,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "الصحة الرقمية والمعلوماتية الطبية",
+      "المعدات الطبية والأنظمة الذكية",
+      "هندسة معدات التصوير الطبي"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISBS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد العالي للبيوتكنولوجيا بصفاقس",
+    "code": "40759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "العلوم التقنية",
+    "score": 123.9167,
+    "formula": "FG+SP",
+    "speciality": [
+      "الصحة الرقمية والمعلوماتية الطبية",
+      "المعدات الطبية والأنظمة الذكية",
+      "هندسة معدات التصوير الطبي"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISBS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد العالي للبيوتكنولوجيا بصفاقس",
+    "code": "40759",
+    "license": "الإجازة في الهندسة البيوطبية",
+    "bacType": "علوم الإعلامية",
+    "score": 133.5681,
+    "formula": "FG+SP",
+    "speciality": [
+      "الصحة الرقمية والمعلوماتية الطبية",
+      "المعدات الطبية والأنظمة الذكية",
+      "هندسة معدات التصوير الطبي"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en génie biomédical",
+    "university_abbreviation": "ISBS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "آداب",
+    "score": 136.9814,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "notes": [
+      "علوم الحياة والأرض إجبارية"
+    ],
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "رياضيات",
+    "score": 152.5339,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "علوم تجريبية",
+    "score": 152.5553,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة سوسة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بسوسة",
+    "code": "30760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "رياضة",
+    "score": 184.5162,
+    "formula": "FG+SB",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قفصة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بقفصة",
+    "code": "60760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "آداب",
+    "score": 141.7001,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "notes": [
+      "علوم الحياة والأرض إجبارية"
+    ],
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTSG",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قفصة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بقفصة",
+    "code": "60760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "رياضيات",
+    "score": 133.105,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTSG",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قفصة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بقفصة",
+    "code": "60760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "علوم تجريبية",
+    "score": 142.7541,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTSG",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قفصة",
+    "institution": "المدرسة العليا لعلوم وتقنيات الصحة بقفصة",
+    "code": "60760",
+    "license": "الإجازة في  الرعاية الصحية الإستعجالية  والانعاش",
+    "bacType": "رياضة",
+    "score": 177.8501,
+    "formula": "FG+SB",
+    "speciality": [
+      "الرعاية الصحية والاستعجالية والإنعاش"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en soins d'urgence et réanimation",
+    "university_abbreviation": "ESSTSG",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي لعلوم البحار ببنزرت",
+    "code": "20846",
+    "license": "الإجازة في علوم البحار",
+    "bacType": "رياضيات",
+    "score": 99.42,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "علوم البحار: التكنولوجيا والحوكمة"
+    ],
+    "duration": 3,
+    "notes": [
+      "إناث"
+    ],
+    "degree_fr": "Licence en sciences de la mer",
+    "university_abbreviation": "ISSMB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي لعلوم البحار ببنزرت",
+    "code": "20846",
+    "license": "الإجازة في علوم البحار",
+    "bacType": "علوم تجريبية",
+    "score": 80.6234,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "علوم البحار: التكنولوجيا والحوكمة"
+    ],
+    "duration": 3,
+    "notes": [
+      "إناث"
+    ],
+    "degree_fr": "Licence en sciences de la mer",
+    "university_abbreviation": "ISSMB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي لعلوم البحار ببنزرت",
+    "code": "20846",
+    "license": "الإجازة في علوم البحار",
+    "bacType": "العلوم التقنية",
+    "score": 61.0716,
+    "formula": "FG+SP",
+    "speciality": [
+      "علوم البحار: التكنولوجيا والحوكمة"
+    ],
+    "duration": 3,
+    "notes": [
+      "إناث"
+    ],
+    "degree_fr": "Licence en sciences de la mer",
+    "university_abbreviation": "ISSMB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30847",
+    "license": "الإجازة في التهيئة والتصرف المستدام في المساحات الخضراء",
+    "bacType": "العلوم التقنية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التهيئة والتصرف المستدام في المساحات الخضراء"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30847",
+    "license": "الإجازة في التهيئة والتصرف المستدام في المساحات الخضراء",
+    "bacType": "رياضيات",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التهيئة والتصرف المستدام في المساحات الخضراء"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30847",
+    "license": "الإجازة في التهيئة والتصرف المستدام في المساحات الخضراء",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التهيئة والتصرف المستدام في المساحات الخضراء"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30848",
+    "license": "الإجازة في البستنة المندمجة",
+    "bacType": "العلوم التقنية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "البستنة المندمجة"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30848",
+    "license": "الإجازة في البستنة المندمجة",
+    "bacType": "رياضيات",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "البستنة المندمجة"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30848",
+    "license": "الإجازة في البستنة المندمجة",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "البستنة المندمجة"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30849",
+    "license": "الإجازة في التكنولوجيات والإبتكارات في العلوم الفلاحية",
+    "bacType": "العلوم التقنية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التكنولوجيات والإبتكارات في العلوم الفلاحية"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30849",
+    "license": "الإجازة في التكنولوجيات والإبتكارات في العلوم الفلاحية",
+    "bacType": "رياضيات",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التكنولوجيات والإبتكارات في العلوم الفلاحية"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس المنار",
+    "institution": "المعهد العالي للعلوم الفلاحية بشط مريم",
+    "code": "30849",
+    "license": "الإجازة في التكنولوجيات والإبتكارات في العلوم الفلاحية",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "التكنولوجيات والإبتكارات في العلوم الفلاحية"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISACM",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "رياضيات",
+    "score": 98.2175,
+    "formula": "FG+(A+Ang+F+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "علوم تجريبية",
+    "score": 114.635,
+    "formula": "FG+(A+Ang+F+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "إقتصاد وتصرف",
+    "score": 96.7217,
+    "formula": "FG+(A+F+HG+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "العلوم التقنية",
+    "score": 109.3125,
+    "formula": "FG+(A+Ang+F+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "علوم الإعلامية",
+    "score": null,
+    "formula": "FG+(A+Ang+F+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة تونس",
+    "institution": "المعهد التحضيري للدراسات الأدبية والعلوم الإنسانية بتونس",
+    "code": "10195",
+    "license": "المرحلة التحضيرية للعلوم الإنسانية: فلسفة",
+    "bacType": "رياضة",
+    "score": 92.1165,
+    "formula": "FG+(A+Ang+F+PH)/4",
+    "speciality": [
+      "فلسفة"
+    ],
+    "duration": 2,
+    "notes": [
+      "السن القصوى أقل من 20 سنة في غرة سبتمبر"
+    ],
+    "degree_fr": "Cycle préparatoire aux sciences humaines : Philosophie",
+    "university_abbreviation": "IPELSHT",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "كلية العلوم ببنزرت",
+    "code": "20512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": 80.7976,
+    "formula": "FG+SVT",
+    "speciality": [
+      "المراقبة البيولوجية للبيئة"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "FSB",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "المعهد العالي للفنون والحرف بقابس",
+    "code": "51622",
+    "license": "الإجازة في الفنون والوسائط",
+    "bacType": "إقتصاد وتصرف",
+    "score": null,
+    "formula": "FG+Info",
+    "speciality": [
+      "تصميم وسائط رقمية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en arts numériques et médias",
+    "university_abbreviation": "ISAMGB",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "المعهد العالي للفنون والحرف بقابس",
+    "code": "51622",
+    "license": "الإجازة في الفنون والوسائط",
+    "bacType": "العلوم التقنية",
+    "score": null,
+    "formula": "FG+Info",
+    "speciality": [
+      "تصميم وسائط رقمية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en arts numériques et médias",
+    "university_abbreviation": "ISAMGB",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "المعهد العالي للفنون والحرف بقابس",
+    "code": "51622",
+    "license": "الإجازة في الفنون والوسائط",
+    "bacType": "علوم الإعلامية",
+    "score": null,
+    "formula": "FG+STI",
+    "speciality": [
+      "تصميم وسائط رقمية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en arts numériques et médias",
+    "university_abbreviation": "ISAMGB",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "الإدارة العامة للدراسات التكنولوجية",
+    "institution": "المعهد العالي للدراسات التكنولوجية بسليانة",
+    "code": "86318",
+    "license": "الإجازة في علوم التصرف",
+    "bacType": "علوم الإعلامية",
+    "score": null,
+    "formula": "FG+M",
+    "speciality": [
+      "إدارة الأعمال",
+      "تقنيات الماحسبة والمراقبة والتدقيق"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de gestion",
+    "university_abbreviation": "ISETSL",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة المنستير",
+    "institution": "المعهد العالي للعلوم التطبيقية والتكنولوجيا بالمهدية",
+    "code": "36512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG+SVT",
+    "speciality": [
+      "تكنولوجيات البيئة وتثمين النفايات"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "ISSATMH",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة المنستير",
+    "institution": "المعهد العالي للبيوتكنولوجيا بالمنستير",
+    "code": "34512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG+SVT",
+    "speciality": [
+      "العلوم البحرية والاقتصاد الأزرق"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "ISBM",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قابس",
+    "institution": "كلية العلوم بقابس",
+    "code": "50512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": 77.4585,
+    "formula": "FG+SVT",
+    "speciality": [
+      "الزراعة الذكية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "FSG",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قرطاج",
+    "institution": "المعهد العالي لعلوم وتكنولوجيات البيئة ببرج السدرية",
+    "code": "10530",
+    "license": "الإجازة في إدارة الأنظمة البيولوجية والتنمية المستدامة",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "إدارة الأنظمة البيولوجية والتنمية المستدامة"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISSTEBC",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة جندوبة",
+    "institution": "المعهد العالي للبيوتكنولوجيا بباجة",
+    "code": "84761",
+    "license": "الإجازة في علوم التغذية التطبيقية في الأداء الرياضي",
+    "bacType": "رياضيات",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "علوم التغذية التطبيقية في الأداء الرياضي"
+    ],
+    "duration": 3,
+    "university_abbreviation": "ISBB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "الإدارة العامة للدراسات التكنولوجية",
+    "institution": "المعهد العالي للدراسات التكنولوجية بسيدي بوزيد",
+    "code": "75841",
+    "license": "الإجازة في علوم وتقنيات الأغذية",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG+(SP+SVT)/2",
+    "speciality": [
+      "الصناعات الغذائية والبيوصناعية"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences et technologies des aliments",
+    "university_abbreviation": "ISETSB",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة القيروان",
+    "institution": "كلية العلوم والتقنيات بسيدي بوزيد",
+    "code": "75843",
+    "license": "الإجازة في تقنيات الأغذية والحوكمة البيئية",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "تقنيات الأغذية والحوكمة البيئية"
+    ],
+    "duration": 3,
+    "university_abbreviation": "FSTSB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة القيروان",
+    "institution": "كلية العلوم والتقنيات بسيدي بوزيد",
+    "code": "75845",
+    "license": "الإجازة في هندسة تكنولوجيات الصناعات الغذائية",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG",
+    "speciality": [
+      "هندسة تكنولوجيات الصناعات الغذائية"
+    ],
+    "duration": 3,
+    "university_abbreviation": "FSTSB",
+    "geo_bonus_eligible": false
+  },
+  {
+    "page": 0,
+    "university": "جامعة صفاقس",
+    "institution": "المعهد العالي للبيوتكنولوجيا بصفاقس",
+    "code": "41512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": 95.285,
+    "formula": "FG+SVT",
+    "speciality": [
+      "علوم البيئة والحلول الذكية المستدامة"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "ISBS",
+    "geo_bonus_eligible": true
+  },
+  {
+    "page": 0,
+    "university": "جامعة قفصة",
+    "institution": "كلية العلوم بقفصة",
+    "code": "60512",
+    "license": "الإجازة في علوم الأحياء والبيئة",
+    "bacType": "علوم تجريبية",
+    "score": null,
+    "formula": "FG+SVT",
+    "speciality": [
+      "إيكولوجيا - التنوع البيولوجي - البيئة"
+    ],
+    "duration": 3,
+    "degree_fr": "Licence en sciences de la vie et de l'environnement",
+    "university_abbreviation": "FSGF",
+    "geo_bonus_eligible": true
   }
 ]
