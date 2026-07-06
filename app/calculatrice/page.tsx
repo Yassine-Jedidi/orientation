@@ -5,6 +5,7 @@ import { Check, Save } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Select,
@@ -59,10 +60,11 @@ export default function CalculatorPage() {
   const [mgInput, setMgInput] = useState("");
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [optionalSubject, setOptionalSubject] = useState("");
+  const [sptExempt, setSptExempt] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [isLoadingSavedData, setIsLoadingSavedData] = useState(true);
   const loadedSavedScore = useRef(false);
-  const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; optionalSubject: string; saved: boolean }>>({});
+  const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; optionalSubject: string; saved: boolean; sptExempt: boolean }>>({});
 
   useEffect(() => {
     fetch("/data/scores.json")
@@ -89,7 +91,8 @@ export default function CalculatorPage() {
           ({ code }) => loadedGrades[code] !== undefined,
         )?.code ?? "";
         setOptionalSubject(loadedOptionalSubject);
-        formCache.current[local.bacType] = { mg: local.generalAverage.toFixed(2), grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true };
+        setSptExempt(local.sptExempt ?? false);
+        formCache.current[local.bacType] = { mg: local.generalAverage.toFixed(2), grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true, sptExempt: local.sptExempt ?? false };
         /* eslint-enable react-hooks/set-state-in-effect */
       }
       setTimeout(() => setIsLoadingSavedData(false), 0);
@@ -116,7 +119,8 @@ export default function CalculatorPage() {
         setMgInput(mg);
         setGrades(loadedGrades);
         setOptionalSubject(loadedOptionalSubject);
-        formCache.current[payload.bacType] = { mg, grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true };
+        setSptExempt(payload.sptExempt ?? false);
+        formCache.current[payload.bacType] = { mg, grades: loadedGrades, optionalSubject: loadedOptionalSubject, saved: true, sptExempt: payload.sptExempt ?? false };
       })
       .finally(() => {
         setIsLoadingSavedData(false);
@@ -182,11 +186,12 @@ export default function CalculatorPage() {
         fg: result.fg,
         fgRegional: result.fgRegional,
         governorate,
+        sptExempt,
       });
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSaveState("saved");
     }
-  }, [result, bacType, governorate, numericGrades, session]);
+  }, [result, bacType, governorate, numericGrades, session, sptExempt]);
 
   function setGrade(code: string, value: string) {
     const normalized = normalize(value);
@@ -224,6 +229,7 @@ export default function CalculatorPage() {
         fg: result.fg,
         fgRegional: result.fgRegional,
         governorate,
+        sptExempt,
       });
       setSaveState("saved");
       return;
@@ -236,23 +242,25 @@ export default function CalculatorPage() {
         bacType,
         generalAverage: result.mg,
         grades: numericGrades,
+        sptExempt,
       }),
     });
     if (response.ok) {
-      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: true };
+      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: true, sptExempt };
     }
     setSaveState(response.ok ? "saved" : "error");
   }
 
   function selectBacType(value: string) {
     if (bacType) {
-      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: saveState === "saved" };
+      formCache.current[bacType] = { mg: mgInput, grades, optionalSubject, saved: saveState === "saved", sptExempt };
     }
 
     setBacType(value);
     setGrades({});
     setOptionalSubject("");
     setMgInput("");
+    setSptExempt(false);
     setSaveState("idle");
 
     const cached = formCache.current[value];
@@ -260,6 +268,7 @@ export default function CalculatorPage() {
       setMgInput(cached.mg);
       setGrades(cached.grades);
       setOptionalSubject(cached.optionalSubject);
+      setSptExempt(cached.sptExempt);
       setSaveState(cached.saved ? "saved" : "idle");
     }
 
@@ -483,24 +492,65 @@ export default function CalculatorPage() {
                         <label className="flex-1 text-sm text-body">
                           {s.label}
                         </label>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          placeholder="0-20"
-                          value={grades[s.code] ?? ""}
-                          onChange={(e) => setGrade(s.code, e.target.value)}
-                          onBlur={() => {
-                            const value = grades[s.code];
-                            if (value !== undefined && value !== "" && isValidGrade(value)) {
-                              setGrades((previous) => ({
-                                ...previous,
-                                [s.code]: Number(value).toFixed(2),
-                              }));
-                            }
-                          }}
-                          className="w-24 text-center"
-                          aria-invalid={errors[s.code] ? true : undefined}
-                        />
+                        {s.code === "SPT" && bacType !== "رياضة" ? (
+                          <>
+                            <label className="inline-flex items-center gap-2 text-xs text-muted-text cursor-pointer">
+                              <Switch
+                                checked={sptExempt}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setGrades((prev) => {
+                                      const next = { ...prev };
+                                      delete next.SPT;
+                                      return next;
+                                    });
+                                  }
+                                  setSptExempt(checked);
+                                }}
+                              />
+                              معفى
+                            </label>
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0-20"
+                              disabled={sptExempt}
+                              value={sptExempt ? "" : grades[s.code] ?? ""}
+                              onChange={(e) => !sptExempt && setGrade(s.code, e.target.value)}
+                              onBlur={() => {
+                                if (sptExempt) return;
+                                const value = grades[s.code];
+                                if (value !== undefined && value !== "" && isValidGrade(value)) {
+                                  setGrades((previous) => ({
+                                    ...previous,
+                                    [s.code]: Number(value).toFixed(2),
+                                  }));
+                                }
+                              }}
+                              className="w-24 text-center"
+                              aria-invalid={errors[s.code] ? true : undefined}
+                            />
+                          </>
+                        ) : (
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0-20"
+                            value={grades[s.code] ?? ""}
+                            onChange={(e) => setGrade(s.code, e.target.value)}
+                            onBlur={() => {
+                              const value = grades[s.code];
+                              if (value !== undefined && value !== "" && isValidGrade(value)) {
+                                setGrades((previous) => ({
+                                  ...previous,
+                                  [s.code]: Number(value).toFixed(2),
+                                }));
+                              }
+                            }}
+                            className="w-24 text-center"
+                            aria-invalid={errors[s.code] ? true : undefined}
+                          />
+                        )}
                       </div>
                     ))}
 

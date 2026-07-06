@@ -121,6 +121,7 @@ export const studentScore = pgTable(
       scale: 4,
       mode: "number",
     }).notNull(),
+    sptExempt: boolean("spt_exempt").default(false).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

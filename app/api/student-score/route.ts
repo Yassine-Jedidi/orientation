@@ -46,6 +46,7 @@ export async function GET() {
     score: saved
       ? { ...saved, bacType: getBacTypeLabel(saved.bacType) ?? saved.bacType }
       : null,
+    sptExempt: saved?.sptExempt ?? false,
   });
 }
 
@@ -122,6 +123,7 @@ export async function PUT(request: Request) {
   const bacTypeCode = getBacTypeCode(bacType);
   const generalAverage = roundToTwo(Number(input.generalAverage));
   const rawGrades = input.grades;
+  const sptExempt = input.sptExempt === true;
 
   if (!rawGrades || typeof rawGrades !== "object" || Array.isArray(rawGrades)) {
     return NextResponse.json({ error: "Invalid grades" }, { status: 400 });
@@ -141,13 +143,14 @@ export async function PUT(request: Request) {
 
   const [saved] = await db
     .insert(studentScore)
-    .values({ userId, bacType: bacTypeCode, generalAverage, grades, ...result })
+    .values({ userId, bacType: bacTypeCode, generalAverage, grades, sptExempt, ...result })
     .onConflictDoUpdate({
       target: studentScore.userId,
       set: {
         bacType: bacTypeCode,
         generalAverage,
         grades,
+        sptExempt,
         ...result,
         updatedAt: new Date(),
       },

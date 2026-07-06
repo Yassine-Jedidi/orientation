@@ -5,6 +5,7 @@ export interface LocalScore {
   fg: number;
   fgRegional: number;
   governorate: string;
+  sptExempt?: boolean;
 }
 
 const STORAGE_KEY = "localUserScore";

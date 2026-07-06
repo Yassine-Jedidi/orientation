@@ -64,6 +64,13 @@
       "when": 1783282333535,
       "tag": "0008_overjoyed_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783296104047,
+      "tag": "0009_deep_firebird",
+      "breakpoints": true
     }
   ]
 }

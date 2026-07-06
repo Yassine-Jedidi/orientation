@@ -271,7 +271,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   ) => {
     if (licenseName && !isGenderEligible(licenseName, userGender))
       return "gender-unavailable";
-    if (score === null) return "new";
+    if (score === null) return null;
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
     const effective = computeEffective(
@@ -832,7 +832,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         ? "text-warning"
                         : status === "far"
                           ? "text-error"
-                          : "text-muted-text";
+                          : "";
 
                   return (
                     <Dialog key={`${record.code}-${record.bacType}-${index}`}>

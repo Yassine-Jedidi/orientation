@@ -1,0 +1,1 @@
+ALTER TABLE "student_score" ADD COLUMN "spt_exempt" boolean DEFAULT false NOT NULL;
