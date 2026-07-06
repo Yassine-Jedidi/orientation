@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   jsonb,
   numeric,
   pgTable,
@@ -165,6 +166,36 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorite_user_code_bac_unique").on(
+      table.userId,
+      table.code,
+      table.bacType,
+    ),
+  ],
+);
+
+export const choiceCard = pgTable(
+  "choice_card",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    bacType: text("bac_type").notNull(),
+    rank: integer("rank").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("choice_card_user_rank_unique").on(
+      table.userId,
+      table.rank,
+    ),
+    uniqueIndex("choice_card_user_code_bac_unique").on(
       table.userId,
       table.code,
       table.bacType,

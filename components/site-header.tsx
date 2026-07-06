@@ -22,7 +22,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { usePathname } from "next/navigation";
 
-type PageId = "guide" | "calculator" | "tenfil" | "changes" | "favorites";
+type PageId = "guide" | "calculator" | "tenfil" | "changes" | "favorites" | "bittaka";
 
 const destinations = [
   { id: "guide", href: "/", label: "دليل التوجيه" },
@@ -30,6 +30,7 @@ const destinations = [
   { id: "tenfil", href: "/tenfil", label: "التنفيل الجغرافي" },
   { id: "changes", href: "/changements-filieres", label: "تغييرات دليل 2026" },
   { id: "favorites", href: "/favorites", label: "المفضلة" },
+  { id: "bittaka", href: "/bittaka", label: "بطاقة الاختيارات" },
 ] as const;
 
 export function SiteHeader() {
@@ -88,6 +89,14 @@ export function SiteHeader() {
     current = "favorites";
     title = "المفضلة";
     subtitle = "الإجازات التي أضفتها إلى المفضلة";
+  } else if (pathname.startsWith("/bitaka/view")) {
+    current = "bittaka";
+    title = "بطاقة الاختيارات";
+    subtitle = "تمت مشاركة هذه البطاقة معك";
+  } else if (pathname === "/bittaka" || pathname.startsWith("/bitaka/")) {
+    current = "bittaka";
+    title = "بطاقة الاختيارات";
+    subtitle = "رتّب أفضل 10 اختيارات حسب أولويتك";
   }
 
   const links = destinations.filter((destination) => destination.id !== current);
@@ -154,7 +163,7 @@ export function SiteHeader() {
               <Button
                 key={link.id}
                 nativeButton={false}
-                variant={link.id === "calculator" ? "brand-mint" : link.id === "tenfil" ? "brand-lavender" : link.id === "favorites" ? "brand-pink" : "brand-peach"}
+                variant={link.id === "calculator" ? "brand-mint" : link.id === "tenfil" ? "brand-lavender" : link.id === "favorites" ? "brand-pink" : link.id === "bittaka" ? "brand-ochre" : "brand-peach"}
                 render={<Link href={link.href} />}
               >
                 {link.label}

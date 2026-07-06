@@ -26,6 +26,8 @@ const buttonVariants = cva(
           "bg-brand-peach/50 text-ink hover:bg-brand-peach/70 border-brand-peach/80",
         "brand-lavender":
           "bg-brand-lavender/50 text-ink hover:bg-brand-lavender/70 border-brand-lavender/80",
+        "brand-ochre":
+          "bg-brand-ochre/50 text-ink hover:bg-brand-ochre/70 border-brand-ochre/80",
       },
       size: {
         default:

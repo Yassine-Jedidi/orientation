@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Calculator,
   TriangleAlert,
+  ClipboardList,
 } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
@@ -21,6 +22,7 @@ import { normalizeArabicSearch } from "@/lib/arabic-search";
 import { getLocalScore } from "@/lib/local-score";
 import { useFavorites } from "@/lib/use-favorites";
 import { FavoriteButton } from "@/components/favorite-button";
+import { useChoiceCard } from "@/lib/use-choice-card";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
@@ -201,6 +203,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userGender, setUserGender] = useState<Gender | null>(null);
   const { isFavorite } = useFavorites();
+  const { isInCard, addChoice, removeChoice } = useChoiceCard();
   const userScoreFetched = useRef(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
 
@@ -1208,7 +1211,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </div>
                               );
                             })()}
-                          {unavailable && (
+                           {unavailable && (
                             <p className="rounded-lg bg-surface-strong p-3 text-sm text-muted-text">
                               غير متاح: تتطلب الصيغة مادة {unavailable.label}.
                             </p>
@@ -1219,6 +1222,28 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {genderUnavailable}
                             </p>
                           )}
+                          <div className="flex items-center gap-2 pt-2">
+                            {isInCard(record.code, record.bacType) ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                nativeButton={false}
+                                render={<a href="/bittaka" />}
+                              >
+                                <ClipboardList className="size-4" /> في البطاقة
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="brand-ochre"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => addChoice(record.code, record.bacType)}
+                              >
+                                <ClipboardList className="size-4" /> أضف إلى البطاقة
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -1231,7 +1256,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[36px]"></TableHead>
+                    <TableHead className="w-[60px]"></TableHead>
                     <TableHead className="w-[72px]">الرمز</TableHead>
                     <TableHead className="w-[180px] xl:w-[200px]">الإجازة</TableHead>
                     <TableHead className="w-[160px] xl:w-[180px]">الجامعة</TableHead>
@@ -1307,7 +1332,27 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                             >
                               <TableCell className="p-2">
-                                <FavoriteButton code={branch.code} bacType={branch.bacType} size="xs" />
+                                <div className="flex items-center gap-0.5">
+                                  <FavoriteButton code={branch.code} bacType={branch.bacType} size="xs" />
+                                  {isInCard(branch.code, branch.bacType) ? (
+                                    <Link
+                                      href="/bittaka"
+                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                      aria-label="في البطاقة"
+                                    >
+                                      <ClipboardList className="size-3.5" />
+                                    </Link>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => addChoice(branch.code, branch.bacType)}
+                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                      aria-label="أضف إلى البطاقة"
+                                    >
+                                      <ClipboardList className="size-3.5" />
+                                    </button>
+                                  )}
+                                </div>
                               </TableCell>
                               {branchIndex === 0 && (
                                 <>
@@ -1693,7 +1738,27 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           )}
                         >
                           <TableCell className="p-2">
-                            <FavoriteButton code={r.code} bacType={r.bacType} size="xs" />
+                            <div className="flex items-center gap-0.5">
+                              <FavoriteButton code={r.code} bacType={r.bacType} size="xs" />
+                              {isInCard(r.code, r.bacType) ? (
+                                <Link
+                                  href="/bittaka"
+                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                  aria-label="في البطاقة"
+                                >
+                                  <ClipboardList className="size-3.5" />
+                                </Link>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => addChoice(r.code, r.bacType)}
+                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                  aria-label="أضف إلى البطاقة"
+                                >
+                                  <ClipboardList className="size-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="font-mono text-xs">
                             {r.code}

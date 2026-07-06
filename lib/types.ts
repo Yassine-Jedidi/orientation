@@ -1,3 +1,9 @@
+export interface ChoiceCardEntry {
+  code: string;
+  bacType: string;
+  rank: number;
+}
+
 export interface ScoreRecord {
   page: number;
   university: string;

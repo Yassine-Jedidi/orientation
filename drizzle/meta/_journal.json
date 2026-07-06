@@ -71,6 +71,13 @@
       "when": 1783296104047,
       "tag": "0009_deep_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783299364547,
+      "tag": "0010_groovy_medusa",
+      "breakpoints": true
     }
   ]
 }
