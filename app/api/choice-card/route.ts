@@ -150,11 +150,11 @@ export async function DELETE(request: Request) {
       );
 
     // Re-index remaining entries
-    const remaining = await tx.query.choiceCard.findMany({
-      where: eq(choiceCard.userId, userId),
-      orderBy: asc(choiceCard.rank),
-      columns: { id: true, rank: true },
-    });
+    const remaining = await tx
+      .select({ id: choiceCard.id, rank: choiceCard.rank })
+      .from(choiceCard)
+      .where(eq(choiceCard.userId, userId))
+      .orderBy(asc(choiceCard.rank));
 
     for (let i = 0; i < remaining.length; i++) {
       if (remaining[i].rank !== i + 1) {

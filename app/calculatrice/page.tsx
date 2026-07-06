@@ -106,6 +106,7 @@ export default function CalculatorPage() {
       .then((payload) => {
         if (!payload?.bacType) return;
         setBacType(payload.bacType);
+        if (payload.governorate) setGovernorate(payload.governorate);
         if (!payload.score) return;
         const mg = Number(payload.score.generalAverage).toFixed(2);
         const loadedGrades = Object.fromEntries(
@@ -323,6 +324,7 @@ export default function CalculatorPage() {
           </CardContent>
         </Card>
 
+        {!session && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>الولاية</CardTitle>
@@ -342,6 +344,7 @@ export default function CalculatorPage() {
             </Select>
           </CardContent>
         </Card>
+        )}
 
         {bacType && (
           <>
