@@ -106,15 +106,12 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Maximum 10 choices allowed" }, { status: 400 });
   }
 
-  // Replace all entries for this user
-  await db.transaction(async (tx) => {
-    await tx.delete(choiceCard).where(eq(choiceCard.userId, userId));
-    if (entries.length > 0) {
-      await tx.insert(choiceCard).values(
-        entries.map((e) => ({ userId, code: e.code, bacType: e.bacType, rank: e.rank })),
-      );
-    }
-  });
+  await db.delete(choiceCard).where(eq(choiceCard.userId, userId));
+  if (entries.length > 0) {
+    await db.insert(choiceCard).values(
+      entries.map((e) => ({ userId, code: e.code, bacType: e.bacType, rank: e.rank })),
+    );
+  }
 
   const merged = await db.query.choiceCard.findMany({
     where: eq(choiceCard.userId, userId),
@@ -150,34 +147,30 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "code and bacType are required" }, { status: 400 });
   }
 
-  // Delete and re-index ranks
-  await db.transaction(async (tx) => {
-    await tx
-      .delete(choiceCard)
-      .where(
-        and(
-          eq(choiceCard.userId, userId),
-          eq(choiceCard.code, code),
-          eq(choiceCard.bacType, bacType),
-        ),
-      );
+  await db
+    .delete(choiceCard)
+    .where(
+      and(
+        eq(choiceCard.userId, userId),
+        eq(choiceCard.code, code),
+        eq(choiceCard.bacType, bacType),
+      ),
+    );
 
-    // Re-index remaining entries
-    const remaining = await tx
-      .select({ id: choiceCard.id, rank: choiceCard.rank })
-      .from(choiceCard)
-      .where(eq(choiceCard.userId, userId))
-      .orderBy(asc(choiceCard.rank));
+  const remaining = await db
+    .select({ id: choiceCard.id, rank: choiceCard.rank })
+    .from(choiceCard)
+    .where(eq(choiceCard.userId, userId))
+    .orderBy(asc(choiceCard.rank));
 
-    for (let i = 0; i < remaining.length; i++) {
-      if (remaining[i].rank !== i + 1) {
-        await tx
-          .update(choiceCard)
-          .set({ rank: i + 1, updatedAt: new Date() })
-          .where(eq(choiceCard.id, remaining[i].id));
-      }
+  for (let i = 0; i < remaining.length; i++) {
+    if (remaining[i].rank !== i + 1) {
+      await db
+        .update(choiceCard)
+        .set({ rank: i + 1, updatedAt: new Date() })
+        .where(eq(choiceCard.id, remaining[i].id));
     }
-  });
+  }
 
   return NextResponse.json({ success: true });
 }
