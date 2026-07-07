@@ -3,7 +3,7 @@
 import { GripVertical, Heart, X } from "lucide-react";
 import type { ChoiceCardEntry, ScoreRecord } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { forwardRef, useMemo, useState, useCallback, type ComponentProps } from "react";
+import { forwardRef, useMemo, useState, type ComponentProps } from "react";
 import { hasGeographicBonus, isSameGeographicBonusZone, isGeographicBonusApplicable, getScoreWithGeographicBonus } from "@/lib/geographic-bonus";
 import { getFormulaCalculation } from "@/lib/formula-evaluator";
 import {
@@ -135,6 +135,18 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
               {record.code}
             </span>
           </div>
+          {record.speciality && record.speciality.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {record.speciality.map((speciality) => (
+                <span
+                  key={speciality}
+                  className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
+                >
+                  {speciality}
+                </span>
+              ))}
+            </div>
+          )}
           <span className="block break-words text-xs text-muted-text">
             {record.institution}
           </span>

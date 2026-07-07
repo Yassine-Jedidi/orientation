@@ -18,13 +18,15 @@ function parseChoices(value: string | null): ChoiceCardEntry[] {
   try {
     const parsed: unknown = JSON.parse(value);
     return Array.isArray(parsed)
-      ? parsed.filter(
-          (item): item is ChoiceCardEntry =>
-            typeof item === "object" &&
-            item !== null &&
-            typeof (item as ChoiceCardEntry).code === "string" &&
-            typeof (item as ChoiceCardEntry).bacType === "string" &&
-            typeof (item as ChoiceCardEntry).rank === "number",
+      ? normalizeChoices(
+          parsed.filter(
+            (item): item is ChoiceCardEntry =>
+              typeof item === "object" &&
+              item !== null &&
+              typeof (item as ChoiceCardEntry).code === "string" &&
+              typeof (item as ChoiceCardEntry).bacType === "string" &&
+              typeof (item as ChoiceCardEntry).rank === "number",
+          ).sort((a, b) => a.rank - b.rank),
         )
       : [];
   } catch {
@@ -66,6 +68,30 @@ function getNextRank(): number {
   return 11; // full
 }
 
+function normalizeChoices(entries: ChoiceCardEntry[]): ChoiceCardEntry[] {
+  return entries
+    .filter(
+      (entry, index, array) =>
+        array.findIndex(
+          (item) => item.code === entry.code && item.bacType === entry.bacType,
+        ) === index,
+    )
+    .slice(0, 10)
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+function choicesEqual(a: ChoiceCardEntry[], b: ChoiceCardEntry[]) {
+  return (
+    a.length === b.length &&
+    a.every(
+      (entry, index) =>
+        entry.code === b[index]?.code &&
+        entry.bacType === b[index]?.bacType &&
+        entry.rank === b[index]?.rank,
+    )
+  );
+}
+
 async function request(method: "POST" | "DELETE" | "PUT", body?: object) {
   const response = await fetch("/api/choice-card", {
     method,
@@ -86,29 +112,20 @@ export function useChoiceCard() {
     if (isPending || !userId || reconciledUsers.has(userId)) return;
     reconciledUsers.add(userId);
 
-    void fetch("/api/choice-card", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ choices: getSnapshot() }),
-    })
+    void fetch("/api/choice-card")
       .then(async (response) => {
-        if (!response.ok) throw new Error("Choice card reconciliation failed");
+        if (!response.ok) throw new Error("Choice card fetch failed");
         const data = (await response.json()) as { choices?: ChoiceCardEntry[] };
         if (Array.isArray(data.choices)) {
           const local = getSnapshot();
-          const merged = [...data.choices];
-          // Merge local entries that aren't in server
-          for (const entry of local) {
-            if (!merged.some((m) => m.code === entry.code && m.bacType === entry.bacType)) {
-              merged.push(entry);
-            }
+          const merged = normalizeChoices([...data.choices, ...local]);
+          update(merged);
+
+          if (!choicesEqual(merged, data.choices)) {
+            void request("PUT", { choices: merged }).catch(() => {
+              reconciledUsers.delete(userId);
+            });
           }
-          // Re-index ranks
-          const deduped = merged.filter(
-            (e, i, arr) => arr.findIndex((x) => x.code === e.code && x.bacType === e.bacType) === i,
-          );
-          const reindexed = deduped.map((e, i) => ({ ...e, rank: i + 1 }));
-          update(reindexed);
         }
       })
       .catch(() => {
@@ -151,12 +168,7 @@ export function useChoiceCard() {
 
     toast("تمت الإضافة إلى بطاقة الاختيارات", { duration: 2000 });
 
-    void request("POST", { code, bacType }).catch(() => {
-      toast("تعذرت المزامنة مع الخادم", {
-        description: "تم حفظ التغيير محليًا وسنحاول مزامنته لاحقًا",
-        duration: 3000,
-      });
-    });
+    void request("POST", { code, bacType }).catch(() => undefined);
   }, []);
 
   const removeChoice = useCallback((code: string, bacType: string) => {
@@ -167,26 +179,20 @@ export function useChoiceCard() {
 
     toast("تمت الإزالة من بطاقة الاختيارات", { duration: 2000 });
 
-    void request("DELETE", { code, bacType }).catch(() => {
-      toast("تعذرت المزامنة مع الخادم", { duration: 3000 });
-    });
+    void request("DELETE", { code, bacType }).catch(() => undefined);
   }, []);
 
   const reorder = useCallback((entries: ChoiceCardEntry[]) => {
     const reindexed = entries.map((e, i) => ({ ...e, rank: i + 1 }));
     update(reindexed);
 
-    void request("PUT", { choices: reindexed }).catch(() => {
-      toast("تعذرت المزامنة مع الخادم", { duration: 3000 });
-    });
+    void request("PUT", { choices: reindexed }).catch(() => undefined);
   }, []);
 
   const clearAll = useCallback(() => {
     update([]);
     toast("تم تفريغ بطاقة الاختيارات", { duration: 2000 });
-    void request("DELETE").catch(() => {
-      toast("تعذرت المزامنة مع الخادم", { duration: 3000 });
-    });
+    void request("DELETE").catch(() => undefined);
   }, []);
 
   const getShareLink = useCallback(() => {

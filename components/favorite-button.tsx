@@ -16,7 +16,7 @@ export function FavoriteButton({ code, bacType, size = "sm" }: FavoriteButtonPro
   const favorited = mounted && isFavorite(code, bacType);
 
   useEffect(() => {
-    setMounted(true);
+    void Promise.resolve().then(() => setMounted(true));
   }, []);
 
   return (

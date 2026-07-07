@@ -26,7 +26,12 @@ import { useFavorites } from "@/lib/use-favorites";
 import { authClient } from "@/lib/auth-client";
 import { getLocalScore } from "@/lib/local-score";
 import { evaluateFormula } from "@/lib/formula-evaluator";
-import { isGender, type Gender } from "@/lib/gender";
+import { isGender, isGenderEligible, type Gender } from "@/lib/gender";
+import { getBacOptionalSubjects } from "@/lib/bac-subjects";
+import {
+  getScoreWithGeographicBonus,
+  isGeographicBonusApplicable,
+} from "@/lib/geographic-bonus";
 import { Button } from "@/components/ui/button";
 import { ChoiceCardItem } from "@/components/choice-card-item";
 import { ChoiceCardAddDialog } from "@/components/choice-card-add-dialog";
@@ -40,23 +45,44 @@ interface Props {
 type RowStatus = "qualified" | "close" | "far" | "unavailable" | "gender-unavailable" | null;
 
 function getRowStatus(
-  bacType: string,
-  score: number | null,
-  formula: string | undefined | null,
-  licenseName: string | undefined,
+  record: ScoreRecord,
   userScore: number | null,
   userBacType: string | null,
   userGrades: Record<string, number> | null,
+  userGovernorate: string | null,
+  userGender: Gender | null,
 ): RowStatus {
-  if (userScore === null || userBacType !== bacType) return null;
-  if (score === null) return null;
-  if (!formula || formula === "FG") {
-    return userScore >= score ? "qualified" : score > userScore + 15 ? "far" : "close";
+  if (!isGenderEligible(record.license, userGender)) return "gender-unavailable";
+  if (userScore === null || userBacType !== record.bacType) return null;
+  if (record.score === null) return null;
+  if (record.formula && userGrades) {
+    const missingOptionalSubject = getBacOptionalSubjects(record.bacType).some(
+      ({ code }) =>
+        new RegExp(`\\b${code}\\b`, "i").test(record.formula!) &&
+        userGrades[code] === undefined,
+    );
+    if (missingOptionalSubject) return "unavailable";
   }
-  const effective = evaluateFormula(formula, { FG: userScore, ...(userGrades ?? {}) });
+
+  const baseEffective =
+    record.formula && record.formula !== "FG"
+      ? evaluateFormula(record.formula, { FG: userScore, ...(userGrades ?? {}) })
+      : userScore;
+  if (baseEffective === null) return null;
+
+  const effective = getScoreWithGeographicBonus(
+    baseEffective,
+    record,
+    isGeographicBonusApplicable(
+      record,
+      userGovernorate,
+      record.governorate,
+      true,
+    ),
+  );
   if (effective === null) return null;
-  if (effective >= score) return "qualified";
-  if (score > effective + 15) return "far";
+  if (effective >= record.score) return "qualified";
+  if (record.score > effective + 15) return "far";
   return "close";
 }
 
@@ -75,6 +101,7 @@ function SortableChoiceCard({
   userBacType,
   userGrades,
   userGovernorate,
+  userGender,
   isFavorite,
   onToggleFavorite,
   onRemove,
@@ -85,6 +112,7 @@ function SortableChoiceCard({
   userBacType: string | null;
   userGrades: Record<string, number> | null;
   userGovernorate: string | null;
+  userGender: Gender | null;
   isFavorite: boolean;
   onToggleFavorite: (code: string, bacType: string) => void;
   onRemove: (code: string, bacType: string) => void;
@@ -104,13 +132,12 @@ function SortableChoiceCard({
   };
 
   const status = getRowStatus(
-    record.bacType,
-    record.score,
-    record.formula,
-    record.license,
+    record,
     userScore,
     userBacType,
     userGrades,
+    userGovernorate,
+    userGender,
   );
 
   const effective =
@@ -150,11 +177,8 @@ export function BittakaClient({ initialData }: Props) {
     getShareLink,
     copyShareLink,
   } = useChoiceCard();
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { data: session, isPending } = authClient.useSession();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   // User score state
   const [userBacType, setUserBacType] = useState<string | null>(null);
@@ -165,21 +189,23 @@ export function BittakaClient({ initialData }: Props) {
   const [userStateLoaded, setUserStateLoaded] = useState(false);
 
   useEffect(() => {
-    if (userStateLoaded) return;
-    setUserStateLoaded(true);
+    if (isPending || userStateLoaded) return;
 
     if (!session) {
-      const local = getLocalScore();
-      if (local) {
-        setUserBacType(local.bacType);
-        setUserScore(local.fg);
-        setUserGovernorate(local.governorate);
-        const grades: Record<string, number> = {};
-        for (const [k, v] of Object.entries(local.grades)) {
-          grades[k] = Number(v);
+      void Promise.resolve().then(() => {
+        const local = getLocalScore();
+        if (local) {
+          setUserBacType(local.bacType);
+          setUserScore(local.fg);
+          setUserGovernorate(local.governorate);
+          const grades: Record<string, number> = {};
+          for (const [k, v] of Object.entries(local.grades)) {
+            grades[k] = Number(v);
+          }
+          setUserGrades(grades);
         }
-        setUserGrades(grades);
-      }
+        setUserStateLoaded(true);
+      });
       return;
     }
 
@@ -213,8 +239,9 @@ export function BittakaClient({ initialData }: Props) {
           setUserGrades(grades);
         }
       })
-      .catch(() => undefined);
-  }, [session, userStateLoaded]);
+      .catch(() => undefined)
+      .finally(() => setUserStateLoaded(true));
+  }, [isPending, session, userStateLoaded]);
 
   // Build record lookup for choice entries
   const choiceRecords = useMemo(() => {
@@ -258,7 +285,7 @@ export function BittakaClient({ initialData }: Props) {
 
   const showFull = hasScore && choices.length > 0;
 
-  if (mounted && isPending) {
+  if (isPending || !userStateLoaded) {
     return (
       <div className="mx-auto w-full max-w-4xl px-6 py-8">
         {/* Actions skeleton */}
@@ -342,7 +369,6 @@ export function BittakaClient({ initialData }: Props) {
         </Card>
       )}
 
-      {/* Empty state */}
       {hasScore && choices.length === 0 ? (
         <Card className="w-full">
           <CardContent className="flex flex-col items-center gap-4 py-16">
@@ -352,7 +378,7 @@ export function BittakaClient({ initialData }: Props) {
             </p>
           </CardContent>
         </Card>
-      ) : (
+      ) : hasScore ? (
         <>
           {/* Sortable list */}
           <DndContext
@@ -374,6 +400,7 @@ export function BittakaClient({ initialData }: Props) {
                     userBacType={userBacType}
                     userGrades={userGrades}
                     userGovernorate={userGovernorate}
+                    userGender={userGender}
                     isFavorite={isFavorite(record.code, record.bacType)}
                     onToggleFavorite={toggleFavorite}
                     onRemove={removeChoice}
@@ -392,7 +419,7 @@ export function BittakaClient({ initialData }: Props) {
             </div>
           )}
         </>
-      )}
+      ) : null}
     </div>
   );
 }

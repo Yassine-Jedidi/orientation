@@ -1,10 +1,23 @@
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { choiceCard } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import type { ChoiceCardEntry } from "@/lib/types";
+
+function normalizeChoices(entries: ChoiceCardEntry[]): ChoiceCardEntry[] {
+  return entries
+    .filter(
+      (entry, index, array) =>
+        array.findIndex(
+          (item) => item.code === entry.code && item.bacType === entry.bacType,
+        ) === index,
+    )
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, 10)
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
 
 async function getUserId() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -80,14 +93,14 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "choices must be an array" }, { status: 400 });
   }
 
-  const entries = values.filter(
+  const entries = normalizeChoices(values.filter(
     (item): item is ChoiceCardEntry =>
       typeof item === "object" &&
       item !== null &&
       typeof (item as ChoiceCardEntry).code === "string" &&
       typeof (item as ChoiceCardEntry).bacType === "string" &&
       typeof (item as ChoiceCardEntry).rank === "number",
-  );
+  ));
 
   if (entries.length > 10) {
     return NextResponse.json({ error: "Maximum 10 choices allowed" }, { status: 400 });
