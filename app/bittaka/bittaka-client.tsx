@@ -176,6 +176,7 @@ export function BittakaClient({ initialData }: Props) {
     clearAll,
     getShareLink,
     copyShareLink,
+    isLoaded: choiceCardLoaded,
   } = useChoiceCard();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { data: session, isPending } = authClient.useSession();
@@ -285,7 +286,7 @@ export function BittakaClient({ initialData }: Props) {
 
   const showFull = hasScore && choices.length > 0;
 
-  if (isPending || !userStateLoaded) {
+  if (isPending || !userStateLoaded || !choiceCardLoaded) {
     return (
       <div className="mx-auto w-full max-w-4xl px-6 py-8">
         {/* Actions skeleton */}

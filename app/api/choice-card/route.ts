@@ -8,13 +8,13 @@ import type { ChoiceCardEntry } from "@/lib/types";
 
 function normalizeChoices(entries: ChoiceCardEntry[]): ChoiceCardEntry[] {
   return entries
+    .sort((a, b) => a.rank - b.rank)
     .filter(
       (entry, index, array) =>
         array.findIndex(
           (item) => item.code === entry.code && item.bacType === entry.bacType,
         ) === index,
     )
-    .sort((a, b) => a.rank - b.rank)
     .slice(0, 10)
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }

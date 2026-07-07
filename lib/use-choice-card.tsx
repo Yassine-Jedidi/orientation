@@ -10,6 +10,7 @@ const STORAGE_KEY = "choiceCard";
 const EMPTY: ChoiceCardEntry[] = [];
 let snapshot = EMPTY;
 let initialized = false;
+let activeUserId: string | null = null;
 const listeners = new Set<() => void>();
 const reconciledUsers = new Set<string>();
 
@@ -50,10 +51,14 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-function update(next: ChoiceCardEntry[]) {
+function update(next: ChoiceCardEntry[], persistLocal = activeUserId === null) {
   snapshot = next;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    if (persistLocal) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   } catch {
     // In-memory store still works
   }
@@ -98,34 +103,48 @@ async function request(method: "POST" | "DELETE" | "PUT", body?: object) {
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (response.status === 401) return;
   if (!response.ok) throw new Error("Choice card sync failed");
   return response.json() as Promise<{ choices?: ChoiceCardEntry[] }>;
+}
+
+async function fetchServerChoices() {
+  const response = await fetch("/api/choice-card");
+  if (!response.ok) throw new Error("Choice card fetch failed");
+  const data = (await response.json()) as { choices?: ChoiceCardEntry[] };
+  return normalizeChoices(Array.isArray(data.choices) ? data.choices : []);
 }
 
 export function useChoiceCard() {
   const choices = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY);
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user.id;
+  const isLoaded = !isPending && (!userId || reconciledUsers.has(userId));
 
   useEffect(() => {
-    if (isPending || !userId || reconciledUsers.has(userId)) return;
+    if (isPending) return;
+    if (!userId) {
+      activeUserId = null;
+      reconciledUsers.clear();
+      update(parseChoices(localStorage.getItem(STORAGE_KEY)), true);
+      return;
+    }
+    const userChanged = activeUserId !== userId;
+    const shouldMigrateAnonymousChoices = activeUserId === null;
+    activeUserId = userId;
+    if (reconciledUsers.has(userId) && !userChanged) return;
+    if (!shouldMigrateAnonymousChoices) update(EMPTY, false);
     reconciledUsers.add(userId);
 
-    void fetch("/api/choice-card")
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Choice card fetch failed");
-        const data = (await response.json()) as { choices?: ChoiceCardEntry[] };
-        if (Array.isArray(data.choices)) {
-          const local = getSnapshot();
-          const merged = normalizeChoices([...data.choices, ...local]);
-          update(merged);
+    void fetchServerChoices()
+      .then((serverChoices) => {
+        const optimisticOrGuestChoices = getSnapshot();
+        const merged = normalizeChoices([...serverChoices, ...optimisticOrGuestChoices]);
+        update(merged, false);
 
-          if (!choicesEqual(merged, data.choices)) {
-            void request("PUT", { choices: merged }).catch(() => {
-              reconciledUsers.delete(userId);
-            });
-          }
+        if (!choicesEqual(merged, serverChoices)) {
+          void request("PUT", { choices: merged }).catch(() => {
+            reconciledUsers.delete(userId);
+          });
         }
       })
       .catch(() => {
@@ -140,6 +159,13 @@ export function useChoiceCard() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  const refreshFromServer = useCallback(() => {
+    if (!userId) return;
+    void fetchServerChoices()
+      .then((serverChoices) => update(serverChoices, false))
+      .catch(() => undefined);
+  }, [userId]);
 
   const getEntry = useCallback(
     (code: string, bacType: string) =>
@@ -168,8 +194,10 @@ export function useChoiceCard() {
 
     toast("تمت الإضافة إلى بطاقة الاختيارات", { duration: 2000 });
 
-    void request("POST", { code, bacType }).catch(() => undefined);
-  }, []);
+    void request("POST", { code, bacType }).catch(() => {
+      refreshFromServer();
+    });
+  }, [refreshFromServer]);
 
   const removeChoice = useCallback((code: string, bacType: string) => {
     const entries = getSnapshot();
@@ -179,21 +207,27 @@ export function useChoiceCard() {
 
     toast("تمت الإزالة من بطاقة الاختيارات", { duration: 2000 });
 
-    void request("DELETE", { code, bacType }).catch(() => undefined);
-  }, []);
+    void request("DELETE", { code, bacType }).catch(() => {
+      refreshFromServer();
+    });
+  }, [refreshFromServer]);
 
   const reorder = useCallback((entries: ChoiceCardEntry[]) => {
     const reindexed = entries.map((e, i) => ({ ...e, rank: i + 1 }));
     update(reindexed);
 
-    void request("PUT", { choices: reindexed }).catch(() => undefined);
-  }, []);
+    void request("PUT", { choices: reindexed }).catch(() => {
+      refreshFromServer();
+    });
+  }, [refreshFromServer]);
 
   const clearAll = useCallback(() => {
     update([]);
     toast("تم تفريغ بطاقة الاختيارات", { duration: 2000 });
-    void request("DELETE").catch(() => undefined);
-  }, []);
+    void request("DELETE").catch(() => {
+      refreshFromServer();
+    });
+  }, [refreshFromServer]);
 
   const getShareLink = useCallback(() => {
     const entries = getSnapshot();
@@ -227,5 +261,6 @@ export function useChoiceCard() {
     clearAll,
     getShareLink,
     copyShareLink,
+    isLoaded,
   };
 }
