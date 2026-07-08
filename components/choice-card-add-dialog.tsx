@@ -309,7 +309,7 @@ export function ChoiceCardAddDialog({
         )}
 
         <p className="text-caption text-muted-text">
-          {choiceCount}/10 اختيارات
+          {choiceCount}/10 {choiceCount === 1 ? "اختيار" : "اختيارات"}
         </p>
       </DialogContent>
     </Dialog>

@@ -212,7 +212,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                           {finalDiff !== null && (
                             <div className={cn(
                               "flex items-center justify-between gap-4 border-t border-border pt-1.5 font-bold",
-                              finalDiff >= 0 ? "text-success" : "text-error",
+                              finalDiff >= 15 || finalDiff < -15 ? "text-error" : finalDiff >= 0 ? "text-success" : "text-warning",
                             )}>
                               <span>الفرق</span>
                               <span>{(finalDiff >= 0 ? "+" : "")}{finalDiff.toFixed(2)}</span>
@@ -227,7 +227,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                   <div
                     className={cn(
                       "font-mono text-xs tabular-nums",
-                      scoreDiff >= 0 ? "text-success" : "text-error",
+                      scoreDiff >= 15 || scoreDiff < -15 ? "text-error" : scoreDiff >= 0 ? "text-success" : "text-warning",
                     )}
                     dir="ltr"
                   >

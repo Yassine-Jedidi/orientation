@@ -416,7 +416,7 @@ export function BittakaClient() {
           {choices.length > 0 && choices.length < 10 && (
             <div className="mt-4">
               <p className="text-xs text-muted-text">
-                {10 - choices.length} {10 - choices.length === 1 ? "اختيار" : "اختيارات"} متبقية
+                {10 - choices.length} {10 - choices.length === 1 ? "اختيار متبقي" : "اختيارات متبقية"}
               </p>
             </div>
           )}

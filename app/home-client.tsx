@@ -23,6 +23,7 @@ import { getLocalScore } from "@/lib/local-score";
 import { useFavorites } from "@/lib/use-favorites";
 import { FavoriteButton } from "@/components/favorite-button";
 import { useChoiceCard } from "@/lib/use-choice-card";
+import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
@@ -852,7 +853,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               <span className="text-muted-text text-sm font-normal">
                 {groupedView
                   ? `(${filteredLicenseGroups.length} إجازة)`
-                  : `(${filtered.length} ${filtered.length < 10 ? "نتائج" : "نتيجة"})`}
+                  : `(${filtered.length} ${filtered.length === 1 ? "نتيجة" : "نتائج"})`}
               </span>
             </CardTitle>
           </CardHeader>
@@ -1270,15 +1271,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           )}
                           <div className="flex items-center gap-2 pt-2">
                             {isInCard(record.code, record.bacType) ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1"
-                                nativeButton={false}
-                                render={<a href="/bittaka" />}
+                              <button
+                                type="button"
+                                onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
+                                className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
                               >
                                 <ClipboardList className="size-4" /> في البطاقة
-                              </Button>
+                              </button>
                             ) : (
                               <Button
                                 variant="brand-ochre"
@@ -1381,18 +1380,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 <div className="flex items-center gap-0.5">
                                   <FavoriteButton code={branch.code} bacType={branch.bacType} size="xs" />
                                   {isInCard(branch.code, branch.bacType) ? (
-                                    <Link
-                                      href="/bittaka"
-                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                    <button
+                                      type="button"
+                                      onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
+                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
                                       aria-label="في البطاقة"
                                     >
                                       <ClipboardList className="size-3.5" />
-                                    </Link>
+                                    </button>
                                   ) : (
                                     <button
                                       type="button"
                                       onClick={() => addChoice(branch.code, branch.bacType)}
-                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
                                       aria-label="أضف إلى البطاقة"
                                     >
                                       <ClipboardList className="size-3.5" />
@@ -1778,18 +1778,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             <div className="flex items-center gap-0.5">
                               <FavoriteButton code={r.code} bacType={r.bacType} size="xs" />
                               {isInCard(r.code, r.bacType) ? (
-                                <Link
-                                  href="/bittaka"
-                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                <button
+                                  type="button"
+                                  onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
+                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
                                   aria-label="في البطاقة"
                                 >
                                   <ClipboardList className="size-3.5" />
-                                </Link>
+                                </button>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => addChoice(r.code, r.bacType)}
-                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:bg-surface-strong hover:text-brand-ochre"
+                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
                                   aria-label="أضف إلى البطاقة"
                                 >
                                   <ClipboardList className="size-3.5" />
