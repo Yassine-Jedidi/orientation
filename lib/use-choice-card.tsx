@@ -190,7 +190,7 @@ export function useChoiceCard() {
     update(next, !userId);
 
     const remaining = 10 - next.length;
-    toast(`تمت الإضافة — ${remaining === 0 ? "0 اختيارات متبقية" : remaining === 1 ? "اختيار واحد متبقي" : `${remaining} اختيارات متبقية`}`, { duration: 2000 });
+    toast(`تمت الإضافة — ${remaining === 0 ? "لا اختيارات متبقية" : remaining === 1 ? "اختيار واحد متبقي" : `${remaining} اختيارات متبقية`}`, { duration: 2000 });
 
     if (!userId) return;
     void request("POST", { code, bacType }).catch(() => {

@@ -12,6 +12,7 @@ import {
   Calculator,
   TriangleAlert,
   ClipboardList,
+  Heart,
 } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
@@ -357,11 +358,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         setUserGrades(grades);
         setOnlyMyBac(true);
         setUserGovernorate(local.governorate);
-        setGovernorate(
-          isGreaterTunisGovernorate(local.governorate)
-            ? GREATER_TUNIS_FILTER
-            : local.governorate,
-        );
       } else {
         setUserBacType(null);
         setUserScore(null);
@@ -385,11 +381,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         }
         if (payload.governorate) {
           setUserGovernorate(payload.governorate);
-          setGovernorate(
-            isGreaterTunisGovernorate(payload.governorate)
-              ? GREATER_TUNIS_FILTER
-              : payload.governorate,
-          );
         }
         if (payload.gender) setUserGender(payload.gender as Gender);
         if (payload.score?.fg != null) {
@@ -418,11 +409,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
           setUserGrades(grades);
           setOnlyMyBac(true);
           setUserGovernorate(local.governorate);
-          setGovernorate(
-            isGreaterTunisGovernorate(local.governorate)
-              ? GREATER_TUNIS_FILTER
-              : local.governorate,
-          );
         }
       })
       .catch(() => {});
@@ -852,8 +838,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
               النتائج{" "}
               <span className="text-muted-text text-sm font-normal">
                 {groupedView
-                  ? `(${filteredLicenseGroups.length} إجازة)`
-                  : `(${filtered.length} ${filtered.length === 1 ? "نتيجة" : "نتائج"})`}
+                  ? `(${filteredLicenseGroups.length === 1 ? "إجازة واحدة" : `${filteredLicenseGroups.length} إجازات`})`
+                  : `(${filtered.length === 1 ? "نتيجة واحدة" : `${filtered.length} نتائج`})`}
               </span>
             </CardTitle>
           </CardHeader>
@@ -884,6 +870,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   const genderUnavailable = getGenderUnavailableMessage(
                     record.license,
                   );
+                  const isUserBacRecord =
+                    !userBacType || record.bacType === userBacType;
                   const statusColor =
                     status === "qualified"
                       ? "text-success"
@@ -1045,7 +1033,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </p>
                           )}
                           <DialogDescription className="text-right">
-                            {record.duration && <span>{record.duration} سنوات · </span>}
+                            {record.duration && <span>{record.duration === 1 ? "سنة واحدة" : `${record.duration} سنوات`} · </span>}
                             الرمز {record.code} · {record.university}
                           </DialogDescription>
                         </DialogHeader>
@@ -1270,7 +1258,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </p>
                           )}
                           <div className="flex items-center gap-2 pt-2">
-                            {isInCard(record.code, record.bacType) ? (
+                            {!isUserBacRecord ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  toast("شعبة غير موجودة", {
+                                    duration: 2000,
+                                  })
+                                }
+                                className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
+                              >
+                                <ClipboardList className="size-4" /> أضف إلى البطاقة
+                              </button>
+                            ) : isInCard(record.code, record.bacType) ? (
                               <button
                                 type="button"
                                 onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
@@ -1355,6 +1355,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                           : allUnavailable
                             ? { icon: CircleSlash2, color: "text-muted-text" }
                             : null;
+                    const userBacBranch = group.branches.find(
+                      (branch) => branch.bacType === userBacType,
+                    );
+                    const actionBranch =
+                      userBacBranch ?? (!userBacType ? group.branches[0] : null);
                     return (
                       <tbody
                         key={group.key}
@@ -1376,32 +1381,80 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               key={`${group.key}-${branch.bacType}-${branchIndex}`}
                               className={`${branchIndex === 0 ? "border-t border-border" : "border-border/60"} ${isHovered && branchIndex === bestIdx && !status ? "bg-surface-soft/80!" : ""} ${bgClass}`}
                             >
-                              <TableCell className="p-2">
-                                <div className="flex items-center gap-0.5">
-                                  <FavoriteButton code={branch.code} bacType={branch.bacType} size="xs" />
-                                  {isInCard(branch.code, branch.bacType) ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
-                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
-                                      aria-label="في البطاقة"
-                                    >
-                                      <ClipboardList className="size-3.5" />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => addChoice(branch.code, branch.bacType)}
-                                      className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
-                                      aria-label="أضف إلى البطاقة"
-                                    >
-                                      <ClipboardList className="size-3.5" />
-                                    </button>
-                                  )}
-                                </div>
-                              </TableCell>
                               {branchIndex === 0 && (
                                 <>
+                                  <TableCell
+                                    rowSpan={group.branches.length}
+                                    className={`p-2 align-top ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
+                                  >
+                                    <div className="flex items-center gap-0.5">
+                                      {actionBranch ? (
+                                        <FavoriteButton
+                                          code={actionBranch.code}
+                                          bacType={actionBranch.bacType}
+                                          size="xs"
+                                        />
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            toast("شعبة غير موجودة", {
+                                              duration: 2000,
+                                            })
+                                          }
+                                          className="flex size-6 items-center justify-center rounded-full text-muted-text hover:text-brand-pink"
+                                          aria-label="شعبة غير موجودة"
+                                        >
+                                          <Heart className="size-3.5" />
+                                        </button>
+                                      )}
+                                      {!actionBranch ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            toast("شعبة غير موجودة", {
+                                              duration: 2000,
+                                            })
+                                          }
+                                          className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
+                                          aria-label="شعبة غير موجودة"
+                                        >
+                                          <ClipboardList className="size-3.5" />
+                                        </button>
+                                      ) : isInCard(
+                                          actionBranch.code,
+                                          actionBranch.bacType,
+                                        ) ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            toast(
+                                              "البرنامج موجود بالفعل في البطاقة",
+                                              { duration: 2000 },
+                                            )
+                                          }
+                                          className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
+                                          aria-label="في البطاقة"
+                                        >
+                                          <ClipboardList className="size-3.5" />
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            addChoice(
+                                              actionBranch.code,
+                                              actionBranch.bacType,
+                                            )
+                                          }
+                                          className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
+                                          aria-label="أضف إلى البطاقة"
+                                        >
+                                          <ClipboardList className="size-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </TableCell>
                                   <TableCell
                                     rowSpan={group.branches.length}
                                     className={`align-top font-mono text-xs ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}

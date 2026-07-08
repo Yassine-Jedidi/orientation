@@ -8,10 +8,13 @@ import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
   isGeographicBonusApplicableForRecord,
   getScoreWithGeographicBonus,
+  isGreaterTunisGovernorate,
 } from "@/lib/geographic-bonus";
+import { TUNISIA_GOVERNORATES } from "@/lib/governorates";
 import { evaluateFormula } from "@/lib/formula-evaluator";
 
 const PAGE_SIZE = 20;
+const GREATER_TUNIS_FILTER = "greater-tunis";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -66,11 +69,8 @@ export function ChoiceCardAddDialog({
   const [geoBonusOnly, setGeoBonusOnly] = useState(false);
 
   const governorates = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of records) {
-      if (r.governorate) set.add(r.governorate);
-    }
-    return [...set].sort();
+    const set = new Set(records.map((r) => r.governorate).filter(Boolean));
+    return TUNISIA_GOVERNORATES.filter((g) => set.has(g));
   }, [records]);
 
   const categories = useMemo(() => {
@@ -105,6 +105,7 @@ export function ChoiceCardAddDialog({
       })
       .filter((r) => {
         if (!selectedGovernorate || !r.governorate) return true;
+        if (selectedGovernorate === GREATER_TUNIS_FILTER) return isGreaterTunisGovernorate(r.governorate);
         return r.governorate === selectedGovernorate;
       })
       .filter((r) => {
@@ -173,10 +174,13 @@ export function ChoiceCardAddDialog({
               }}
             >
               <SelectTrigger className="w-36 h-9 text-caption [&_svg]:size-3.5">
-                <SelectValue placeholder="كل الولايات" />
+                <SelectValue placeholder="كل الولايات">
+                  {selectedGovernorate === GREATER_TUNIS_FILTER ? "تونس الكبرى" : selectedGovernorate}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent showScrollbar>
                 <SelectItem value="__all__">كل الولايات</SelectItem>
+                <SelectItem value={GREATER_TUNIS_FILTER}>تونس الكبرى</SelectItem>
                 {governorates.map((gov) => (
                   <SelectItem key={gov} value={gov}>{gov}</SelectItem>
                 ))}
@@ -256,30 +260,30 @@ export function ChoiceCardAddDialog({
                       {record.institution}
                     </span>
                   </div>
-                   {record.score !== null ? (
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      {isGeographicBonusApplicableForRecord(
-                        record,
-                        userGovernorate,
-                        records,
-                        true,
-                      ) && (
-                          <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
-                            +7%
-                          </span>
-                        )}
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {isGeographicBonusApplicableForRecord(
+                      record,
+                      userGovernorate,
+                      records,
+                      true,
+                    ) && (
+                        <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
+                          +7%
+                        </span>
+                      )}
+                    {record.score !== null ? (
                       <span
                         className="font-mono text-body-sm tabular-nums text-muted-text"
                         dir="ltr"
                       >
                         {record.score.toFixed(2)}
                       </span>
-                    </div>
-                  ) : (
-                    <span className="shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-caption font-medium text-success">
-                      جديد
-                    </span>
-                  )}
+                    ) : (
+                      <span className="rounded-full bg-success/10 px-2 py-0.5 text-caption font-medium text-success">
+                        جديد
+                      </span>
+                    )}
+                  </div>
                   <Button
                     variant={added ? "outline" : "brand-ochre"}
                     size="sm"

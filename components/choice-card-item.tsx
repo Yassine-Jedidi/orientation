@@ -157,20 +157,20 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
         </div>
 
         {/* Score */}
-        {record.score !== null && (
-          <div className="shrink-0 text-right">
-            <div className="flex items-center justify-end gap-1.5">
-              {hasGeographicBonus(record) &&
-                (geoBonusApplicable ??
-                  (userGovernorate &&
-                    isSameGeographicBonusZone(
-                      userGovernorate,
-                      record.governorate,
-                    ))) && (
-                  <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
-                    +7%
-                  </span>
-                )}
+        <div className="shrink-0 text-right">
+          <div className="flex items-center justify-end gap-1.5">
+            {hasGeographicBonus(record) &&
+              (geoBonusApplicable ??
+                (userGovernorate &&
+                  isSameGeographicBonusZone(
+                    userGovernorate,
+                    record.governorate,
+                  ))) && (
+                <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
+                  +7%
+                </span>
+              )}
+            {record.score !== null && (
               <div className="flex flex-col items-end">
                 <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
                   <TooltipTrigger
@@ -212,7 +212,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                           {finalDiff !== null && (
                             <div className={cn(
                               "flex items-center justify-between gap-4 border-t border-border pt-1.5 font-bold",
-                              finalDiff >= 15 || finalDiff < -15 ? "text-error" : finalDiff >= 0 ? "text-success" : "text-warning",
+                              finalDiff >= 0 ? "text-success" : finalDiff < -15 ? "text-error" : "text-warning",
                             )}>
                               <span>الفرق</span>
                               <span>{(finalDiff >= 0 ? "+" : "")}{finalDiff.toFixed(2)}</span>
@@ -227,7 +227,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                   <div
                     className={cn(
                       "font-mono text-xs tabular-nums",
-                      scoreDiff >= 15 || scoreDiff < -15 ? "text-error" : scoreDiff >= 0 ? "text-success" : "text-warning",
+                      scoreDiff >= 0 ? "text-success" : scoreDiff < -15 ? "text-error" : "text-warning",
                     )}
                     dir="ltr"
                   >
@@ -236,9 +236,9 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                   </div>
                 )}
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Status badge (desktop only) */}
         {statusConfig && (

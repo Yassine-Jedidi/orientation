@@ -73,7 +73,7 @@ export function RemovedLicensesDirectory({
             </CardDescription>
           </div>
           <span className="w-fit rounded-full bg-surface-card px-3 py-1.5 text-caption font-semibold text-ink">
-            {resultCount} نتيجة
+            {resultCount === 0 ? "لا نتائج" : resultCount === 1 ? "نتيجة واحدة" : `${resultCount} نتائج`}
           </span>
         </div>
 
