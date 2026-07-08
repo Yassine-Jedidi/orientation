@@ -73,10 +73,9 @@ import {
 } from "@/lib/formula-evaluator";
 import {
   getScoreWithGeographicBonus,
-  hasGeographicBonus,
   isGreaterTunisGovernorate,
   isGeographicBonusApplicable,
-  isSameGeographicBonusZone,
+  isGeographicBonusApplicableForRecord,
 } from "@/lib/geographic-bonus";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
@@ -203,7 +202,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userGender, setUserGender] = useState<Gender | null>(null);
   const { isFavorite } = useFavorites();
-  const { isInCard, addChoice, removeChoice } = useChoiceCard();
+  const { isInCard, addChoice } = useChoiceCard();
   const userScoreFetched = useRef(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
 
@@ -216,7 +215,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
 
   const computeEffective = (
     formula?: string | null,
-    program?: string | { code?: string; geo_bonus_eligible?: boolean },
+    program?: string | ScoreRecord,
     institutionGovernorate?: string,
   ) => {
     const score = computeBaseScore(formula);
@@ -227,14 +226,29 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     return getScoreWithGeographicBonus(
       score,
       input,
-      isGeographicBonusApplicable(
-        input,
-        userGovernorate,
-        institutionGovernorate ?? "",
-        useGeographicBonus,
-      ),
+      typeof program === "string"
+        ? isGeographicBonusApplicable(
+            input,
+            userGovernorate,
+            institutionGovernorate ?? "",
+            useGeographicBonus,
+          )
+        : isGeographicBonusApplicableForRecord(
+            program,
+            userGovernorate,
+            data,
+            useGeographicBonus,
+          ),
     );
   };
+
+  const hasApplicableGeographicBonus = (record: ScoreRecord) =>
+    isGeographicBonusApplicableForRecord(
+      record,
+      userGovernorate,
+      data,
+      useGeographicBonus,
+    );
 
   const getCalculation = (formula?: string | null) => {
     if (!formula || userScore === null) return null;
@@ -279,7 +293,12 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
     const effective = computeEffective(
       formula,
-      programCode,
+      data.find(
+        (record) =>
+          record.code === programCode &&
+          record.bacType === bacType &&
+          record.governorate === institutionGovernorate,
+      ) ?? programCode,
       institutionGovernorate,
     );
     if (effective === null) return null;
@@ -484,6 +503,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     governorate,
     institution,
     license,
+    category,
     minScore,
     onlyNewLicenses,
     onlyFavorites,
@@ -818,7 +838,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   );
                   const effective = computeEffective(
                     record.formula,
-                    record.code,
+                    record,
                     record.governorate,
                   );
                   const unavailable = getUnavailableOptionalSubject(
@@ -953,13 +973,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <span className="rounded-full bg-surface-card px-2.5 py-1 font-medium text-ink">
                                 {record.bacType}
                               </span>
-                              {hasGeographicBonus(record) &&
+                              {hasApplicableGeographicBonus(record) &&
                                 isGenderEligible(record.license, userGender) &&
-                                (!userGovernorate ||
-                                  isSameGeographicBonusZone(
-                                    userGovernorate,
-                                    record.governorate,
-                                  )) && (
+                                (
                                   <span
                                     className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink"
                                     dir="ltr"
@@ -1138,12 +1154,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               if (record.score === null) return null;
                               const base = computeBaseScore(record.formula);
                               const bonusApplied =
-                                useGeographicBonus &&
-                                isSameGeographicBonusZone(
-                                  userGovernorate,
-                                  record.governorate,
-                                ) &&
-                                hasGeographicBonus(record);
+                                hasApplicableGeographicBonus(record);
                               const baseColor =
                                 base === null
                                   ? "text-muted-text"
@@ -1472,16 +1483,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     rowSpan={group.branches.length}
                                     className={`align-top text-center ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                   >
-                                    {hasGeographicBonus(group) &&
+                                    {group.branches.some((branch) =>
+                                      hasApplicableGeographicBonus(branch),
+                                    ) &&
                                     isGenderEligible(
                                       group.license,
                                       userGender,
-                                    ) &&
-                                    (userGovernorate === null ||
-                                      isSameGeographicBonusZone(
-                                        userGovernorate,
-                                        group.governorate,
-                                      )) ? (
+                                    ) ? (
                                       <span
                                         className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                                         dir="ltr"
@@ -1608,7 +1616,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             );
                                             const eff = computeEffective(
                                               branch.formula,
-                                              branch.code,
+                                              branch,
                                               branch.governorate,
                                             );
                                             if (
@@ -1618,12 +1626,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             )
                                               return null;
                                             const bonusApplied =
-                                              useGeographicBonus &&
-                                              isSameGeographicBonusZone(
-                                                userGovernorate,
-                                                branch.governorate,
-                                              ) &&
-                                              hasGeographicBonus(branch);
+                                              hasApplicableGeographicBonus(branch);
                                             return (
                                               <span className="whitespace-nowrap text-xs leading-relaxed">
                                                 {bonusApplied &&
@@ -1897,13 +1900,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
-                            {hasGeographicBonus(r.code) &&
-                            isGenderEligible(r.license, userGender) &&
-                            (userGovernorate === null ||
-                              isSameGeographicBonusZone(
-                                userGovernorate,
-                                r.governorate,
-                              )) ? (
+                            {hasApplicableGeographicBonus(r) &&
+                            isGenderEligible(r.license, userGender) ? (
                               <span
                                 className="inline-flex rounded-full bg-brand-mint/60 px-2.5 py-1 text-[11px] font-semibold text-ink"
                                 dir="ltr"
@@ -2022,7 +2020,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         );
                                         const eff = computeEffective(
                                           r.formula,
-                                          r.code,
+                                          r,
                                           r.governorate,
                                         );
                                         if (
@@ -2032,12 +2030,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         )
                                           return null;
                                         const bonusApplied =
-                                          useGeographicBonus &&
-                                          isSameGeographicBonusZone(
-                                            userGovernorate,
-                                            r.governorate,
-                                          ) &&
-                                          hasGeographicBonus(r.code);
+                                          hasApplicableGeographicBonus(r);
                                         return (
                                           <span className="whitespace-nowrap text-xs leading-relaxed">
                                             {bonusApplied && base !== null && (

@@ -184,6 +184,10 @@ export function useChoiceCard() {
       toast("هذا البرنامج موجود بالفعل في البطاقة", { duration: 2000 });
       return;
     }
+    if (entries.length > 0 && entries.some((e) => e.bacType !== bacType)) {
+      toast("بطاقة الاختيارات تقبل شعبة باكالوريا واحدة فقط", { duration: 2000 });
+      return;
+    }
     const rank = getNextRank();
     if (rank > 10) {
       toast("يمكنك إضافة 10 اختيارات كحد أقصى", { duration: 2000 });
@@ -235,9 +239,10 @@ export function useChoiceCard() {
       toast("أضف اختياراتك أولاً قبل المشاركة", { duration: 2000 });
       return "";
     }
-    const bacType = entries[0].bacType;
-    const codes = entries.map((e) => e.code);
-    const id = encodeShareData(bacType, codes);
+    const id = encodeShareData(entries.map((entry) => ({
+      bacType: entry.bacType,
+      code: entry.code,
+    })));
     const url = `${window.location.origin}/bitaka/view/${id}`;
     return url;
   }, []);

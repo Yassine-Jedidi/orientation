@@ -25,6 +25,7 @@ interface ChoiceCardItemProps extends ComponentProps<"div"> {
   userGovernorate: string | null;
   userScore: number | null;
   userGrades: Record<string, number> | null;
+  geoBonusApplicable?: boolean;
   isFavorite: boolean;
   onToggleFavorite?: (code: string, bacType: string) => void;
   onRemove?: (code: string, bacType: string) => void;
@@ -53,10 +54,10 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
       record,
       status,
       effective,
-      userBacType,
       userGovernorate,
       userScore,
       userGrades,
+      geoBonusApplicable,
       isFavorite,
       onToggleFavorite = () => {},
       onRemove = () => {},
@@ -82,9 +83,12 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
       return calc ? { label: record.formula, ...calc } : null;
     }, [record.formula, userScore, userGrades]);
 
-    const geoBonusApplicable = userScore !== null && userGovernorate &&
-      isGeographicBonusApplicable(record, userGovernorate, record.governorate, true);
-    const effectiveWithGeo = geoBonusApplicable && effective !== null
+    const effectiveGeoBonusApplicable = geoBonusApplicable ?? (
+      userScore !== null &&
+      Boolean(userGovernorate) &&
+      isGeographicBonusApplicable(record, userGovernorate, record.governorate, true)
+    );
+    const effectiveWithGeo = effectiveGeoBonusApplicable && effective !== null
       ? getScoreWithGeographicBonus(effective, record, true)
       : null;
     const finalEffective = effectiveWithGeo ?? effective;
@@ -157,11 +161,12 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
           <div className="shrink-0 text-right">
             <div className="flex items-center justify-end gap-1.5">
               {hasGeographicBonus(record) &&
-                userGovernorate &&
-                isSameGeographicBonusZone(
-                  userGovernorate,
-                  record.governorate,
-                ) && (
+                (geoBonusApplicable ??
+                  (userGovernorate &&
+                    isSameGeographicBonusZone(
+                      userGovernorate,
+                      record.governorate,
+                    ))) && (
                   <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
                     +7%
                   </span>
@@ -198,7 +203,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
                               <span className="text-muted-soft">—</span>
                             </div>
                           )}
-                          {geoBonusApplicable && effectiveWithGeo !== null && (
+                          {effectiveGeoBonusApplicable && effectiveWithGeo !== null && (
                             <div className="flex items-center justify-between gap-4 border-t border-border pt-1.5">
                               <span className="text-muted-text">بعد التنفيل (+7%)</span>
                               <span className="text-ink">{effectiveWithGeo.toFixed(2)}</span>

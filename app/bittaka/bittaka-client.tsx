@@ -30,7 +30,7 @@ import { isGender, isGenderEligible, type Gender } from "@/lib/gender";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
 import {
   getScoreWithGeographicBonus,
-  isGeographicBonusApplicable,
+  isGeographicBonusApplicableForRecord,
 } from "@/lib/geographic-bonus";
 import { Button } from "@/components/ui/button";
 import { ChoiceCardItem } from "@/components/choice-card-item";
@@ -51,6 +51,7 @@ function getRowStatus(
   userGrades: Record<string, number> | null,
   userGovernorate: string | null,
   userGender: Gender | null,
+  records: ScoreRecord[],
 ): RowStatus {
   if (!isGenderEligible(record.license, userGender)) return "gender-unavailable";
   if (userScore === null || userBacType !== record.bacType) return null;
@@ -73,10 +74,10 @@ function getRowStatus(
   const effective = getScoreWithGeographicBonus(
     baseEffective,
     record,
-    isGeographicBonusApplicable(
+    isGeographicBonusApplicableForRecord(
       record,
       userGovernorate,
-      record.governorate,
+      records,
       true,
     ),
   );
@@ -102,6 +103,7 @@ function SortableChoiceCard({
   userGrades,
   userGovernorate,
   userGender,
+  records,
   isFavorite,
   onToggleFavorite,
   onRemove,
@@ -113,6 +115,7 @@ function SortableChoiceCard({
   userGrades: Record<string, number> | null;
   userGovernorate: string | null;
   userGender: Gender | null;
+  records: ScoreRecord[];
   isFavorite: boolean;
   onToggleFavorite: (code: string, bacType: string) => void;
   onRemove: (code: string, bacType: string) => void;
@@ -138,6 +141,14 @@ function SortableChoiceCard({
     userGrades,
     userGovernorate,
     userGender,
+    records,
+  );
+
+  const geoBonusApplicable = isGeographicBonusApplicableForRecord(
+    record,
+    userGovernorate,
+    records,
+    true,
   );
 
   const effective =
@@ -156,6 +167,7 @@ function SortableChoiceCard({
         userGovernorate={userGovernorate}
         userScore={userScore}
         userGrades={userGrades}
+        geoBonusApplicable={geoBonusApplicable}
         isFavorite={isFavorite}
         onToggleFavorite={onToggleFavorite}
         onRemove={onRemove}
@@ -402,6 +414,7 @@ export function BittakaClient({ initialData }: Props) {
                     userGrades={userGrades}
                     userGovernorate={userGovernorate}
                     userGender={userGender}
+                    records={initialData}
                     isFavorite={isFavorite(record.code, record.bacType)}
                     onToggleFavorite={toggleFavorite}
                     onRemove={removeChoice}

@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { Search, Plus, ChevronDown } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
-import { isGenderEligible, isGender, type Gender } from "@/lib/gender";
+import { isGenderEligible, type Gender } from "@/lib/gender";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
-import { hasGeographicBonus, isSameGeographicBonusZone } from "@/lib/geographic-bonus";
+import { isGeographicBonusApplicableForRecord } from "@/lib/geographic-bonus";
 
 const PAGE_SIZE = 20;
 import { Button } from "@/components/ui/button";
@@ -129,12 +129,12 @@ export function ChoiceCardAddDialog({
                   </div>
                    {record.score !== null ? (
                     <div className="flex shrink-0 items-center gap-1.5">
-                      {hasGeographicBonus(record) &&
-                        userGovernorate &&
-                        isSameGeographicBonusZone(
-                          userGovernorate,
-                          record.governorate,
-                        ) && (
+                      {isGeographicBonusApplicableForRecord(
+                        record,
+                        userGovernorate,
+                        records,
+                        true,
+                      ) && (
                           <span className="rounded-full bg-brand-mint/60 px-1.5 py-0.5 text-caption font-semibold text-ink">
                             +7%
                           </span>

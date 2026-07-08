@@ -6,6 +6,6 @@ const connectionString =
   process.env.DATABASE_URL ??
   "postgresql://orientation:orientation@localhost:5432/orientation";
 
-const sql = neon(connectionString);
+export const neonSql = neon(connectionString);
 
-export const db = drizzle({ client: sql, schema });
+export const db = drizzle({ client: neonSql, schema });

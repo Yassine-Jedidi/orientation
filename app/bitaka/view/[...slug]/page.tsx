@@ -26,9 +26,13 @@ export default async function BitakaViewSlugPage({ params }: Props) {
   if (slug && slug.length === 1) {
     const decoded = decodeShareData(slug[0]);
     if (decoded) {
-      entries = decoded.codes.map((code, i) => ({
+      const decodedEntries = decoded.entries ?? decoded.codes.map((code) => ({
         code,
         bacType: decoded.bacType,
+      }));
+      entries = decodedEntries.map((entry, i) => ({
+        code: entry.code,
+        bacType: entry.bacType,
         rank: i + 1,
       }));
     } else {

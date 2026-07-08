@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { db, neonSql } from "@/db";
 import { choiceCard } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import type { ChoiceCardEntry } from "@/lib/types";
@@ -57,18 +57,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "code and bacType are required" }, { status: 400 });
   }
 
-  // Check count
-  const count = await db.$count(choiceCard, eq(choiceCard.userId, userId));
-  if (count >= 10) {
+  const existing = await db.query.choiceCard.findFirst({
+    where: and(
+      eq(choiceCard.userId, userId),
+      eq(choiceCard.code, code),
+      eq(choiceCard.bacType, bacType),
+    ),
+    columns: { rank: true },
+  });
+  if (existing) {
+    return NextResponse.json({ success: false, rank: existing.rank }, { status: 409 });
+  }
+
+  const rows = await db
+    .select({ rank: choiceCard.rank })
+    .from(choiceCard)
+    .where(eq(choiceCard.userId, userId))
+    .orderBy(asc(choiceCard.rank));
+  if (rows.length >= 10) {
     return NextResponse.json({ error: "Maximum 10 choices allowed" }, { status: 400 });
   }
 
-  const nextRank = count + 1;
+  const nextRank = rows.length + 1;
 
-  await db
+  const inserted = await db
     .insert(choiceCard)
     .values({ userId, code, bacType, rank: nextRank })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning({ rank: choiceCard.rank });
+
+  if (inserted.length === 0) {
+    const conflict = await db.query.choiceCard.findFirst({
+      where: and(
+        eq(choiceCard.userId, userId),
+        eq(choiceCard.code, code),
+        eq(choiceCard.bacType, bacType),
+      ),
+      columns: { rank: true },
+    });
+    return NextResponse.json(
+      { success: false, rank: conflict?.rank ?? nextRank },
+      { status: 409 },
+    );
+  }
 
   return NextResponse.json({ success: true, rank: nextRank });
 }
@@ -106,18 +137,46 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Maximum 10 choices allowed" }, { status: 400 });
   }
 
-  await db.delete(choiceCard).where(eq(choiceCard.userId, userId));
-  if (entries.length > 0) {
-    await db.insert(choiceCard).values(
-      entries.map((e) => ({ userId, code: e.code, bacType: e.bacType, rank: e.rank })),
-    );
+  if (entries.length === 0) {
+    await db.delete(choiceCard).where(eq(choiceCard.userId, userId));
+    return NextResponse.json({ choices: [] });
   }
 
-  const merged = await db.query.choiceCard.findMany({
+  const targetKeys = new Set(entries.map((entry) => `${entry.code}|${entry.bacType}`));
+  const existingRows = await db.query.choiceCard.findMany({
     where: eq(choiceCard.userId, userId),
-    orderBy: asc(choiceCard.rank),
-    columns: { code: true, bacType: true, rank: true },
+    columns: { id: true, code: true, bacType: true },
   });
+  const staleRows = existingRows.filter(
+    (row) => !targetKeys.has(`${row.code}|${row.bacType}`),
+  );
+
+  const queries = [
+    neonSql`
+      UPDATE choice_card
+      SET rank = -rank - 100, updated_at = now()
+      WHERE user_id = ${userId}
+    `,
+    ...staleRows.map((row) => neonSql`
+      DELETE FROM choice_card
+      WHERE id = ${row.id}
+    `),
+    ...entries.map((entry) => neonSql`
+      INSERT INTO choice_card (user_id, code, bac_type, rank, created_at, updated_at)
+      VALUES (${userId}, ${entry.code}, ${entry.bacType}, ${entry.rank}, now(), now())
+      ON CONFLICT (user_id, code, bac_type)
+      DO UPDATE SET rank = excluded.rank, updated_at = now()
+    `),
+    neonSql`
+      SELECT code, bac_type AS "bacType", rank
+      FROM choice_card
+      WHERE user_id = ${userId}
+      ORDER BY rank ASC
+    `,
+  ];
+
+  const results = await neonSql.transaction(queries);
+  const merged = results.at(-1) ?? [];
 
   return NextResponse.json({ choices: merged });
 }
