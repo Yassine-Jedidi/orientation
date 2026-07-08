@@ -69,6 +69,7 @@ import {
 } from "@/components/ui/popover";
 import { getFormulaCalculation } from "@/lib/formula-evaluator";
 import {
+  hasGeographicBonus,
   isGreaterTunisGovernorate,
   isGeographicBonusApplicableForRecord,
 } from "@/lib/geographic-bonus";
@@ -230,9 +231,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   };
 
   const hasApplicableGeographicBonus = (record: ScoreRecord) =>
+    !session && !userGovernorate
+      ? hasGeographicBonus(record)
+      : isGeographicBonusApplicableForRecord(
+          record,
+          bonusDisplayGovernorate,
+          data,
+          useGeographicBonus,
+        );
+
+  const hasPersonalGeographicBonus = (record: ScoreRecord) =>
     isGeographicBonusApplicableForRecord(
       record,
-      bonusDisplayGovernorate,
+      userGovernorate,
       data,
       useGeographicBonus,
     );
@@ -1148,7 +1159,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               if (record.score === null) return null;
                               const base = computeBaseScore(record.formula);
                               const bonusApplied =
-                                hasApplicableGeographicBonus(record);
+                                hasPersonalGeographicBonus(record);
                               const baseColor =
                                 base === null
                                   ? "text-muted-text"
@@ -1619,7 +1630,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             )
                                               return null;
                                             const bonusApplied =
-                                              hasApplicableGeographicBonus(branch);
+                                              hasPersonalGeographicBonus(branch);
                                             return (
                                               <span className="whitespace-nowrap text-xs leading-relaxed">
                                                 {bonusApplied &&
@@ -2022,7 +2033,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         )
                                           return null;
                                         const bonusApplied =
-                                          hasApplicableGeographicBonus(r);
+                                          hasPersonalGeographicBonus(r);
                                         return (
                                           <span className="whitespace-nowrap text-xs leading-relaxed">
                                             {bonusApplied && base !== null && (
