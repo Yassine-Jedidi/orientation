@@ -176,6 +176,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [institution, setInstitution] = useState<string | null>(null);
   const [license, setLicense] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("all");
+  const [speciality, setSpeciality] = useState<string>("all");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [minScore, setMinScore] = useState("");
   const [onlyNewLicenses, setOnlyNewLicenses] = useState(false);
@@ -469,6 +470,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     [data],
   );
 
+  const specialities = useMemo(
+    () => [...new Set(data.flatMap((r) => r.speciality ?? []))].filter(Boolean).sort(),
+    [data],
+  );
+
   const filtered = useMemo(() => {
     const q = normalizeArabicSearch(search);
     return data
@@ -481,6 +487,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
         if (category !== "all" && r.category !== category) return false;
+        if (speciality !== "all" && !(r.speciality ?? []).includes(speciality)) return false;
         if (onlyNewLicenses && r.score !== null) return false;
         if (onlyFavorites && !isFavorite(r.code, r.bacType)) return false;
         if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
@@ -510,6 +517,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     institution,
     license,
     category,
+    speciality,
     minScore,
     onlyNewLicenses,
     onlyFavorites,
@@ -688,6 +696,28 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                 <SelectContent listClassName="max-h-72" showScrollbar>
                   <SelectItem value="all">كل التصنيفات</SelectItem>
                   {categories.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={speciality}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  setSpeciality(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-[360px]">
+                  <SelectValue placeholder="التخصص">
+                    {speciality === "all" ? "كل التخصصات" : speciality}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent listClassName="max-h-72" showScrollbar>
+                  <SelectItem value="all">كل التخصصات</SelectItem>
+                  {specialities.map((item) => (
                     <SelectItem key={item} value={item}>
                       {item}
                     </SelectItem>

@@ -329,6 +329,7 @@ export function BittakaClient() {
             isLoadingRecords={shouldLoadRecords && !records}
             onOpen={() => setRecordsRequested(true)}
             userBacType={userBacType}
+            userScore={userScore}
             userGender={userGender}
             userGovernorate={userGovernorate}
             userGrades={userGrades}

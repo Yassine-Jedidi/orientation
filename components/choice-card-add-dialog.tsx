@@ -5,7 +5,11 @@ import { Search, Plus, ChevronDown } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { isGenderEligible, type Gender } from "@/lib/gender";
 import { getBacOptionalSubjects } from "@/lib/bac-subjects";
-import { isGeographicBonusApplicableForRecord } from "@/lib/geographic-bonus";
+import {
+  isGeographicBonusApplicableForRecord,
+  getScoreWithGeographicBonus,
+} from "@/lib/geographic-bonus";
+import { evaluateFormula } from "@/lib/formula-evaluator";
 
 const PAGE_SIZE = 20;
 import { Button } from "@/components/ui/button";
@@ -17,12 +21,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ChoiceCardAddDialogProps {
   records: ScoreRecord[];
   isLoadingRecords?: boolean;
   onOpen?: () => void;
   userBacType: string | null;
+  userScore: number | null;
   userGender: Gender | null;
   userGovernorate: string | null;
   userGrades: Record<string, number> | null;
@@ -36,6 +49,7 @@ export function ChoiceCardAddDialog({
   isLoadingRecords = false,
   onOpen,
   userBacType,
+  userScore,
   userGender,
   userGovernorate,
   userGrades,
@@ -46,6 +60,26 @@ export function ChoiceCardAddDialog({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [selectedGovernorate, setSelectedGovernorate] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [eligibleOnly, setEligibleOnly] = useState(false);
+  const [geoBonusOnly, setGeoBonusOnly] = useState(false);
+
+  const governorates = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      if (r.governorate) set.add(r.governorate);
+    }
+    return [...set].sort();
+  }, [records]);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      if (r.category) set.add(r.category);
+    }
+    return [...set].sort();
+  }, [records]);
 
   const eligibleRecords = useMemo(() => {
     if (!userBacType) return [];
@@ -69,9 +103,34 @@ export function ChoiceCardAddDialog({
         );
         return !missing;
       })
+      .filter((r) => {
+        if (!selectedGovernorate || !r.governorate) return true;
+        return r.governorate === selectedGovernorate;
+      })
+      .filter((r) => {
+        if (!selectedCategory || !r.category) return true;
+        return r.category === selectedCategory;
+      })
+      .filter((r) => {
+        if (!eligibleOnly || userScore === null || r.score === null) return true;
+        const rawEffective = r.formula && r.formula !== "FG"
+          ? evaluateFormula(r.formula, { FG: userScore, ...(userGrades ?? {}) })
+          : userScore;
+        if (rawEffective === null) return true;
+        const finalEffective = getScoreWithGeographicBonus(
+          rawEffective,
+          r,
+          isGeographicBonusApplicableForRecord(r, userGovernorate, records, true),
+        );
+        return finalEffective >= r.score;
+      })
+      .filter((r) => {
+        if (!geoBonusOnly || !userGovernorate) return true;
+        return isGeographicBonusApplicableForRecord(r, userGovernorate, records, true);
+      })
       .filter((r, i, arr) => arr.findIndex((x) => x.code === r.code) === i)
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-  }, [records, userBacType, userGender, userGrades, query]);
+  }, [records, userBacType, userGender, userGrades, query, selectedGovernorate, selectedCategory, eligibleOnly, geoBonusOnly, userScore, userGovernorate]);
 
   const visibleRecords = eligibleRecords.slice(0, visibleCount);
   const hasMore = visibleCount < eligibleRecords.length;
@@ -101,6 +160,62 @@ export function ChoiceCardAddDialog({
             placeholder="ابحث بالرمز أو الاسم أو المؤسسة..."
             className="pr-9"
           />
+        </div>
+
+        {/* Filters */}
+        <div>
+          <div className="flex items-center gap-3">
+            <Select
+              value={selectedGovernorate}
+              onValueChange={(v) => {
+                setSelectedGovernorate(v === "__all__" ? null : v);
+                setVisibleCount(PAGE_SIZE);
+              }}
+            >
+              <SelectTrigger className="w-36 h-9 text-caption [&_svg]:size-3.5">
+                <SelectValue placeholder="كل الولايات" />
+              </SelectTrigger>
+              <SelectContent showScrollbar>
+                <SelectItem value="__all__">كل الولايات</SelectItem>
+                {governorates.map((gov) => (
+                  <SelectItem key={gov} value={gov}>{gov}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedCategory}
+              onValueChange={(v) => {
+                setSelectedCategory(v === "__all__" ? null : v);
+                setVisibleCount(PAGE_SIZE);
+              }}
+            >
+              <SelectTrigger className="flex-1 h-9 text-caption [&_svg]:size-3.5">
+                <SelectValue placeholder="كل التصنيفات" />
+              </SelectTrigger>
+              <SelectContent showScrollbar>
+                <SelectItem value="__all__">كل التصنيفات</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3 pt-4">
+            <label className="flex cursor-pointer items-center gap-2 text-caption text-muted-text">
+              <Switch
+                checked={eligibleOnly}
+                onCheckedChange={(c) => { setEligibleOnly(c); setVisibleCount(PAGE_SIZE); }}
+              />
+              المؤهلة فقط
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-caption text-muted-text">
+              <Switch
+                checked={geoBonusOnly}
+                onCheckedChange={(c) => { setGeoBonusOnly(c); setVisibleCount(PAGE_SIZE); }}
+              />
+              +7% فقط
+            </label>
+          </div>
         </div>
 
         {isLoadingRecords ? (

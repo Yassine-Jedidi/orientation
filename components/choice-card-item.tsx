@@ -53,6 +53,7 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
       record,
       status,
       effective,
+      userBacType,
       userGovernorate,
       userScore,
       userGrades,
