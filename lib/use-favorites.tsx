@@ -9,6 +9,7 @@ const STORAGE_KEY = "favorites";
 const EMPTY = new Set<string>();
 let snapshot = EMPTY;
 let initialized = false;
+let activeUserId: string | null = null;
 const listeners = new Set<() => void>();
 const reconciledUsers = new Set<string>();
 
@@ -40,10 +41,14 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-function update(next: Set<string>) {
+function update(next: Set<string>, persistLocal = activeUserId === null) {
   snapshot = next;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+    if (persistLocal) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   } catch {
     // The in-memory store still works when storage is unavailable.
   }
@@ -60,30 +65,40 @@ async function request(method: "POST" | "DELETE", body?: object) {
   if (!response.ok) throw new Error("Favorite sync failed");
 }
 
+async function fetchServerFavorites() {
+  const response = await fetch("/api/favorites");
+  if (!response.ok) throw new Error("Favorite fetch failed");
+  const data = (await response.json()) as { favorites?: unknown };
+  return new Set(
+    Array.isArray(data.favorites)
+      ? data.favorites.filter((item): item is string => typeof item === "string")
+      : [],
+  );
+}
+
 export function useFavorites() {
   const favorites = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY);
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user.id;
 
   useEffect(() => {
-    if (isPending || !userId || reconciledUsers.has(userId)) return;
+    if (isPending) return;
+    if (!userId) {
+      activeUserId = null;
+      reconciledUsers.clear();
+      update(parseFavorites(localStorage.getItem(STORAGE_KEY)), true);
+      return;
+    }
+
+    const userChanged = activeUserId !== userId;
+    activeUserId = userId;
+    if (reconciledUsers.has(userId) && !userChanged) return;
+    if (userChanged) update(new Set(), false);
     reconciledUsers.add(userId);
 
-    void fetch("/api/favorites", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ favorites: [...getSnapshot()] }),
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Favorite reconciliation failed");
-        const data = (await response.json()) as { favorites?: unknown };
-        if (Array.isArray(data.favorites)) {
-          const merged = new Set(getSnapshot());
-          data.favorites
-            .filter((item): item is string => typeof item === "string")
-            .forEach((item) => merged.add(item));
-          update(merged);
-        }
+    void fetchServerFavorites()
+      .then((serverFavorites) => {
+        update(serverFavorites, false);
       })
       .catch(() => {
         reconciledUsers.delete(userId);
@@ -92,11 +107,20 @@ export function useFavorites() {
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) update(parseFavorites(event.newValue));
+      if (activeUserId === null && event.key === STORAGE_KEY) {
+        update(parseFavorites(event.newValue), true);
+      }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  const refreshFromServer = useCallback(() => {
+    if (!userId) return;
+    void fetchServerFavorites()
+      .then((serverFavorites) => update(serverFavorites, false))
+      .catch(() => undefined);
+  }, [userId]);
 
   const isFavorite = useCallback(
     (code: string, bacType: string) => favorites.has(`${code}|${bacType}`),
@@ -109,31 +133,30 @@ export function useFavorites() {
     const adding = !next.has(key);
     if (adding) next.add(key);
     else next.delete(key);
-    update(next);
+    update(next, !userId);
 
     toast(adding ? "تمت الإضافة إلى المفضلة" : "تمت الإزالة من المفضلة", {
       icon: <Heart className="size-4 text-brand-pink" fill="currentColor" />,
       duration: 2000,
     });
 
+    if (!userId) return;
     void request(adding ? "POST" : "DELETE", { code, bacType }).catch(() => {
-      toast("تعذرت المزامنة مع الخادم", {
-        description: "تم حفظ التغيير محليًا وسنحاول مزامنته لاحقًا",
-        duration: 3000,
-      });
+      refreshFromServer();
     });
-  }, []);
+  }, [refreshFromServer, userId]);
 
   const clearFavorites = useCallback(() => {
-    update(new Set());
+    update(new Set(), !userId);
     toast("تم حذف جميع المفضلة", {
       icon: <Heart className="size-4 text-brand-pink" fill="currentColor" />,
       duration: 2000,
     });
+    if (!userId) return;
     void request("DELETE").catch(() => {
-      toast("تعذرت المزامنة مع الخادم", { duration: 3000 });
+      refreshFromServer();
     });
-  }, []);
+  }, [refreshFromServer, userId]);
 
   return { favorites, isFavorite, toggleFavorite, clearFavorites };
 }

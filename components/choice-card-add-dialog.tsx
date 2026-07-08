@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 
 interface ChoiceCardAddDialogProps {
   records: ScoreRecord[];
+  isLoadingRecords?: boolean;
+  onOpen?: () => void;
   userBacType: string | null;
   userGender: Gender | null;
   userGovernorate: string | null;
@@ -31,6 +33,8 @@ interface ChoiceCardAddDialogProps {
 
 export function ChoiceCardAddDialog({
   records,
+  isLoadingRecords = false,
+  onOpen,
   userBacType,
   userGender,
   userGovernorate,
@@ -73,7 +77,13 @@ export function ChoiceCardAddDialog({
   const hasMore = visibleCount < eligibleRecords.length;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (nextOpen) onOpen?.();
+      }}
+    >
       <DialogTrigger render={<Button variant="brand-mint">إضافة برنامج</Button>} />
       <DialogContent className="sm:max-w-xl [&_[data-slot=dialog-close]]:left-2 [&_[data-slot=dialog-close]]:right-auto">
         <DialogHeader>
@@ -93,7 +103,11 @@ export function ChoiceCardAddDialog({
           />
         </div>
 
-        {!userBacType ? (
+        {isLoadingRecords ? (
+          <p className="py-8 text-center text-sm text-muted-text">
+            جاري تحميل البرامج...
+          </p>
+        ) : !userBacType ? (
           <p className="py-8 text-center text-sm text-muted-text">
             يجب إدخال سكورك أولاً لتظهر البرامج المتاحة
           </p>

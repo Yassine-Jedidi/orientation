@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo, Fragment, useRef } from "react";
 import { Check, Save } from "lucide-react";
-import type { ScoreRecord } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -54,7 +53,6 @@ function isValidMg(v: string): boolean {
 
 export default function CalculatorPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
-  const [data, setData] = useState<ScoreRecord[]>([]);
   const [bacType, setBacType] = useState("");
   const [governorate, setGovernorate] = useState("");
   const [mgInput, setMgInput] = useState("");
@@ -65,12 +63,6 @@ export default function CalculatorPage() {
   const [isLoadingSavedData, setIsLoadingSavedData] = useState(true);
   const loadedSavedScore = useRef(false);
   const formCache = useRef<Record<string, { mg: string; grades: Record<string, string>; optionalSubject: string; saved: boolean; sptExempt: boolean }>>({});
-
-  useEffect(() => {
-    fetch("/data/scores.json")
-      .then((r) => r.json())
-      .then(setData);
-  }, []);
 
   useEffect(() => {
     if (sessionPending) return;
@@ -128,13 +120,7 @@ export default function CalculatorPage() {
       });
   }, [session, sessionPending]);
 
-  const bacTypes = useMemo(
-    () =>
-      [...new Set(data.map((r) => r.bacType))].sort(
-        (a, b) => BAC_ORDER.indexOf(a) - BAC_ORDER.indexOf(b)
-      ),
-    [data]
-  );
+  const bacTypes = BAC_ORDER;
 
   const subjects = useMemo(() => getBacSubjects(bacType), [bacType]);
   const optionalSubjects = useMemo(() => getBacOptionalSubjects(bacType), [bacType]);

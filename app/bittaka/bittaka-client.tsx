@@ -38,11 +38,8 @@ import { ChoiceCardAddDialog } from "@/components/choice-card-add-dialog";
 import { ChoiceCardShare } from "@/components/choice-card-share";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface Props {
-  initialData: ScoreRecord[];
-}
-
 type RowStatus = "qualified" | "close" | "far" | "unavailable" | "gender-unavailable" | null;
+const EMPTY_RECORDS: ScoreRecord[] = [];
 
 function getRowStatus(
   record: ScoreRecord,
@@ -178,7 +175,7 @@ function SortableChoiceCard({
   );
 }
 
-export function BittakaClient({ initialData }: Props) {
+export function BittakaClient() {
   const {
     choices,
     isInCard,
@@ -200,6 +197,8 @@ export function BittakaClient({ initialData }: Props) {
   const [userGender, setUserGender] = useState<Gender | null>(null);
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userStateLoaded, setUserStateLoaded] = useState(false);
+  const [records, setRecords] = useState<ScoreRecord[] | null>(null);
+  const [recordsRequested, setRecordsRequested] = useState(false);
 
   useEffect(() => {
     if (isPending || userStateLoaded) return;
@@ -256,16 +255,37 @@ export function BittakaClient({ initialData }: Props) {
       .finally(() => setUserStateLoaded(true));
   }, [isPending, session, userStateLoaded]);
 
+  const shouldLoadRecords = recordsRequested || (choiceCardLoaded && choices.length > 0);
+
+  useEffect(() => {
+    if (!shouldLoadRecords || records) return;
+
+    let ignore = false;
+    void fetch("/data/scores.json")
+      .then((response) => (response.ok ? response.json() : []))
+      .then((payload: unknown) => {
+        if (!ignore) setRecords(Array.isArray(payload) ? (payload as ScoreRecord[]) : []);
+      })
+      .catch(() => {
+        if (!ignore) setRecords([]);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [records, shouldLoadRecords]);
+
   // Build record lookup for choice entries
   const choiceRecords = useMemo(() => {
+    const scoreRecords = records ?? EMPTY_RECORDS;
     return choices
       .map((entry) => ({
         entry,
-        record: getRecordByKey(initialData, entry.code, entry.bacType),
+        record: getRecordByKey(scoreRecords, entry.code, entry.bacType),
       }))
       .filter((item): item is { entry: typeof item.entry; record: ScoreRecord } => item.record !== undefined)
       .sort((a, b) => a.entry.rank - b.entry.rank);
-  }, [choices, initialData]);
+  }, [choices, records]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -298,7 +318,10 @@ export function BittakaClient({ initialData }: Props) {
 
   const showFull = hasScore && choices.length > 0;
 
-  if (isPending || !userStateLoaded || !choiceCardLoaded) {
+  const scoreRecords = records ?? EMPTY_RECORDS;
+  const loadingChoiceRecords = choices.length > 0 && !records;
+
+  if (isPending || !userStateLoaded || !choiceCardLoaded || loadingChoiceRecords) {
     return (
       <div className="mx-auto w-full max-w-4xl px-6 py-8">
         {/* Actions skeleton */}
@@ -340,7 +363,9 @@ export function BittakaClient({ initialData }: Props) {
       {/* Actions */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
           <ChoiceCardAddDialog
-            records={initialData}
+            records={scoreRecords}
+            isLoadingRecords={shouldLoadRecords && !records}
+            onOpen={() => setRecordsRequested(true)}
             userBacType={userBacType}
             userGender={userGender}
             userGovernorate={userGovernorate}
@@ -414,7 +439,7 @@ export function BittakaClient({ initialData }: Props) {
                     userGrades={userGrades}
                     userGovernorate={userGovernorate}
                     userGender={userGender}
-                    records={initialData}
+                    records={scoreRecords}
                     isFavorite={isFavorite(record.code, record.bacType)}
                     onToggleFavorite={toggleFavorite}
                     onRemove={removeChoice}

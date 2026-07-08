@@ -1,16 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { ScoreRecord, ChoiceCardEntry } from "@/lib/types";
 import { ChoiceCardItem } from "@/components/choice-card-item";
 import { decodeShareData } from "@/lib/share-encoding";
-
-function readScores(): ScoreRecord[] {
-  const source = fs.readFileSync(
-    path.join(process.cwd(), "public", "data", "scores.json"),
-    "utf8",
-  );
-  return JSON.parse(source) as ScoreRecord[];
-}
+import { readScores } from "@/lib/score-data";
 
 interface Props {
   params: Promise<{ slug?: string[] }>;
