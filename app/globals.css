@@ -214,31 +214,37 @@
 }
 
 /* Compact, branded scrollbar for long select menus. */
-[data-slot="select-list"] {
+[data-slot="select-list"],
+[data-scrollbar="branded"] {
   scrollbar-color: var(--brand-ochre) var(--popover) !important;
   scrollbar-width: thin;
 }
 
-[data-slot="select-list"]::-webkit-scrollbar {
+[data-slot="select-list"]::-webkit-scrollbar,
+[data-scrollbar="branded"]::-webkit-scrollbar {
   width: 6px;
 }
 
-[data-slot="select-list"]::-webkit-scrollbar-track {
+[data-slot="select-list"]::-webkit-scrollbar-track,
+[data-scrollbar="branded"]::-webkit-scrollbar-track {
   background: var(--popover);
   border-radius: var(--radius-pill);
 }
 
-[data-slot="select-list"]::-webkit-scrollbar-thumb {
+[data-slot="select-list"]::-webkit-scrollbar-thumb,
+[data-scrollbar="branded"]::-webkit-scrollbar-thumb {
   background: var(--brand-ochre);
   border: 1px solid var(--popover);
   border-radius: var(--radius-pill);
 }
 
-[data-slot="select-list"]::-webkit-scrollbar-thumb:hover {
+[data-slot="select-list"]::-webkit-scrollbar-thumb:hover,
+[data-scrollbar="branded"]::-webkit-scrollbar-thumb:hover {
   background: #c99a2e;
 }
 
-[data-slot="select-list"]::-webkit-scrollbar-button {
+[data-slot="select-list"]::-webkit-scrollbar-button,
+[data-scrollbar="branded"]::-webkit-scrollbar-button {
   display: none;
 }
 

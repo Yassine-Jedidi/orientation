@@ -233,6 +233,18 @@ export function useChoiceCard() {
     });
   }, [refreshFromServer]);
 
+  const repairChoices = useCallback((validKeys: Set<string>) => {
+    const repaired = normalizeChoices(
+      getSnapshot().filter((entry) => validKeys.has(`${entry.code}|${entry.bacType}`)),
+    );
+    if (choicesEqual(repaired, getSnapshot())) return;
+
+    update(repaired);
+    void request("PUT", { choices: repaired }).catch(() => {
+      refreshFromServer();
+    });
+  }, [refreshFromServer]);
+
   const getShareLink = useCallback(() => {
     const entries = getSnapshot();
     if (entries.length === 0) {
@@ -264,6 +276,7 @@ export function useChoiceCard() {
     removeChoice,
     reorder,
     clearAll,
+    repairChoices,
     getShareLink,
     copyShareLink,
     isLoaded,

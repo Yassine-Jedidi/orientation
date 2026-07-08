@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { forwardRef, useMemo, useState, type ComponentProps } from "react";
 import { hasGeographicBonus, isSameGeographicBonusZone, isGeographicBonusApplicable, getScoreWithGeographicBonus } from "@/lib/geographic-bonus";
 import { getFormulaCalculation } from "@/lib/formula-evaluator";
+import type { RowStatus } from "@/lib/choice-eligibility";
 import {
   Tooltip,
   TooltipTrigger,
@@ -13,8 +14,6 @@ import {
   TooltipPositioner,
   TooltipPortal,
 } from "@/components/ui/tooltip";
-
-type RowStatus = "qualified" | "close" | "far" | "unavailable" | "gender-unavailable" | null;
 
 interface ChoiceCardItemProps extends ComponentProps<"div"> {
   entry: ChoiceCardEntry;

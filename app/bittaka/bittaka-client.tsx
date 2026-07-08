@@ -25,64 +25,19 @@ import { useChoiceCard } from "@/lib/use-choice-card";
 import { useFavorites } from "@/lib/use-favorites";
 import { authClient } from "@/lib/auth-client";
 import { getLocalScore } from "@/lib/local-score";
-import { evaluateFormula } from "@/lib/formula-evaluator";
-import { isGender, isGenderEligible, type Gender } from "@/lib/gender";
-import { getBacOptionalSubjects } from "@/lib/bac-subjects";
+import { isGender, type Gender } from "@/lib/gender";
+import { isGeographicBonusApplicableForRecord } from "@/lib/geographic-bonus";
 import {
-  getScoreWithGeographicBonus,
-  isGeographicBonusApplicableForRecord,
-} from "@/lib/geographic-bonus";
+  getBaseScore,
+  getRowStatus,
+} from "@/lib/choice-eligibility";
 import { Button } from "@/components/ui/button";
 import { ChoiceCardItem } from "@/components/choice-card-item";
 import { ChoiceCardAddDialog } from "@/components/choice-card-add-dialog";
 import { ChoiceCardShare } from "@/components/choice-card-share";
 import { Card, CardContent } from "@/components/ui/card";
 
-type RowStatus = "qualified" | "close" | "far" | "unavailable" | "gender-unavailable" | null;
 const EMPTY_RECORDS: ScoreRecord[] = [];
-
-function getRowStatus(
-  record: ScoreRecord,
-  userScore: number | null,
-  userBacType: string | null,
-  userGrades: Record<string, number> | null,
-  userGovernorate: string | null,
-  userGender: Gender | null,
-  records: ScoreRecord[],
-): RowStatus {
-  if (!isGenderEligible(record.license, userGender)) return "gender-unavailable";
-  if (userScore === null || userBacType !== record.bacType) return null;
-  if (record.score === null) return null;
-  if (record.formula && userGrades) {
-    const missingOptionalSubject = getBacOptionalSubjects(record.bacType).some(
-      ({ code }) =>
-        new RegExp(`\\b${code}\\b`, "i").test(record.formula!) &&
-        userGrades[code] === undefined,
-    );
-    if (missingOptionalSubject) return "unavailable";
-  }
-
-  const baseEffective =
-    record.formula && record.formula !== "FG"
-      ? evaluateFormula(record.formula, { FG: userScore, ...(userGrades ?? {}) })
-      : userScore;
-  if (baseEffective === null) return null;
-
-  const effective = getScoreWithGeographicBonus(
-    baseEffective,
-    record,
-    isGeographicBonusApplicableForRecord(
-      record,
-      userGovernorate,
-      records,
-      true,
-    ),
-  );
-  if (effective === null) return null;
-  if (effective >= record.score) return "qualified";
-  if (record.score > effective + 15) return "far";
-  return "close";
-}
 
 function getRecordByKey(
   records: ScoreRecord[],
@@ -131,7 +86,7 @@ function SortableChoiceCard({
     transition,
   };
 
-  const status = getRowStatus(
+  const status = getRowStatus({
     record,
     userScore,
     userBacType,
@@ -139,7 +94,8 @@ function SortableChoiceCard({
     userGovernorate,
     userGender,
     records,
-  );
+    useGeographicBonus: true,
+  });
 
   const geoBonusApplicable = isGeographicBonusApplicableForRecord(
     record,
@@ -149,9 +105,7 @@ function SortableChoiceCard({
   );
 
   const effective =
-    userScore !== null && record.formula && record.formula !== "FG"
-      ? evaluateFormula(record.formula, { FG: userScore, ...(userGrades ?? {}) })
-      : userScore;
+    getBaseScore(record.formula, userScore, userGrades);
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -183,6 +137,7 @@ export function BittakaClient() {
     removeChoice,
     reorder,
     clearAll,
+    repairChoices,
     getShareLink,
     copyShareLink,
     isLoaded: choiceCardLoaded,
@@ -274,6 +229,13 @@ export function BittakaClient() {
       ignore = true;
     };
   }, [records, shouldLoadRecords]);
+
+  useEffect(() => {
+    if (!records || choices.length === 0) return;
+    repairChoices(
+      new Set(records.map((record) => `${record.code}|${record.bacType}`)),
+    );
+  }, [choices, records, repairChoices]);
 
   // Build record lookup for choice entries
   const choiceRecords = useMemo(() => {

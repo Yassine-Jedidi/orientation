@@ -67,17 +67,17 @@ import {
   PopoverPositioner,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { getFormulaCalculation } from "@/lib/formula-evaluator";
 import {
-  evaluateFormula,
-  getFormulaCalculation,
-} from "@/lib/formula-evaluator";
-import {
-  getScoreWithGeographicBonus,
   isGreaterTunisGovernorate,
-  isGeographicBonusApplicable,
   isGeographicBonusApplicableForRecord,
 } from "@/lib/geographic-bonus";
-import { getBacOptionalSubjects } from "@/lib/bac-subjects";
+import {
+  getBaseScore,
+  getEffectiveScore,
+  getRowStatus as getSharedRowStatus,
+  getUnavailableOptionalSubject as getSharedUnavailableOptionalSubject,
+} from "@/lib/choice-eligibility";
 import {
   Tooltip,
   TooltipArrow,
@@ -207,39 +207,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const resultsCardRef = useRef<HTMLDivElement>(null);
 
   const computeBaseScore = (formula?: string | null) => {
-    if (userScore === null) return null;
-    return formula && formula !== "FG"
-      ? evaluateFormula(formula, { FG: userScore, ...(userGrades ?? {}) })
-      : userScore;
+    return getBaseScore(formula, userScore, userGrades);
   };
 
-  const computeEffective = (
-    formula?: string | null,
-    program?: string | ScoreRecord,
-    institutionGovernorate?: string,
-  ) => {
-    const score = computeBaseScore(formula);
-    if (score === null) return null;
-    if (!program) return score;
-    const input = typeof program === "string" ? { code: program } : program;
-    if (!input.code) return score;
-    return getScoreWithGeographicBonus(
-      score,
-      input,
-      typeof program === "string"
-        ? isGeographicBonusApplicable(
-            input,
-            userGovernorate,
-            institutionGovernorate ?? "",
-            useGeographicBonus,
-          )
-        : isGeographicBonusApplicableForRecord(
-            program,
-            userGovernorate,
-            data,
-            useGeographicBonus,
-          ),
-    );
+  const computeEffective = (formula?: string | null, record?: ScoreRecord) => {
+    if (!record) return computeBaseScore(formula);
+    return getEffectiveScore({
+      record,
+      userScore,
+      userGrades,
+      userGovernorate,
+      records: data,
+      useGeographicBonus,
+    });
   };
 
   const hasApplicableGeographicBonus = (record: ScoreRecord) =>
@@ -262,12 +242,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     bacType: string,
     formula?: string | null,
   ) => {
-    if (!formula || userBacType !== bacType || !userGrades) return null;
-    return (
-      getBacOptionalSubjects(bacType).find(({ code }) => {
-        const isRequired = new RegExp(`\\b${code}\\b`, "i").test(formula);
-        return isRequired && userGrades[code] === undefined;
-      }) ?? null
+    return getSharedUnavailableOptionalSubject(
+      bacType,
+      formula,
+      userBacType,
+      userGrades,
     );
   };
 
@@ -286,21 +265,30 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
     institutionGovernorate?: string,
     licenseName?: string,
   ) => {
+    const record = data.find(
+      (candidate) =>
+        candidate.code === programCode &&
+        candidate.bacType === bacType &&
+        candidate.governorate === institutionGovernorate,
+    );
+    if (record) {
+      return getSharedRowStatus({
+        record,
+        userScore,
+        userBacType,
+        userGrades,
+        userGovernorate,
+        userGender,
+        records: data,
+        useGeographicBonus,
+      });
+    }
     if (licenseName && !isGenderEligible(licenseName, userGender))
       return "gender-unavailable";
     if (score === null) return null;
     if (userScore === null || userBacType !== bacType) return null;
     if (getUnavailableOptionalSubject(bacType, formula)) return "unavailable";
-    const effective = computeEffective(
-      formula,
-      data.find(
-        (record) =>
-          record.code === programCode &&
-          record.bacType === bacType &&
-          record.governorate === institutionGovernorate,
-      ) ?? programCode,
-      institutionGovernorate,
-    );
+    const effective = computeBaseScore(formula);
     if (effective === null) return null;
     if (effective >= score) return "qualified";
     if (score > effective + 15) return "far";
@@ -839,7 +827,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   const effective = computeEffective(
                     record.formula,
                     record,
-                    record.governorate,
                   );
                   const unavailable = getUnavailableOptionalSubject(
                     record.bacType,
@@ -998,7 +985,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         </Card>
                       </DialogTrigger>
 
-                      <DialogContent className="top-auto! bottom-0! left-0! w-full! max-w-none! translate-x-0! translate-y-0! rounded-b-none rounded-t-xl p-5 [&_[data-slot=dialog-close]]:right-auto [&_[data-slot=dialog-close]]:left-3 [&_[data-slot=dialog-close]]:top-3">
+                      <DialogContent className="top-auto! bottom-0! left-0! flex max-h-[calc(100dvh-0.75rem)] w-full! max-w-none! translate-x-0! translate-y-0! flex-col overflow-hidden rounded-b-none rounded-t-xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] [&_[data-slot=dialog-close]]:right-auto [&_[data-slot=dialog-close]]:left-3 [&_[data-slot=dialog-close]]:top-3">
                         <DialogHeader className="gap-1">
                           <DialogTitle className="pe-10 text-right text-title-md leading-7">
                             {record.license}
@@ -1013,7 +1000,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             الرمز {record.code} · {record.university}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-3">
+                        <div data-scrollbar="branded" className="min-h-0 space-y-3 overflow-y-auto overscroll-contain ps-1">
                           {record.notes && record.notes.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                               {record.notes.map((note) => (
@@ -1617,7 +1604,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             const eff = computeEffective(
                                               branch.formula,
                                               branch,
-                                              branch.governorate,
                                             );
                                             if (
                                               eff === null ||
@@ -2021,7 +2007,6 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         const eff = computeEffective(
                                           r.formula,
                                           r,
-                                          r.governorate,
                                         );
                                         if (
                                           eff === null ||
