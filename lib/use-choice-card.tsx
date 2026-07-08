@@ -129,23 +129,14 @@ export function useChoiceCard() {
       return;
     }
     const userChanged = activeUserId !== userId;
-    const shouldMigrateAnonymousChoices = activeUserId === null;
     activeUserId = userId;
     if (reconciledUsers.has(userId) && !userChanged) return;
-    if (!shouldMigrateAnonymousChoices) update(EMPTY, false);
+    if (userChanged) update(EMPTY, false);
     reconciledUsers.add(userId);
 
     void fetchServerChoices()
       .then((serverChoices) => {
-        const optimisticOrGuestChoices = getSnapshot();
-        const merged = normalizeChoices([...serverChoices, ...optimisticOrGuestChoices]);
-        update(merged, false);
-
-        if (!choicesEqual(merged, serverChoices)) {
-          void request("PUT", { choices: merged }).catch(() => {
-            reconciledUsers.delete(userId);
-          });
-        }
+        update(serverChoices, false);
       })
       .catch(() => {
         reconciledUsers.delete(userId);
@@ -154,7 +145,9 @@ export function useChoiceCard() {
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) update(parseChoices(event.newValue));
+      if (activeUserId === null && event.key === STORAGE_KEY) {
+        update(parseChoices(event.newValue), true);
+      }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -194,44 +187,48 @@ export function useChoiceCard() {
       return;
     }
     const next = [...entries, { code, bacType, rank }];
-    update(next);
+    update(next, !userId);
 
     toast("تمت الإضافة إلى بطاقة الاختيارات", { duration: 2000 });
 
+    if (!userId) return;
     void request("POST", { code, bacType }).catch(() => {
       refreshFromServer();
     });
-  }, [refreshFromServer]);
+  }, [refreshFromServer, userId]);
 
   const removeChoice = useCallback((code: string, bacType: string) => {
     const entries = getSnapshot();
     const filtered = entries.filter((e) => !(e.code === code && e.bacType === bacType));
     const reindexed = filtered.map((e, i) => ({ ...e, rank: i + 1 }));
-    update(reindexed);
+    update(reindexed, !userId);
 
     toast("تمت الإزالة من بطاقة الاختيارات", { duration: 2000 });
 
+    if (!userId) return;
     void request("DELETE", { code, bacType }).catch(() => {
       refreshFromServer();
     });
-  }, [refreshFromServer]);
+  }, [refreshFromServer, userId]);
 
   const reorder = useCallback((entries: ChoiceCardEntry[]) => {
     const reindexed = entries.map((e, i) => ({ ...e, rank: i + 1 }));
-    update(reindexed);
+    update(reindexed, !userId);
 
+    if (!userId) return;
     void request("PUT", { choices: reindexed }).catch(() => {
       refreshFromServer();
     });
-  }, [refreshFromServer]);
+  }, [refreshFromServer, userId]);
 
   const clearAll = useCallback(() => {
-    update([]);
+    update([], !userId);
     toast("تم تفريغ بطاقة الاختيارات", { duration: 2000 });
+    if (!userId) return;
     void request("DELETE").catch(() => {
       refreshFromServer();
     });
-  }, [refreshFromServer]);
+  }, [refreshFromServer, userId]);
 
   const repairChoices = useCallback((validKeys: Set<string>) => {
     const repaired = normalizeChoices(
@@ -239,11 +236,12 @@ export function useChoiceCard() {
     );
     if (choicesEqual(repaired, getSnapshot())) return;
 
-    update(repaired);
+    update(repaired, !userId);
+    if (!userId) return;
     void request("PUT", { choices: repaired }).catch(() => {
       refreshFromServer();
     });
-  }, [refreshFromServer]);
+  }, [refreshFromServer, userId]);
 
   const getShareLink = useCallback(() => {
     const entries = getSnapshot();

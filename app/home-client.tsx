@@ -205,6 +205,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const { isInCard, addChoice } = useChoiceCard();
   const userScoreFetched = useRef(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
+  const bonusDisplayGovernorate =
+    userGovernorate ??
+    (governorate === GREATER_TUNIS_FILTER
+      ? "تونس"
+      : governorate !== "all"
+        ? governorate
+        : null);
 
   const computeBaseScore = (formula?: string | null) => {
     return getBaseScore(formula, userScore, userGrades);
@@ -225,7 +232,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const hasApplicableGeographicBonus = (record: ScoreRecord) =>
     isGeographicBonusApplicableForRecord(
       record,
-      userGovernorate,
+      bonusDisplayGovernorate,
       data,
       useGeographicBonus,
     );
