@@ -429,7 +429,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (!institution || record.institution === institution) &&
         (!license || record.license === license),
     );
-    return [...new Set(available.map((record) => record.university))].filter(Boolean).sort();
+    return [...new Set(available.map((record) => record.university))]
+      .filter(Boolean)
+      .sort();
   }, [data, governorate, institution, license]);
 
   const institutions = useMemo(() => {
@@ -439,7 +441,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (university === "all" || record.university === university) &&
         (!license || record.license === license),
     );
-    return [...new Set(available.map((record) => record.institution))].filter(Boolean).sort();
+    return [...new Set(available.map((record) => record.institution))]
+      .filter(Boolean)
+      .sort();
   }, [data, governorate, university, license]);
 
   const licenses = useMemo(() => {
@@ -449,7 +453,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         (university === "all" || record.university === university) &&
         (!institution || record.institution === institution),
     );
-    return [...new Set(available.map((record) => record.license))].filter(Boolean).sort();
+    return [...new Set(available.map((record) => record.license))]
+      .filter(Boolean)
+      .sort();
   }, [data, governorate, university, institution]);
 
   const categories = useMemo(
@@ -458,7 +464,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   );
 
   const specialities = useMemo(
-    () => [...new Set(data.flatMap((r) => r.speciality ?? []))].filter(Boolean).sort(),
+    () =>
+      [...new Set(data.flatMap((r) => r.speciality ?? []))]
+        .filter(Boolean)
+        .sort(),
     [data],
   );
 
@@ -474,10 +483,12 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
         if (institution && r.institution !== institution) return false;
         if (license && r.license !== license) return false;
         if (category !== "all" && r.category !== category) return false;
-        if (speciality !== "all" && !(r.speciality ?? []).includes(speciality)) return false;
+        if (speciality !== "all" && !(r.speciality ?? []).includes(speciality))
+          return false;
         if (onlyNewLicenses && r.score !== null) return false;
         if (onlyFavorites && !isFavorite(r.code, r.bacType)) return false;
-        if (minScore && (r.score === null || r.score > parseFloat(minScore))) return false;
+        if (minScore && (r.score === null || r.score > parseFloat(minScore)))
+          return false;
         if (q) {
           const match =
             normalizeArabicSearch(r.institution).includes(q) ||
@@ -859,10 +870,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                     record.governorate,
                     record.license,
                   );
-                  const effective = computeEffective(
-                    record.formula,
-                    record,
-                  );
+                  const effective = computeEffective(record.formula, record);
                   const unavailable = getUnavailableOptionalSubject(
                     record.bacType,
                     record.formula,
@@ -911,7 +919,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   status === "gender-unavailable") && (
                                   <CircleSlash2 className="size-3.5 text-muted-text" />
                                 )}
-                                <FavoriteButton code={record.code} bacType={record.bacType} size="xs" />
+                                <FavoriteButton
+                                  code={record.code}
+                                  bacType={record.bacType}
+                                  size="xs"
+                                />
                               </div>
                               <div className="shrink-0 text-left">
                                 <span className="block text-xs text-muted-text">
@@ -923,6 +935,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 >
                                   {formatScore(record.score)}
                                 </strong>
+                                {record.capacity != null && (
+                                  <span className="mt-1 block text-xs text-muted-text">
+                                    {record.capacity} مقعد
+                                  </span>
+                                )}
                               </div>
                             </div>
 
@@ -935,7 +952,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </p>
                             )}
                             {record.duration && (
-                              <p className="mt-1 text-xs leading-5 text-muted-text">{record.duration} سنوات</p>
+                              <p className="mt-1 text-xs leading-5 text-muted-text">
+                                {record.duration} سنوات
+                              </p>
                             )}
                             {record.category && (
                               <span className="mt-1 inline-block rounded-full bg-brand-lavender/50 px-2 py-0.5 text-xs leading-5 text-ink">
@@ -945,10 +964,18 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             {record.notes && record.notes.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-2">
                                 {record.notes.map((note) => (
-                                  <span key={note} className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words">
+                                  <span
+                                    key={note}
+                                    className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words"
+                                  >
                                     <TriangleAlert className="size-3 shrink-0" />
                                     {note.startsWith("http") ? (
-                                      <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                      <a
+                                        href={note}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="underline"
+                                      >
                                         دليل التوجيه (PDF)
                                       </a>
                                     ) : (
@@ -958,18 +985,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 ))}
                               </div>
                             )}
-                            {record.speciality && record.speciality.length > 0 && (
-                              <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
-                                {record.speciality.map((s) => (
-                                  <span
-                                    key={s}
-                                    className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
-                                  >
-                                    {s}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                            {record.speciality &&
+                              record.speciality.length > 0 && (
+                                <div className="mt-2 flex max-w-full flex-wrap items-start gap-1">
+                                  {record.speciality.map((s) => (
+                                    <span
+                                      key={s}
+                                      className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
+                                    >
+                                      {s}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             {genderUnavailable && (
                               <p className="mt-2 text-xs font-medium text-muted-text">
                                 {genderUnavailable}
@@ -985,7 +1013,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <p className="mt-1 text-xs leading-5 text-muted-text line-clamp-1">
                                 {record.university_fr}
                                 {record.university_abbreviation && (
-                                  <span className="font-mono"> ({record.university_abbreviation})</span>
+                                  <span className="font-mono">
+                                    {" "}
+                                    ({record.university_abbreviation})
+                                  </span>
                                 )}
                               </p>
                             )}
@@ -997,9 +1028,16 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <span className="rounded-full bg-surface-card px-2.5 py-1 font-medium text-ink">
                                 {record.bacType}
                               </span>
+                              {record.capacity != null && (
+                                <span className="rounded-full bg-brand-lavender/40 px-2.5 py-1 font-medium text-ink">
+                                  {record.capacity} مقعد
+                                </span>
+                              )}
                               {hasApplicableGeographicBonus(record) &&
-                                isGenderEligible(record.license, userGender) &&
-                                (
+                                isGenderEligible(
+                                  record.license,
+                                  userGender,
+                                ) && (
                                   <span
                                     className="rounded-full bg-brand-mint/60 px-2.5 py-1 font-semibold text-ink"
                                     dir="ltr"
@@ -1033,18 +1071,36 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             </p>
                           )}
                           <DialogDescription className="text-right">
-                            {record.duration && <span>{record.duration === 1 ? "سنة واحدة" : `${record.duration} سنوات`} · </span>}
+                            {record.duration && (
+                              <span>
+                                {record.duration === 1
+                                  ? "سنة واحدة"
+                                  : `${record.duration} سنوات`}{" "}
+                                ·{" "}
+                              </span>
+                            )}
                             الرمز {record.code} · {record.university}
                           </DialogDescription>
                         </DialogHeader>
-                        <div data-scrollbar="branded" className="min-h-0 space-y-3 overflow-y-auto overscroll-contain ps-1">
+                        <div
+                          data-scrollbar="branded"
+                          className="min-h-0 space-y-3 overflow-y-auto overscroll-contain ps-1"
+                        >
                           {record.notes && record.notes.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                               {record.notes.map((note) => (
-                                <span key={note} className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words">
+                                <span
+                                  key={note}
+                                  className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs leading-5 text-warning whitespace-normal break-words"
+                                >
                                   <TriangleAlert className="size-3 shrink-0" />
                                   {note.startsWith("http") ? (
-                                    <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                    <a
+                                      href={note}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline"
+                                    >
                                       دليل التوجيه (PDF)
                                     </a>
                                   ) : (
@@ -1061,17 +1117,23 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </span>
                             </div>
                           )}
-                          {record.speciality && record.speciality.length > 0 && (
-                            <div className="flex flex-wrap items-start gap-1">
-                              {record.speciality.map((s) => (
+                          {record.speciality &&
+                            record.speciality.length > 0 && (
+                              <div className="flex flex-wrap items-start gap-1">
+                                {record.speciality.map((s) => (
                                   <span
                                     key={s}
                                     className="w-fit whitespace-normal rounded-full bg-brand-peach/60 px-1.5 py-0.5 text-xs leading-5 text-ink"
                                   >
-                                  {s}
-                                </span>
-                              ))}
-                            </div>
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          {record.capacity != null && (
+                            <span className="inline-flex rounded-full bg-brand-pink/15 px-2 py-0.5 text-xs leading-5 text-ink">
+                              عدد المقاعد: {record.capacity}
+                            </span>
                           )}
                           <div className="rounded-lg bg-surface-soft p-4">
                             <p className="text-xs text-muted-text">المؤسسة</p>
@@ -1082,7 +1144,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <p className="text-xs leading-5 text-muted-text">
                                 {record.university_fr}
                                 {record.university_abbreviation && (
-                                  <span className="font-mono"> ({record.university_abbreviation})</span>
+                                  <span className="font-mono">
+                                    {" "}
+                                    ({record.university_abbreviation})
+                                  </span>
                                 )}
                               </p>
                             )}
@@ -1246,7 +1311,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </div>
                               );
                             })()}
-                           {unavailable && (
+                          {unavailable && (
                             <p className="rounded-lg bg-surface-strong p-3 text-sm text-muted-text">
                               غير متاح: تتطلب الصيغة مادة {unavailable.label}.
                             </p>
@@ -1266,15 +1331,20 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                     duration: 2000,
                                   })
                                 }
-                                className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
+                                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
                               >
-                                <ClipboardList className="size-4" /> أضف إلى البطاقة
+                                <ClipboardList className="size-4" /> أضف إلى
+                                البطاقة
                               </button>
                             ) : isInCard(record.code, record.bacType) ? (
                               <button
                                 type="button"
-                                onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
-                                className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
+                                onClick={() =>
+                                  toast("البرنامج موجود بالفعل في البطاقة", {
+                                    duration: 2000,
+                                  })
+                                }
+                                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
                               >
                                 <ClipboardList className="size-4" /> في البطاقة
                               </button>
@@ -1282,10 +1352,13 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <Button
                                 variant="brand-ochre"
                                 size="sm"
-                                className="flex-1"
-                                onClick={() => addChoice(record.code, record.bacType)}
+                                className="min-h-12 flex-1"
+                                onClick={() =>
+                                  addChoice(record.code, record.bacType)
+                                }
                               >
-                                <ClipboardList className="size-4" /> أضف إلى البطاقة
+                                <ClipboardList className="size-4" /> أضف إلى
+                                البطاقة
                               </Button>
                             )}
                           </div>
@@ -1303,18 +1376,25 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   <TableRow>
                     <TableHead className="w-[60px]"></TableHead>
                     <TableHead className="w-[72px]">الرمز</TableHead>
-                    <TableHead className="w-[180px] xl:w-[200px]">الإجازة</TableHead>
-                    <TableHead className="w-[160px] xl:w-[180px]">الجامعة</TableHead>
+                    <TableHead className="w-[180px] xl:w-[200px]">
+                      الإجازة
+                    </TableHead>
+                    <TableHead className="w-[160px] xl:w-[180px]">
+                      الجامعة
+                    </TableHead>
                     <TableHead className="hidden w-[200px] xl:w-[220px] md:table-cell">
                       المؤسسة
                     </TableHead>
                     <TableHead className="w-[60px] text-center">
                       التنفيل
                     </TableHead>
-                    <TableHead className="w-[100px]">
-                      الشعبة
+                    <TableHead className="w-[100px]">الشعبة</TableHead>
+                    <TableHead className="w-[140px] xl:w-[150px]">
+                      الصيغة
                     </TableHead>
-                    <TableHead className="w-[140px] xl:w-[150px]">الصيغة</TableHead>
+                    <TableHead className="w-[84px] text-right">
+                      المقاعد
+                    </TableHead>
                     <TableHead className="w-[84px] text-right">
                       النقاط
                     </TableHead>
@@ -1324,7 +1404,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                   paginatedGroups.map((group) => {
                     const bestIdx = group.branches.reduce(
                       (maxIdx, b, i, arr) =>
-                        (b.score ?? -Infinity) > (arr[maxIdx].score ?? -Infinity) ? i : maxIdx,
+                        (b.score ?? -Infinity) >
+                        (arr[maxIdx].score ?? -Infinity)
+                          ? i
+                          : maxIdx,
                       0,
                     );
                     const isHovered = hoveredGroup === group.key;
@@ -1359,7 +1442,8 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                       (branch) => branch.bacType === userBacType,
                     );
                     const actionBranch =
-                      userBacBranch ?? (!userBacType ? group.branches[0] : null);
+                      userBacBranch ??
+                      (!userBacType ? group.branches[0] : null);
                     return (
                       <tbody
                         key={group.key}
@@ -1466,7 +1550,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       />
                                     )}
                                   </TableCell>
-                                   <TableCell
+                                  <TableCell
                                     rowSpan={group.branches.length}
                                     className={`align-top font-medium max-w-[210px] ${isHovered && bestIdx !== 0 ? "bg-surface-soft/80!" : ""}`}
                                   >
@@ -1489,18 +1573,30 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                       </TooltipPortal>
                                     </Tooltip>
                                     {group.duration && (
-                                      <p className="mt-1 text-xs leading-5 text-muted-text">{group.duration} سنوات</p>
+                                      <p className="mt-1 text-xs leading-5 text-muted-text">
+                                        {group.duration} سنوات
+                                      </p>
                                     )}
                                     {group.category && (
-                                      <p className="mt-1 text-xs leading-5 text-muted-text">{group.category}</p>
+                                      <p className="mt-1 text-xs leading-5 text-muted-text">
+                                        {group.category}
+                                      </p>
                                     )}
                                     {group.notes && group.notes.length > 0 && (
                                       <div className="mt-2 space-y-1">
                                         {group.notes.map((note) => (
-                                          <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                          <p
+                                            key={note}
+                                            className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words"
+                                          >
                                             <TriangleAlert className="size-3 shrink-0 mt-0.5" />
                                             {note.startsWith("http") ? (
-                                              <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                              <a
+                                                href={note}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="underline"
+                                              >
                                                 دليل التوجيه (PDF)
                                               </a>
                                             ) : (
@@ -1671,6 +1767,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   </PopoverPortal>
                                 </Popover>
                               </TableCell>
+                              <TableCell className="text-right font-mono text-xs tabular-nums text-ink">
+                                {branch.capacity ?? "—"}
+                              </TableCell>
                               <TableCell className="text-right font-medium tabular-nums">
                                 {userBacType === branch.bacType &&
                                 userScore !== null &&
@@ -1713,7 +1812,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                             )
                                               return null;
                                             const bonusApplied =
-                                              hasPersonalGeographicBonus(branch);
+                                              hasPersonalGeographicBonus(
+                                                branch,
+                                              );
                                             return (
                                               <span className="whitespace-nowrap text-xs leading-relaxed">
                                                 {bonusApplied &&
@@ -1829,11 +1930,19 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                         >
                           <TableCell className="p-2">
                             <div className="flex items-center gap-0.5">
-                              <FavoriteButton code={r.code} bacType={r.bacType} size="xs" />
+                              <FavoriteButton
+                                code={r.code}
+                                bacType={r.bacType}
+                                size="xs"
+                              />
                               {isInCard(r.code, r.bacType) ? (
                                 <button
                                   type="button"
-                                  onClick={() => toast("البرنامج موجود بالفعل في البطاقة", { duration: 2000 })}
+                                  onClick={() =>
+                                    toast("البرنامج موجود بالفعل في البطاقة", {
+                                      duration: 2000,
+                                    })
+                                  }
                                   className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
                                   aria-label="في البطاقة"
                                 >
@@ -1902,7 +2011,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               <CircleSlash2 className="size-3.5 text-muted-text inline align-middle ms-1" />
                             ) : null}
                           </TableCell>
-                           <TableCell>
+                          <TableCell>
                             <Tooltip>
                               <TooltipTrigger
                                 delay={500}
@@ -1922,15 +2031,25 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               </TooltipPortal>
                             </Tooltip>
                             {r.duration && (
-                              <p className="mt-1 text-xs leading-5 text-muted-text">{r.duration} سنوات</p>
+                              <p className="mt-1 text-xs leading-5 text-muted-text">
+                                {r.duration} سنوات
+                              </p>
                             )}
                             {r.notes && r.notes.length > 0 && (
                               <div className="mt-2 space-y-1">
                                 {r.notes.map((note) => (
-                                  <p key={note} className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words">
+                                  <p
+                                    key={note}
+                                    className="flex items-start gap-1 text-xs leading-5 text-warning whitespace-normal break-words"
+                                  >
                                     <TriangleAlert className="size-3 shrink-0 mt-0.5" />
                                     {note.startsWith("http") ? (
-                                      <a href={note} target="_blank" rel="noopener noreferrer" className="underline">
+                                      <a
+                                        href={note}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="underline"
+                                      >
                                         دليل التوجيه (PDF)
                                       </a>
                                     ) : (
@@ -2074,6 +2193,9 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                 </PopoverPositioner>
                               </PopoverPortal>
                             </Popover>
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs tabular-nums text-ink">
+                            {r.capacity ?? "—"}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
                             {userBacType === r.bacType &&

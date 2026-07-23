@@ -13,6 +13,7 @@ export interface ScoreRecord {
   license: string;
   bacType: string;
   score: number | null;
+  capacity?: number | null;
   formula?: string;
   speciality?: string[];
   duration?: number;

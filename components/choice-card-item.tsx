@@ -154,6 +154,11 @@ const ChoiceCardItem = forwardRef<HTMLDivElement, ChoiceCardItemProps>(
           <span className="block break-words text-xs text-muted-text">
             {record.institution}
           </span>
+          {record.capacity != null && (
+            <span className="mt-1 block text-xs text-muted-text">
+              {record.capacity} مقعد
+            </span>
+          )}
         </div>
 
         {/* Score */}

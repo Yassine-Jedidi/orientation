@@ -259,6 +259,11 @@ export function ChoiceCardAddDialog({
                     <span className="block break-words text-caption text-muted-text">
                       {record.institution}
                     </span>
+                    {record.capacity != null && (
+                      <span className="block text-caption text-muted-text">
+                        {record.capacity} مقعد
+                      </span>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     {isGeographicBonusApplicableForRecord(
