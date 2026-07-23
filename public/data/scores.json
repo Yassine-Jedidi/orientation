@@ -49499,7 +49499,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "بنزرت",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -49545,7 +49545,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -49591,7 +49591,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "المهدية",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -49689,7 +49689,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "صفاقس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -49735,7 +49735,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "قابس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -49781,7 +49781,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "قفصة",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 147,
@@ -54800,7 +54800,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "بن عروس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 154,
@@ -72965,7 +72965,7 @@
     "university_delegation": "تونس",
     "university_fr": "Faculté de Médecine de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 191,
@@ -73070,7 +73070,7 @@
     "university_delegation": "سوسة",
     "university_fr": "Faculté de Médecine de Sousse",
     "governorate": "سوسة",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 191,
@@ -73174,7 +73174,7 @@
     "university_delegation": "المنستير",
     "university_fr": "Faculté de Médecine de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 191,
@@ -73269,7 +73269,7 @@
     "university_delegation": "صفاقس",
     "university_fr": "Faculté de Médecine de Sfax",
     "governorate": "صفاقس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 191,
@@ -73364,7 +73364,7 @@
     "university_delegation": "المنستير",
     "university_fr": "Faculté de Pharmacie de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 191,
@@ -73460,7 +73460,7 @@
     "university_delegation": "المنستير",
     "university_fr": "Faculté de Médecine Dentaire de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 192,
@@ -73998,7 +73998,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 4
   },
   {
     "page": 192,
@@ -74277,7 +74277,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 193,
@@ -74383,7 +74383,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 12
   },
   {
     "page": 193,
@@ -74411,7 +74411,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 193,
@@ -74439,7 +74439,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 193,
@@ -74467,7 +74467,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 193,
@@ -74494,7 +74494,7 @@
     "university_delegation": "المنستير",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 3
   },
   {
     "page": 193,
@@ -74599,7 +74599,7 @@
     "university_delegation": "صفاقس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Sfax",
     "governorate": "صفاقس",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 193,
@@ -74703,7 +74703,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 9
   },
   {
     "page": 194,
@@ -74821,7 +74821,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 194,
@@ -74916,7 +74916,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 194,
@@ -75204,7 +75204,7 @@
     "university_delegation": "المنستير",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 194,
@@ -76525,7 +76525,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 197,
@@ -76630,7 +76630,7 @@
     "university_delegation": "المنستير",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Monastir",
     "governorate": "المنستير",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 197,
@@ -76735,7 +76735,7 @@
     "university_delegation": "صفاقس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Sfax",
     "governorate": "صفاقس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 197,
@@ -77577,7 +77577,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "سيدي بوزيد",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 199,
@@ -77671,7 +77671,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "سيدي بوزيد",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 199,
@@ -78065,7 +78065,7 @@
     "university_delegation": null,
     "university_fr": null,
     "governorate": "سيدي بوزيد",
-    "capacity": null
+    "capacity": 0
   },
   {
     "page": 0,
@@ -78763,7 +78763,7 @@
     "university_delegation": "تونس",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Tunis",
     "governorate": "تونس",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 0,
@@ -78855,7 +78855,7 @@
     "university_delegation": "سوسة",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Sousse",
     "governorate": "سوسة",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 0,
@@ -79154,7 +79154,7 @@
     "university_delegation": "سوسة",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Sousse",
     "governorate": "سوسة",
-    "capacity": null
+    "capacity": 2
   },
   {
     "page": 0,
@@ -79249,7 +79249,7 @@
     "university_delegation": "قفصة",
     "university_fr": "École Supérieure des Sciences et Techniques de la Santé de Gafsa",
     "governorate": "قفصة",
-    "capacity": null
+    "capacity": 1
   },
   {
     "page": 0,
