@@ -206,7 +206,7 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
   const [userGovernorate, setUserGovernorate] = useState<string | null>(null);
   const [userGender, setUserGender] = useState<Gender | null>(null);
   const { isFavorite } = useFavorites();
-  const { isInCard, addChoice } = useChoiceCard();
+  const { isInCard, addChoice, removeChoice } = useChoiceCard();
   const userScoreFetched = useRef(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
   const bonusDisplayGovernorate =
@@ -924,6 +924,29 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                   bacType={record.bacType}
                                   size="xs"
                                 />
+                                {isInCard(record.code, record.bacType) ? (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); e.preventDefault(); removeChoice(record.code, record.bacType); }}
+                                    onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); removeChoice(record.code, record.bacType); } }}
+                                    className="inline-flex size-6 items-center justify-center rounded text-brand-ochre hover:text-brand-ochre/80 cursor-pointer"
+                                    aria-label="إزالة من البطاقة"
+                                  >
+                                    <ClipboardList className="size-3.5" fill="currentColor" />
+                                  </span>
+                                ) : (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); e.preventDefault(); addChoice(record.code, record.bacType); }}
+                                    onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); addChoice(record.code, record.bacType); } }}
+                                    className="inline-flex size-6 items-center justify-center rounded text-muted-text hover:text-brand-ochre cursor-pointer"
+                                    aria-label="أضف إلى البطاقة"
+                                  >
+                                    <ClipboardList className="size-3.5" />
+                                  </span>
+                                )}
                               </div>
                               <div className="shrink-0 text-left">
                                 <span className="block text-xs text-muted-text">
@@ -1339,14 +1362,10 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                             ) : isInCard(record.code, record.bacType) ? (
                               <button
                                 type="button"
-                                onClick={() =>
-                                  toast("البرنامج موجود بالفعل في البطاقة", {
-                                    duration: 2000,
-                                  })
-                                }
-                                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-muted-text transition-colors hover:text-brand-ochre"
+                                onClick={() => removeChoice(record.code, record.bacType)}
+                                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-canvas px-4 py-2 text-sm font-medium text-brand-ochre transition-colors hover:text-brand-ochre/80"
                               >
-                                <ClipboardList className="size-4" /> في البطاقة
+                                <ClipboardList className="size-4" fill="currentColor" /> في البطاقة
                               </button>
                             ) : (
                               <Button
@@ -1512,15 +1531,15 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                                         <button
                                           type="button"
                                           onClick={() =>
-                                            toast(
-                                              "البرنامج موجود بالفعل في البطاقة",
-                                              { duration: 2000 },
+                                            removeChoice(
+                                              actionBranch.code,
+                                              actionBranch.bacType,
                                             )
                                           }
-                                          className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
-                                          aria-label="في البطاقة"
+                                          className="flex size-6 items-center justify-center rounded text-brand-ochre hover:text-brand-ochre/80"
+                                          aria-label="إزالة من البطاقة"
                                         >
-                                          <ClipboardList className="size-3.5" />
+                                          <ClipboardList className="size-3.5" fill="currentColor" />
                                         </button>
                                       ) : (
                                         <button
@@ -1938,15 +1957,11 @@ export function HomeClient({ initialData }: { initialData: ScoreRecord[] }) {
                               {isInCard(r.code, r.bacType) ? (
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    toast("البرنامج موجود بالفعل في البطاقة", {
-                                      duration: 2000,
-                                    })
-                                  }
-                                  className="flex size-6 items-center justify-center rounded text-muted-soft hover:text-brand-ochre"
-                                  aria-label="في البطاقة"
+                                  onClick={() => removeChoice(r.code, r.bacType)}
+                                  className="flex size-6 items-center justify-center rounded text-brand-ochre hover:text-brand-ochre/80"
+                                  aria-label="إزالة من البطاقة"
                                 >
-                                  <ClipboardList className="size-3.5" />
+                                  <ClipboardList className="size-3.5" fill="currentColor" />
                                 </button>
                               ) : (
                                 <button

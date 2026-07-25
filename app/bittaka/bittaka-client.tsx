@@ -278,7 +278,7 @@ export function BittakaClient() {
 
   const hasScore = userScore !== null;
 
-  const showFull = hasScore && choices.length > 0;
+  const showFull = choices.length > 0;
 
   const scoreRecords = records ?? EMPTY_RECORDS;
   const loadingChoiceRecords = choices.length > 0 && !records;
@@ -352,7 +352,7 @@ export function BittakaClient() {
         </div>
 
       {/* No bac type prompt */}
-      {!hasScore && (
+      {!hasScore && choices.length === 0 && (
         <Card className="w-full">
           <CardContent className="flex flex-col items-center gap-4 py-16">
             <UserRound className="size-12 text-muted-soft" />
@@ -370,7 +370,7 @@ export function BittakaClient() {
         </Card>
       )}
 
-      {hasScore && choices.length === 0 ? (
+      {choices.length === 0 ? (
         <Card className="w-full">
           <CardContent className="flex flex-col items-center gap-4 py-16">
             <ClipboardList className="size-12 text-muted-soft" />
@@ -379,7 +379,7 @@ export function BittakaClient() {
             </p>
           </CardContent>
         </Card>
-      ) : hasScore ? (
+      ) : (
         <>
           {/* Sortable list */}
           <DndContext
@@ -421,7 +421,7 @@ export function BittakaClient() {
             </div>
           )}
         </>
-      ) : null}
+      )}
     </div>
   );
 }
