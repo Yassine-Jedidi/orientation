@@ -74,6 +74,60 @@ export function decodeUserData(encoded: string): ShareUserData | null {
   }
 }
 
+function base64UrlEncode(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64UrlDecode(encoded: string): Uint8Array {
+  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+export interface ShareViewData {
+  entries: { code: string; bacType: string }[];
+  userScore?: number;
+  userGovernorate?: string;
+  userGrades?: Record<string, number>;
+  userGender?: "male" | "female";
+}
+
+export function encodeShareViewData(data: ShareViewData): string {
+  const payload: Record<string, unknown> = {
+    e: data.entries.map((e) => ({ c: e.code, b: e.bacType })),
+  };
+  if (data.userScore !== undefined) payload.s = data.userScore;
+  if (data.userGovernorate !== undefined) payload.g = data.userGovernorate;
+  if (data.userGrades !== undefined) payload.d = data.userGrades;
+  if (data.userGender !== undefined) payload.n = data.userGender;
+  const json = JSON.stringify(payload);
+  return base64UrlEncode(new TextEncoder().encode(json));
+}
+
+export function decodeShareViewData(encoded: string): ShareViewData | null {
+  try {
+    const bytes = base64UrlDecode(encoded);
+    const json = new TextDecoder().decode(bytes);
+    const payload: Record<string, unknown> = JSON.parse(json);
+    const rawEntries = payload.e as { c: string; b: string }[] | undefined;
+    if (!Array.isArray(rawEntries) || rawEntries.length === 0) return null;
+    const entries = rawEntries.map((e) => ({ code: String(e.c), bacType: String(e.b) }));
+    return {
+      entries,
+      userScore: typeof payload.s === "number" ? payload.s : undefined,
+      userGovernorate: typeof payload.g === "string" ? payload.g : undefined,
+      userGrades: payload.d as Record<string, number> | undefined,
+      userGender: payload.n as "male" | "female" | undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function decodeShareData(id: string): { bacType: string; codes: string[]; entries?: { bacType: string; code: string }[] } | null {
   try {
     const base64 = id.replace(/-/g, "+").replace(/_/g, "/");

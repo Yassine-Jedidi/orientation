@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -23,6 +24,7 @@ import { ClipboardList, Trash2, UserRound } from "lucide-react";
 import type { ScoreRecord } from "@/lib/types";
 import { useChoiceCard } from "@/lib/use-choice-card";
 import { useFavorites } from "@/lib/use-favorites";
+import { encodeShareViewData } from "@/lib/share-encoding";
 import { authClient } from "@/lib/auth-client";
 import { getLocalScore } from "@/lib/local-score";
 import { isGender, type Gender } from "@/lib/gender";
@@ -338,18 +340,30 @@ export function BittakaClient() {
             choiceCount={choices.length}
           />
           <ChoiceCardShare
-            onGetLink={() => getShareLink({
-              s: userScore ?? undefined,
-              g: userGovernorate ?? undefined,
-              d: userGrades ?? undefined,
-              n: userGender ?? undefined,
-            })}
-            onCopyLink={() => copyShareLink({
-              s: userScore ?? undefined,
-              g: userGovernorate ?? undefined,
-              d: userGrades ?? undefined,
-              n: userGender ?? undefined,
-            })}
+            onGetLink={() => {
+              if (choices.length === 0) return "";
+              return window.location.origin + "/bittaka?v=" + encodeShareViewData({
+                entries: choices.map((e) => ({ code: e.code, bacType: e.bacType })),
+                userScore: userScore ?? undefined,
+                userGovernorate: userGovernorate ?? undefined,
+                userGrades: userGrades ?? undefined,
+                userGender: userGender ?? undefined,
+              });
+            }}
+            onCopyLink={() => {
+              if (choices.length === 0) return;
+              const url = window.location.origin + "/bittaka?v=" + encodeShareViewData({
+                entries: choices.map((e) => ({ code: e.code, bacType: e.bacType })),
+                userScore: userScore ?? undefined,
+                userGovernorate: userGovernorate ?? undefined,
+                userGrades: userGrades ?? undefined,
+                userGender: userGender ?? undefined,
+              });
+              navigator.clipboard.writeText(url).then(
+                () => toast("تم نسخ رابط البطاقة", { duration: 2000 }),
+                () => toast("تعذر نسخ الرابط", { duration: 2000 }),
+              );
+            }}
             hasChoices={choices.length > 0}
           />
           <Button
