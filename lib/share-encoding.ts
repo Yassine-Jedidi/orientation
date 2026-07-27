@@ -46,6 +46,30 @@ export function encodeShareData(
   return encodeBytes(new Uint8Array(buf));
 }
 
+export interface ShareUserData {
+  s?: number;
+  g?: string;
+  d?: Record<string, number>;
+  n?: "male" | "female";
+}
+
+export function encodeUserData(data: ShareUserData): string {
+  const json = JSON.stringify(data);
+  let binary = "";
+  for (let i = 0; i < json.length; i++) binary += String.fromCharCode(json.charCodeAt(i));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+export function decodeUserData(encoded: string): ShareUserData | null {
+  try {
+    const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(base64);
+    return JSON.parse(json) as ShareUserData;
+  } catch {
+    return null;
+  }
+}
+
 export function decodeShareData(id: string): { bacType: string; codes: string[]; entries?: { bacType: string; code: string }[] } | null {
   try {
     const base64 = id.replace(/-/g, "+").replace(/_/g, "/");

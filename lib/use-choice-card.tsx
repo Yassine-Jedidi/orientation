@@ -4,7 +4,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import type { ChoiceCardEntry } from "@/lib/types";
-import { encodeShareData } from "@/lib/share-encoding";
+import { encodeShareData, encodeUserData, type ShareUserData } from "@/lib/share-encoding";
 
 const STORAGE_KEY = "choiceCard";
 const EMPTY: ChoiceCardEntry[] = [];
@@ -244,7 +244,7 @@ export function useChoiceCard() {
     });
   }, [refreshFromServer, userId]);
 
-  const getShareLink = useCallback(() => {
+  const getShareLink = useCallback((userData?: ShareUserData) => {
     const entries = getSnapshot();
     if (entries.length === 0) {
       toast("أضف اختياراتك أولاً قبل المشاركة", { duration: 2000 });
@@ -254,12 +254,15 @@ export function useChoiceCard() {
       bacType: entry.bacType,
       code: entry.code,
     })));
-    const url = `${window.location.origin}/bitaka/view/${id}`;
+    let url = `${window.location.origin}/bitaka/view/${id}`;
+    if (userData) {
+      url += `?d=${encodeUserData(userData)}`;
+    }
     return url;
   }, []);
 
-  const copyShareLink = useCallback(() => {
-    const url = getShareLink();
+  const copyShareLink = useCallback((userData?: ShareUserData) => {
+    const url = getShareLink(userData);
     if (!url) return;
     navigator.clipboard.writeText(url).then(
       () => toast("تم نسخ رابط البطاقة", { duration: 2000 }),

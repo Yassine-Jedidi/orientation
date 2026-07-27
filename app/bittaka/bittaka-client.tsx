@@ -338,8 +338,18 @@ export function BittakaClient() {
             choiceCount={choices.length}
           />
           <ChoiceCardShare
-            onGetLink={getShareLink}
-            onCopyLink={copyShareLink}
+            onGetLink={() => getShareLink({
+              s: userScore ?? undefined,
+              g: userGovernorate ?? undefined,
+              d: userGrades ?? undefined,
+              n: userGender ?? undefined,
+            })}
+            onCopyLink={() => copyShareLink({
+              s: userScore ?? undefined,
+              g: userGovernorate ?? undefined,
+              d: userGrades ?? undefined,
+              n: userGender ?? undefined,
+            })}
             hasChoices={choices.length > 0}
           />
           <Button
