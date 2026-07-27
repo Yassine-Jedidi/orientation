@@ -340,29 +340,45 @@ export function BittakaClient() {
             choiceCount={choices.length}
           />
           <ChoiceCardShare
-            onGetLink={() => {
-              if (choices.length === 0) return "";
-              return window.location.origin + "/bittaka?v=" + encodeShareViewData({
+            onGetLink={async () => {
+              const payload = encodeShareViewData({
                 entries: choices.map((e) => ({ code: e.code, bacType: e.bacType })),
                 userScore: userScore ?? undefined,
                 userGovernorate: userGovernorate ?? undefined,
                 userGrades: userGrades ?? undefined,
                 userGender: userGender ?? undefined,
               });
+              const res = await fetch("/api/share", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ payload }),
+              });
+              if (!res.ok) throw new Error("Failed to create share link");
+              const { id } = await res.json() as { id: string };
+              return window.location.origin + "/bittaka?v=" + id;
             }}
-            onCopyLink={() => {
-              if (choices.length === 0) return;
-              const url = window.location.origin + "/bittaka?v=" + encodeShareViewData({
-                entries: choices.map((e) => ({ code: e.code, bacType: e.bacType })),
-                userScore: userScore ?? undefined,
-                userGovernorate: userGovernorate ?? undefined,
-                userGrades: userGrades ?? undefined,
-                userGender: userGender ?? undefined,
-              });
-              navigator.clipboard.writeText(url).then(
-                () => toast("تم نسخ رابط البطاقة", { duration: 2000 }),
-                () => toast("تعذر نسخ الرابط", { duration: 2000 }),
-              );
+            onCopyLink={async () => {
+              try {
+                const payload = encodeShareViewData({
+                  entries: choices.map((e) => ({ code: e.code, bacType: e.bacType })),
+                  userScore: userScore ?? undefined,
+                  userGovernorate: userGovernorate ?? undefined,
+                  userGrades: userGrades ?? undefined,
+                  userGender: userGender ?? undefined,
+                });
+                const res = await fetch("/api/share", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ payload }),
+                });
+                if (!res.ok) throw new Error();
+                const { id } = await res.json() as { id: string };
+                const url = window.location.origin + "/bittaka?v=" + id;
+                await navigator.clipboard.writeText(url);
+                toast("تم نسخ رابط البطاقة", { duration: 2000 });
+              } catch {
+                toast("تعذر نسخ الرابط", { duration: 2000 });
+              }
             }}
             hasChoices={choices.length > 0}
           />

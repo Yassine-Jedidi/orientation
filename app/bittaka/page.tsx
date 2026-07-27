@@ -4,6 +4,9 @@ import { decodeShareViewData } from "@/lib/share-encoding";
 import { readScores } from "@/lib/score-data";
 import { getBaseScore, getRowStatus } from "@/lib/choice-eligibility";
 import { isGeographicBonusApplicableForRecord } from "@/lib/geographic-bonus";
+import { db } from "@/db";
+import { shareLink } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { BittakaClient } from "./bittaka-client";
 
 interface Props {
@@ -15,7 +18,24 @@ export default async function BittakaPage({ searchParams }: Props) {
 
   // Shared view mode
   if (typeof sp.v === "string") {
-    const data = decodeShareViewData(sp.v);
+    const raw = sp.v;
+    const isShortCode = /^[a-zA-Z0-9_-]{4,20}$/.test(raw) && raw.length < 30;
+    const payload = isShortCode
+      ? (await db.query.shareLink.findFirst({
+          where: eq(shareLink.id, raw),
+          columns: { payload: true },
+        }))?.payload ?? null
+      : raw;
+    if (!payload) {
+      return (
+        <div className="mx-auto w-full max-w-4xl px-6 py-8">
+          <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border py-16 text-center">
+            <p className="text-body text-muted-text">رابط غير صالح</p>
+          </div>
+        </div>
+      );
+    }
+    const data = decodeShareViewData(payload);
     if (!data) {
       return (
         <div className="mx-auto w-full max-w-4xl px-6 py-8">

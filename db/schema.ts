@@ -203,4 +203,12 @@ export const choiceCard = pgTable(
   ],
 );
 
+export const shareLink = pgTable("share_link", {
+  id: text("id").primaryKey(),
+  payload: text("payload").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const authSchema = { user, session, account, verification };

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Copy, Share2 } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Check, Copy, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface ChoiceCardShareProps {
-  onGetLink: () => string;
+  onGetLink: () => Promise<string>;
   onCopyLink: () => void;
   hasChoices: boolean;
 }
@@ -21,7 +21,22 @@ interface ChoiceCardShareProps {
 export function ChoiceCardShare({ onGetLink, onCopyLink, hasChoices }: ChoiceCardShareProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const link = open ? onGetLink() : "";
+  const [link, setLink] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) {
+      setLoading(true);
+      setLink("");
+      void onGetLink().then((url) => {
+        setLink(url);
+        setLoading(false);
+      }).catch(() => {
+        setLoading(false);
+      });
+    }
+  }, [onGetLink]);
 
   const handleCopy = () => {
     onCopyLink();
@@ -30,7 +45,7 @@ export function ChoiceCardShare({ onGetLink, onCopyLink, hasChoices }: ChoiceCar
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <Button
@@ -54,7 +69,7 @@ export function ChoiceCardShare({ onGetLink, onCopyLink, hasChoices }: ChoiceCar
           <>
             <div className="flex items-center gap-2">
               <Input
-                value={link || "جاري تحميل الرابط..."}
+                value={loading ? "جاري تحميل الرابط..." : link}
                 readOnly
                 className="ltr flex-1 font-mono text-xs"
                 dir="ltr"
@@ -63,8 +78,11 @@ export function ChoiceCardShare({ onGetLink, onCopyLink, hasChoices }: ChoiceCar
                 variant={copied ? "brand-mint" : "brand-ochre"}
                 onClick={handleCopy}
                 className="shrink-0"
+                disabled={loading || !link}
               >
-                {copied ? (
+                {loading ? (
+                  <><Loader2 className="size-4 animate-spin" /></>
+                ) : copied ? (
                   <><Check className="size-4" /> تم</>
                 ) : (
                   <><Copy className="size-4" /> نسخ</>
