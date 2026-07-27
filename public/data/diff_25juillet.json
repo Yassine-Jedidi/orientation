@@ -1,0 +1,1326 @@
+{
+  "statistics": {
+    "oldRows": 3269,
+    "newRows": 3274,
+    "oldCodes": 722,
+    "newCodes": 723,
+    "addedCodes": 2,
+    "removedCodes": 1,
+    "addedBacRows": 11,
+    "removedBacRows": 6,
+    "changedBacRows": 88
+  },
+  "addedCodes": [
+    "31311",
+    "34503"
+  ],
+  "removedCodes": [
+    "30315"
+  ],
+  "addedBacRows": [
+    {
+      "code": "10511",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "11511",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "12511",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "31311",
+      "bacType": "إقتصاد وتصرف"
+    },
+    {
+      "code": "31311",
+      "bacType": "العلوم التقنية"
+    },
+    {
+      "code": "31311",
+      "bacType": "رياضيات"
+    },
+    {
+      "code": "31311",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "31311",
+      "bacType": "علوم تجريبية"
+    },
+    {
+      "code": "34503",
+      "bacType": "العلوم التقنية"
+    },
+    {
+      "code": "34503",
+      "bacType": "رياضيات"
+    },
+    {
+      "code": "34503",
+      "bacType": "علوم تجريبية"
+    }
+  ],
+  "removedBacRows": [
+    {
+      "code": "10377",
+      "bacType": "العلوم التقنية"
+    },
+    {
+      "code": "10377",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "30315",
+      "bacType": "إقتصاد وتصرف"
+    },
+    {
+      "code": "30315",
+      "bacType": "رياضيات"
+    },
+    {
+      "code": "30315",
+      "bacType": "علوم الإعلامية"
+    },
+    {
+      "code": "30315",
+      "bacType": "علوم تجريبية"
+    }
+  ],
+  "changedBacRows": [
+    {
+      "code": "10138",
+      "bacType": "آداب",
+      "old": {
+        "university": "",
+        "institution": "العلوم الإنسانية  والإجتماعية  والدينية والتربية",
+        "score": 45.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الإنسانية  والإجتماعية  والدينية والتربية",
+        "score": 90.0
+      }
+    },
+    {
+      "code": "10311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 19.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "10311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 13.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "10360",
+      "bacType": "إقتصاد وتصرف",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 63.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 35.0
+      }
+    },
+    {
+      "code": "10360",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 23.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 10.0
+      }
+    },
+    {
+      "code": "10360",
+      "bacType": "علوم الإعلامية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 59.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      }
+    },
+    {
+      "code": "10360",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 23.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 10.0
+      }
+    },
+    {
+      "code": "10501",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 60.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 119.0
+      }
+    },
+    {
+      "code": "10503",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 16.0
+      }
+    },
+    {
+      "code": "10503",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "10503",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 14.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 54.0
+      }
+    },
+    {
+      "code": "10522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 200.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 250.0
+      }
+    },
+    {
+      "code": "10522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 135.0
+      }
+    },
+    {
+      "code": "10572",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 13.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 45.0
+      }
+    },
+    {
+      "code": "10572",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 33.0
+      }
+    },
+    {
+      "code": "10572",
+      "bacType": "علوم الإعلامية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 31.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 58.0
+      }
+    },
+    {
+      "code": "10572",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 14.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 33.0
+      }
+    },
+    {
+      "code": "11311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 10.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "11311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "11523",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "11523",
+      "bacType": "علوم الإعلامية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 50.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 48.0
+      }
+    },
+    {
+      "code": "11523",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "11524",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 12.0
+      }
+    },
+    {
+      "code": "11524",
+      "bacType": "علوم الإعلامية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 23.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "11524",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 12.0
+      }
+    },
+    {
+      "code": "12311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 16.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "12311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "13311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "13311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "13522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 134.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 200.0
+      }
+    },
+    {
+      "code": "13522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 77.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 100.0
+      }
+    },
+    {
+      "code": "20311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 20.0
+      }
+    },
+    {
+      "code": "20311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 20.0
+      }
+    },
+    {
+      "code": "20522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 150.0
+      }
+    },
+    {
+      "code": "20522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 60.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 110.0
+      }
+    },
+    {
+      "code": "22311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 18.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "22311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 13.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "22522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 161.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 190.0
+      }
+    },
+    {
+      "code": "22532",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 111.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      }
+    },
+    {
+      "code": "30311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 16.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "30311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "30522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 100.0
+      }
+    },
+    {
+      "code": "30522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 62.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 80.0
+      }
+    },
+    {
+      "code": "34501",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      }
+    },
+    {
+      "code": "34501",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      }
+    },
+    {
+      "code": "34501",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 70.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 90.0
+      }
+    },
+    {
+      "code": "34532",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 170.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 180.0
+      }
+    },
+    {
+      "code": "34575",
+      "bacType": "إقتصاد وتصرف",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 75.0
+      }
+    },
+    {
+      "code": "35522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 240.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 250.0
+      }
+    },
+    {
+      "code": "35522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      }
+    },
+    {
+      "code": "36311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "36311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "37311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "37311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "38318",
+      "bacType": "إقتصاد وتصرف",
+      "old": {
+        "university": "",
+        "institution": "العلوم الإقتصادية  وعلوم التصرف",
+        "score": 72.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الإقتصادية  وعلوم التصرف",
+        "score": 120.0
+      }
+    },
+    {
+      "code": "40311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "40311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "40532",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 100.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 150.0
+      }
+    },
+    {
+      "code": "40841",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "40841",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 23.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 65.0
+      }
+    },
+    {
+      "code": "41311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "41311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "41512",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 23.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 35.0
+      }
+    },
+    {
+      "code": "41522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 170.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 200.0
+      }
+    },
+    {
+      "code": "41522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      }
+    },
+    {
+      "code": "41546",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 10.0
+      }
+    },
+    {
+      "code": "41546",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 94.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الفلاحية  والبيوتكنولوجيا والبيئة",
+        "score": 110.0
+      }
+    },
+    {
+      "code": "41597",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 26.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 30.0
+      }
+    },
+    {
+      "code": "42311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "42311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "44311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 20.0
+      }
+    },
+    {
+      "code": "44311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 20.0
+      }
+    },
+    {
+      "code": "50311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "50311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "50522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 120.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 125.0
+      }
+    },
+    {
+      "code": "50522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 100.0
+      }
+    },
+    {
+      "code": "50532",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 77.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      }
+    },
+    {
+      "code": "60311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 15.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "60311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 11.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "60522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 71.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 100.0
+      }
+    },
+    {
+      "code": "60522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 59.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 80.0
+      }
+    },
+    {
+      "code": "60571",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 70.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 80.0
+      }
+    },
+    {
+      "code": "70311",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 13.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "70311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": null
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 25.0
+      }
+    },
+    {
+      "code": "70522",
+      "bacType": "رياضيات",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 66.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 90.0
+      }
+    },
+    {
+      "code": "70522",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 54.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 74.0
+      }
+    },
+    {
+      "code": "70532",
+      "bacType": "العلوم التقنية",
+      "old": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 94.0
+      },
+      "new": {
+        "university": "",
+        "institution": "الهندسة المعمارية والمراحل التحضيرية العلمية",
+        "score": 110.0
+      }
+    },
+    {
+      "code": "80311",
+      "bacType": "علوم تجريبية",
+      "old": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 19.0
+      },
+      "new": {
+        "university": "",
+        "institution": "العلوم الصحيحة والتكنولوجيا",
+        "score": 27.0
+      }
+    }
+  ]
+}
